@@ -77,12 +77,16 @@ FocusScope {
     }
 
     function closeZapList() {
+        zapTimer.stop();
         zapPanel.shown = false;
-        root.forceActiveFocus();
+        // Only reclaim focus while watching; the overlay may already be hidden.
+        if (root.visible)
+            root.forceActiveFocus();
     }
 
     onVisibleChanged: {
         if (!visible) {
+            zapTimer.stop();
             zapPanel.shown = false;
         }
     }
@@ -367,7 +371,9 @@ FocusScope {
         width: 760
         height: parent.height
         x: shown ? 0 : -width
-        visible: x > -width
+        // Visible as soon as it opens (before the slide-in has moved it), so
+        // the list can take the keyboard focus right away.
+        visible: shown || x > -width
         color: Kirigami.Theme.backgroundColor
         Behavior on x {
             NumberAnimation {
