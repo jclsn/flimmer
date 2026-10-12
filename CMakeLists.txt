@@ -17,6 +17,8 @@ qt_policy(SET QTP0004 NEW)
 
 qt_add_executable(plasma-tv src/main.cpp)
 
+set_source_files_properties(qml/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+
 qt_add_qml_module(plasma-tv
     URI PlasmaTv
     VERSION 1.0
@@ -33,6 +35,22 @@ qt_add_qml_module(plasma-tv
         src/channelmodel.h src/channelmodel.cpp
         src/tvhbackend.h src/tvhbackend.cpp
         src/screensaverinhibitor.h src/screensaverinhibitor.cpp
+    QML_FILES
+        qml/Main.qml
+        qml/Theme.qml
+        qml/NavBar.qml
+        qml/ChannelsPage.qml
+        qml/GuidePage.qml
+        qml/SettingsPage.qml
+        qml/SettingRow.qml
+        qml/TvButton.qml
+        qml/TextEntryDialog.qml
+        qml/EventDialog.qml
+        qml/PlayerView.qml
+        qml/WatchOverlay.qml
+        qml/ChannelLogo.qml
+        qml/ThinProgress.qml
+        qml/Toast.qml
 )
 
 target_include_directories(plasma-tv PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)

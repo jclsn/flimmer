@@ -1,0 +1,361 @@
+import QtQuick
+import PlasmaTv
+
+FocusScope {
+    id: root
+    signal exitUp
+    // Main provides the on-screen keyboard: editText(title, value, mode, callback)
+    signal editText(string title, string value, string mode, var callback)
+
+    // Draft values, committed with "Save"
+    property string dHost
+    property int dPort: 9981
+    property bool dHttps
+    property string dUser
+    property var dPassword: null   // null = unchanged
+    property string dProfile
+    property int dDays: 3
+    property string dScheme
+    readonly property int schemeIndex: Math.max(0, Settings.colorSchemes.findIndex(s => s.id === dScheme))
+    property string testMessage
+    property bool testOk: false
+    property bool testing: false
+
+    readonly property bool dirty: dHost !== Settings.host || dPort !== Settings.port || dHttps !== Settings.useHttps || dUser !== Settings.username || dPassword !== null || dProfile !== Settings.streamProfile || dDays !== Settings.guideDays || dScheme !== Settings.colorScheme
+
+    function load() {
+        dHost = Settings.host;
+        dPort = Settings.port;
+        dHttps = Settings.useHttps;
+        dUser = Settings.username;
+        dPassword = null;
+        dProfile = Settings.streamProfile;
+        dDays = Settings.guideDays;
+        dScheme = Settings.colorScheme;
+    }
+
+    function cycleScheme(delta) {
+        const n = Settings.colorSchemes.length;
+        dScheme = Settings.colorSchemes[(schemeIndex + delta + n) % n].id;
+    }
+
+    function values() {
+        const v = {
+            host: dHost,
+            port: dPort,
+            useHttps: dHttps,
+            username: dUser,
+            streamProfile: dProfile,
+            guideDays: dDays,
+            colorScheme: dScheme
+        };
+        if (dPassword !== null)
+            v.password = dPassword;
+        return v;
+    }
+
+    function save() {
+        Settings.save(values());
+        dPassword = null;
+        testMessage = "";
+    }
+
+    Component.onCompleted: load()
+    onVisibleChanged: {
+        if (visible && !dirty) {
+            load();
+        }
+    }
+
+    Connections {
+        target: Tvh
+        function onConnectionTestFinished(ok, message) {
+            root.testing = false;
+            root.testOk = ok;
+            root.testMessage = message;
+        }
+    }
+
+    // --- Form ---------------------------------------------------------
+    Rectangle {
+        id: formCard
+        x: Theme.margin
+        y: 16
+        width: 1080
+        height: form.implicitHeight + 48
+        radius: Theme.radius + 8
+        color: Theme.card
+        border.color: Theme.outline
+
+        Column {
+            id: form
+            anchors.fill: parent
+            anchors.margins: 24
+            spacing: 4
+
+            Text {
+                text: qsTr("Server")
+                color: Theme.accent
+                font.pixelSize: Theme.fontSmall
+                font.weight: Font.DemiBold
+                font.capitalization: Font.AllUppercase
+                font.letterSpacing: 2
+                leftPadding: 32
+                bottomPadding: 8
+            }
+
+            SettingRow {
+                id: hostRow
+                width: parent.width
+                focus: true
+                label: qsTr("Address")
+                value: root.dHost
+                placeholder: qsTr("e.g. 192.168.1.10")
+                onActivated: root.editText(label, root.dHost, "text", v => root.dHost = v.trim())
+                KeyNavigation.down: portRow
+                KeyNavigation.right: testButton
+                Keys.onUpPressed: root.exitUp()
+            }
+            SettingRow {
+                id: portRow
+                width: parent.width
+                label: qsTr("Port")
+                value: root.dPort
+                onActivated: root.editText(label, String(root.dPort), "number", v => {
+                    const p = parseInt(v);
+                    if (p > 0 && p < 65536)
+                        root.dPort = p;
+                })
+                KeyNavigation.up: hostRow
+                KeyNavigation.down: httpsRow
+                KeyNavigation.right: testButton
+            }
+            SettingRow {
+                id: httpsRow
+                width: parent.width
+                kind: "toggle"
+                label: qsTr("Use HTTPS")
+                checked: root.dHttps
+                onActivated: root.dHttps = !root.dHttps
+                KeyNavigation.up: portRow
+                KeyNavigation.down: userRow
+                KeyNavigation.right: testButton
+            }
+            SettingRow {
+                id: userRow
+                width: parent.width
+                label: qsTr("Username")
+                value: root.dUser
+                placeholder: qsTr("none (anonymous)")
+                onActivated: root.editText(label, root.dUser, "text", v => root.dUser = v.trim())
+                KeyNavigation.up: httpsRow
+                KeyNavigation.down: passwordRow
+                KeyNavigation.right: testButton
+            }
+            SettingRow {
+                id: passwordRow
+                width: parent.width
+                label: qsTr("Password")
+                value: root.dPassword !== null ? "•".repeat(Math.min(root.dPassword.length, 16)) : (Settings.hasPassword ? "••••••••" : "")
+                placeholder: qsTr("not set")
+                onActivated: root.editText(label, "", "password", v => root.dPassword = v)
+                KeyNavigation.up: userRow
+                KeyNavigation.down: profileRow
+                KeyNavigation.right: testButton
+            }
+
+            Text {
+                text: qsTr("Playback & Appearance")
+                color: Theme.accent
+                font.pixelSize: Theme.fontSmall
+                font.weight: Font.DemiBold
+                font.capitalization: Font.AllUppercase
+                font.letterSpacing: 2
+                leftPadding: 32
+                topPadding: 24
+                bottomPadding: 8
+            }
+
+            SettingRow {
+                id: profileRow
+                width: parent.width
+                label: qsTr("Streaming profile")
+                value: root.dProfile
+                placeholder: "pass"
+                onActivated: root.editText(label, root.dProfile, "text", v => root.dProfile = v.trim().length > 0 ? v.trim() : "pass")
+                KeyNavigation.up: passwordRow
+                KeyNavigation.down: daysRow
+                KeyNavigation.right: testButton
+            }
+            SettingRow {
+                id: daysRow
+                width: parent.width
+                kind: "stepper"
+                label: qsTr("Days of guide data")
+                value: root.dDays === 1 ? qsTr("1 day") : qsTr("%1 days").arg(root.dDays)
+                onDecrement: root.dDays = Math.max(1, root.dDays - 1)
+                onIncrement: root.dDays = Math.min(14, root.dDays + 1)
+                onActivated: root.dDays = root.dDays >= 14 ? 1 : root.dDays + 1
+                KeyNavigation.up: profileRow
+                KeyNavigation.down: schemeRow
+                KeyNavigation.right: testButton
+            }
+            SettingRow {
+                id: schemeRow
+                width: parent.width
+                kind: "stepper"
+                label: qsTr("Color scheme")
+                value: Settings.colorSchemes[root.schemeIndex].name
+                onDecrement: root.cycleScheme(-1)
+                onIncrement: root.cycleScheme(1)
+                onActivated: root.cycleScheme(1)
+                KeyNavigation.up: daysRow
+                KeyNavigation.down: testButton
+                KeyNavigation.right: testButton
+            }
+        }
+    }
+
+    // --- Status & actions --------------------------------------------
+    Column {
+        id: side
+        anchors.left: formCard.right
+        anchors.leftMargin: 48
+        anchors.right: parent.right
+        anchors.rightMargin: Theme.margin
+        y: 16
+        spacing: 22
+
+        Rectangle {
+            width: parent.width
+            height: statusColumn.implicitHeight + 56
+            radius: Theme.radius + 8
+            color: Theme.card
+            border.color: Theme.outline
+
+            Column {
+                id: statusColumn
+                anchors.fill: parent
+                anchors.margins: 28
+                spacing: 12
+
+                Row {
+                    spacing: 14
+                    Rectangle {
+                        width: 18
+                        height: 18
+                        radius: 9
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: Tvh.status === Tvh.Online ? Theme.success : Tvh.status === Tvh.Offline ? Theme.danger : Theme.warning
+                    }
+                    Text {
+                        text: Tvh.statusText
+                        color: Theme.text
+                        font.pixelSize: Theme.fontNormal
+                        font.weight: Font.DemiBold
+                        width: side.width - 90
+                        elide: Text.ElideRight
+                    }
+                }
+                Text {
+                    visible: Tvh.serverVersion.length > 0
+                    text: Tvh.serverName + " " + Tvh.serverVersion
+                    color: Theme.textDim
+                    font.pixelSize: Theme.fontSmall
+                }
+                Text {
+                    text: Tvh.lastUpdate.getTime() > 0 ? qsTr("Guide updated %1 · %2 channels").arg(Qt.formatDateTime(Tvh.lastUpdate, "dd.MM. HH:mm")).arg(Tvh.channels.count) : qsTr("Guide not loaded yet")
+                    color: Theme.textDim
+                    font.pixelSize: Theme.fontSmall
+                }
+                Text {
+                    width: parent.width
+                    visible: Settings.secretStoreStatus.length > 0
+                    text: Settings.secretStoreStatus
+                    color: Theme.warning
+                    font.pixelSize: Theme.fontTiny
+                    wrapMode: Text.Wrap
+                }
+                Text {
+                    width: parent.width
+                    visible: root.testMessage.length > 0 || root.testing
+                    text: root.testing ? qsTr("Testing connection…") : (root.testOk ? "✓ " : "✗ ") + root.testMessage
+                    color: root.testing ? Theme.textDim : (root.testOk ? Theme.success : Theme.danger)
+                    font.pixelSize: Theme.fontSmall
+                    wrapMode: Text.Wrap
+                }
+            }
+        }
+
+        TvButton {
+            id: testButton
+            width: parent.width
+            text: qsTr("Test connection")
+            iconName: "network-connect"
+            available: root.dHost.length > 0 && !root.testing
+            onClicked: {
+                root.testing = true;
+                root.testMessage = "";
+                Tvh.testConnection(root.values());
+            }
+            KeyNavigation.left: hostRow
+            KeyNavigation.down: saveButton
+            Keys.onUpPressed: root.exitUp()
+        }
+        TvButton {
+            id: saveButton
+            width: parent.width
+            primary: true
+            text: root.dirty ? qsTr("Save & connect") : qsTr("Saved")
+            iconName: root.dirty ? "document-save" : "dialog-ok"
+            available: root.dirty && root.dHost.length > 0
+            onClicked: root.save()
+            KeyNavigation.left: hostRow
+            KeyNavigation.up: testButton
+            KeyNavigation.down: refreshButton
+        }
+        TvButton {
+            id: refreshButton
+            width: parent.width
+            text: qsTr("Reload channels & guide")
+            iconName: "view-refresh"
+            available: Settings.configured && !Tvh.busy
+            onClicked: Tvh.refresh()
+            KeyNavigation.left: hostRow
+            KeyNavigation.up: saveButton
+            KeyNavigation.down: clearButton
+        }
+        TvButton {
+            id: clearButton
+            width: parent.width
+            text: qsTr("Clear guide cache")
+            iconName: "edit-clear-all"
+            onClicked: {
+                Tvh.clearCache();
+                Tvh.refresh();
+            }
+            KeyNavigation.left: hostRow
+            KeyNavigation.up: refreshButton
+            KeyNavigation.down: quitButton
+        }
+        TvButton {
+            id: quitButton
+            width: parent.width
+            destructive: true
+            text: qsTr("Quit application")
+            iconName: "application-exit"
+            onClicked: Qt.quit()
+            KeyNavigation.left: hostRow
+            KeyNavigation.up: clearButton
+        }
+
+        Text {
+            width: parent.width
+            topPadding: 8
+            text: qsTr("Remote: arrows to move, OK to select, BACK to return, MENU for settings, GUIDE for the TV guide.")
+            color: Theme.textFaint
+            font.pixelSize: Theme.fontTiny
+            wrapMode: Text.Wrap
+        }
+    }
+}
