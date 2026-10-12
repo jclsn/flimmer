@@ -66,6 +66,10 @@ int main(int argc, char *argv[])
         QIcon::setThemeName(QStringLiteral("breeze"));
     }
 
+    // The bundled icon also works when the application isn't installed.
+    QApplication::setWindowIcon(
+        QIcon(QStringLiteral(":/qt/qml/PlasmaTv/data/icons/hicolor/scalable/apps/plasmatv.svg")));
+
     if (qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE")) {
         QQuickStyle::setStyle(QStringLiteral("org.kde.desktop"));
         QQuickStyle::setFallbackStyle(QStringLiteral("Fusion"));

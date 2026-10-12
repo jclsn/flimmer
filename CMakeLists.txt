@@ -51,6 +51,8 @@ qt_add_qml_module(plasma-tv
         qml/ChannelLogo.qml
         qml/ThinProgress.qml
         qml/Toast.qml
+    RESOURCES
+        data/icons/hicolor/scalable/apps/plasmatv.svg
 )
 
 target_include_directories(plasma-tv PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -62,7 +64,11 @@ target_link_libraries(plasma-tv PRIVATE
 include(GNUInstallDirs)
 # Kirigami and the Plasma Qt Quick Controls style are only used from QML, so they
 # are runtime dependencies (Ubuntu: qml6-module-org-kde-kirigami, qml6-module-org-kde-desktop,
-# kde-style-breeze; Arch: kirigami, qqc2-desktop-style, breeze).
+# kde-style-breeze, qt6-svg-plugins; Arch: kirigami, qqc2-desktop-style, breeze, qt6-svg).
 
 install(TARGETS plasma-tv RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES data/plasma-tv.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+# The icon is called "plasmatv" on purpose: KIconLoader tries the shortened
+# "plasma" in the current theme before looking into hicolor, so "plasma-tv"
+# would show Breeze's Plasma logo.
+install(DIRECTORY data/icons/hicolor DESTINATION ${CMAKE_INSTALL_DATADIR}/icons)

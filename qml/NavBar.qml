@@ -51,11 +51,13 @@ FocusScope {
         anchors.verticalCenter: parent.verticalCenter
         spacing: 16
 
-        Kirigami.Icon {
+        Image {
             anchors.verticalCenter: parent.verticalCenter
-            width: 56
-            height: 56
-            source: "video-television"
+            width: 64
+            height: 64
+            source: Qt.resolvedUrl("../data/icons/hicolor/scalable/apps/plasmatv.svg")
+            sourceSize: Qt.size(128, 128)
+            smooth: true
         }
         Text {
             anchors.verticalCenter: parent.verticalCenter
