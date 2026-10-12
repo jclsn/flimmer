@@ -8,13 +8,16 @@ Item {
     property string channelUuid
     property string error
     property bool awaitingUrl: false
+    // Reconnect attempts for the current channel before an error is shown.
     property int retries: 0
+    readonly property int maxRetries: 3
     readonly property bool active: channelUuid.length > 0
     readonly property alias mediaPlayer: player
 
     function play(uuid) {
         if (uuid !== channelUuid)
             retries = 0;
+        reconnect.stop();
         player.stop();
         player.source = "";
         channelUuid = uuid;
@@ -23,12 +26,28 @@ Item {
         Tvh.requestStream(uuid);
     }
 
+    // Manual retry from the error screen gets a fresh set of reconnect attempts.
     function retry() {
+        retries = 0;
+        reconnectNow();
+    }
+
+    function reconnectNow() {
         if (channelUuid.length > 0)
             play(channelUuid);
     }
 
+    function scheduleReconnect(message) {
+        if (retries < maxRetries) {
+            retries++;
+            reconnect.restart();
+        } else {
+            error = message;
+        }
+    }
+
     function stop() {
+        reconnect.stop();
         player.stop();
         player.source = "";
         channelUuid = "";
@@ -84,29 +103,25 @@ Item {
         }
 
         onErrorOccurred: (error, errorString) => {
-            if (!root.active)
+            // Errors while a new stream is being requested belong to the cancelled one.
+            if (!root.active || root.awaitingUrl)
                 return;
-            root.error = errorString.length > 0 ? errorString : qsTr("Playback failed");
+            // IPTV sources and busy tuners often fail once; reconnect with a fresh ticket.
+            root.scheduleReconnect(errorString.length > 0 ? errorString : qsTr("Playback failed"));
         }
         onMediaStatusChanged: {
             if (mediaStatus === MediaPlayer.BufferedMedia)
                 root.retries = 0;
             // A live stream never ends on its own; reconnect a few times.
-            if (mediaStatus === MediaPlayer.EndOfMedia && root.active) {
-                if (root.retries < 3) {
-                    root.retries++;
-                    reconnect.restart();
-                } else {
-                    root.error = qsTr("The stream ended");
-                }
-            }
+            if (mediaStatus === MediaPlayer.EndOfMedia && root.active)
+                root.scheduleReconnect(qsTr("The stream ended"));
         }
     }
 
     Timer {
         id: reconnect
         interval: 1500
-        onTriggered: root.retry()
+        onTriggered: root.reconnectNow()
     }
 
     Connections {
