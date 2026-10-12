@@ -66,6 +66,10 @@ option(PLASMA_TV_DEV_TOOLS "Build the scripted UI driver used for screenshots/te
 if(PLASMA_TV_DEV_TOOLS)
     target_sources(plasma-tv PRIVATE src/devscript.h src/devscript.cpp)
     target_compile_definitions(plasma-tv PRIVATE PLASMA_TV_DEV_TOOLS)
+    # Simulating application focus changes needs QWindowSystemInterface.
+    set(QT_NO_PRIVATE_MODULE_WARNING ON)
+    find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
+    target_link_libraries(plasma-tv PRIVATE Qt6::GuiPrivate)
 endif()
 
 target_include_directories(plasma-tv PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
