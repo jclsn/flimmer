@@ -7,6 +7,7 @@
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
 #include <QTimer>
+#include <QWindow>
 
 #include <memory>
 
@@ -16,6 +17,7 @@ struct Runner {
     QStringList lines;
     int position = 0;
     QQuickWindow *window = nullptr;
+    std::unique_ptr<QWindow> otherWindow; // takes focus away for "focusout"
 
     void sendKey(int key, Qt::KeyboardModifiers mods, const QString &text)
     {
@@ -57,6 +59,20 @@ struct Runner {
             } else if (command == QLatin1String("shot")) {
                 window->grabWindow().save(arg);
                 qInfo() << "screenshot saved:" << arg;
+            } else if (command == QLatin1String("focusout")) {
+                if (!otherWindow) {
+                    otherWindow = std::make_unique<QWindow>();
+                    otherWindow->resize(200, 200);
+                }
+
+                otherWindow->show();
+                otherWindow->requestActivate();
+            } else if (command == QLatin1String("focusin")) {
+                if (otherWindow) {
+                    otherWindow->hide();
+                }
+
+                window->requestActivate();
             } else if (command == QLatin1String("quit")) {
                 QCoreApplication::quit();
                 return;
