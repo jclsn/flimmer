@@ -1,5 +1,8 @@
 #include "appsettings.h"
 #include "networkauth.h"
+#ifdef PLASMA_TV_DEV_TOOLS
+#include "devscript.h"
+#endif
 
 #include <QApplication>
 #include <QCommandLineParser>
@@ -90,6 +93,9 @@ int main(int argc, char *argv[])
         },
         Qt::QueuedConnection);
     engine.loadFromModule("PlasmaTv", "Main");
+#ifdef PLASMA_TV_DEV_TOOLS
+    DevScript::runFromEnvironment(&engine);
+#endif
 
     return app.exec();
 }

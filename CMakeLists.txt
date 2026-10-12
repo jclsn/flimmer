@@ -55,6 +55,12 @@ qt_add_qml_module(plasma-tv
         data/icons/hicolor/scalable/apps/plasmatv.svg
 )
 
+option(PLASMA_TV_DEV_TOOLS "Build the scripted UI driver used for screenshots/tests" OFF)
+if(PLASMA_TV_DEV_TOOLS)
+    target_sources(plasma-tv PRIVATE src/devscript.h src/devscript.cpp)
+    target_compile_definitions(plasma-tv PRIVATE PLASMA_TV_DEV_TOOLS)
+endif()
+
 target_include_directories(plasma-tv PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 target_link_libraries(plasma-tv PRIVATE
