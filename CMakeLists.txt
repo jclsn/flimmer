@@ -42,6 +42,7 @@ qt_add_qml_module(plasma-tv
         src/tvhbackend.h src/tvhbackend.cpp
         src/screensaverinhibitor.h src/screensaverinhibitor.cpp
         src/logoimageprovider.h src/logoimageprovider.cpp
+        src/inputdebug.h src/inputdebug.cpp
     QML_FILES
         qml/Main.qml
         qml/Theme.qml
