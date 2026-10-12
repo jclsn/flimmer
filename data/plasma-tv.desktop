@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Plasma TV
+GenericName=Live TV
+Comment=Watch live TV and browse the program guide from a TVHeadend server
+Exec=plasma-tv
+Icon=video-television
+Categories=AudioVideo;Video;TV;Player;Qt;KDE;
+Keywords=tv;epg;tvheadend;iptv;dvb;
