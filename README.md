@@ -10,6 +10,20 @@ Breeze Dark by default.
 * TV guide
 * Navigation with TV remote buttons
 
+## Screenshots
+
+**Live TV**: channel logos, the programme on air with its progress and the
+time left, plus details and "up next" for the highlighted channel. The channel
+that is playing shows through behind the menus.
+
+![Live TV page with the channel list and programme details](img/live-tv.png)
+
+**Settings**: server address, credentials (the password is stored in the
+wallet), streaming profile, days of guide data and color scheme, next to the
+connection status.
+
+![Settings page with server, playback and appearance options](img/settings.png)
+
 ## Build
 
 Supported on **Ubuntu** (26.04 and later) and **Arch Linux**, on both x86_64
