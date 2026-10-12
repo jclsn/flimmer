@@ -98,6 +98,9 @@ public:
     }
     // Applies the configured color scheme to the running application.
     void applyColorScheme();
+    // Shows a color scheme without storing it; save() makes it permanent and
+    // previewColorScheme(colorScheme) reverts to the stored one.
+    Q_INVOKABLE void previewColorScheme(const QString &id);
     void setLastChannel(const QString &uuid);
 
     ServerConfig server() const

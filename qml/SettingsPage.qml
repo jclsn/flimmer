@@ -39,6 +39,8 @@ FocusScope {
     function cycleScheme(delta) {
         const n = Settings.colorSchemes.length;
         dScheme = Settings.colorSchemes[(schemeIndex + delta + n) % n].id;
+        // Show the scheme right away; it is only stored by "Save".
+        Settings.previewColorScheme(dScheme);
     }
 
     function values() {
@@ -67,6 +69,10 @@ FocusScope {
     onVisibleChanged: {
         if (visible && !dirty) {
             load();
+        } else if (!visible && dScheme !== Settings.colorScheme) {
+            // Leaving without saving ends the preview.
+            dScheme = Settings.colorScheme;
+            Settings.previewColorScheme(dScheme);
         }
     }
 
