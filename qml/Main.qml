@@ -21,6 +21,26 @@ QQC2.ApplicationWindow {
     title: qsTr("Plasma TV")
     color: "black"
 
+    // A remote control can't click anything, so never leave keyboard focus on
+    // nothing or on a hidden item: put it back where the user currently is.
+    function ensureFocus() {
+        if (!active)
+            return;
+        const item = activeFocusItem;
+        if (item && item.visible && item !== contentItem && item !== keyRoot && item !== home)
+            return;
+        if (textEntry.visible)
+            textEntry.forceActiveFocus();
+        else if (eventDialog.visible)
+            eventDialog.forceActiveFocus();
+        else if (mode === "watch")
+            overlay.forceActiveFocus();
+        else
+            pageItem(page).forceActiveFocus();
+    }
+
+    onActiveFocusItemChanged: Qt.callLater(ensureFocus)
+
     onActiveChanged: {
         if (!active) {
             if (Settings.stopInBackground && player.active)
