@@ -12,9 +12,12 @@ FocusScope {
     Kirigami.Theme.colorSet: Kirigami.Theme.Complementary
     Kirigami.Theme.inherit: false
 
+    // Channel chosen with up/down whose stream hasn't been started yet.
+    property string pendingUuid
+    readonly property string shownUuid: pendingUuid.length > 0 ? pendingUuid : player.channelUuid
     readonly property int channelIndex: {
         Tvh.channels.count;
-        return Tvh.channels.indexOfUuid(player.channelUuid);
+        return Tvh.channels.indexOfUuid(shownUuid);
     }
     readonly property var channel: {
         Tvh.now;
@@ -24,28 +27,34 @@ FocusScope {
     readonly property var nowEvent: {
         Tvh.now;
         Tvh.epgRevision;
-        return Tvh.eventAt(player.channelUuid, Date.now());
+        return Tvh.eventAt(shownUuid, Date.now());
     }
     readonly property var nextEvent: {
         Tvh.now;
         Tvh.epgRevision;
-        return Tvh.nextEvent(player.channelUuid, nowEvent.start ?? Date.now());
+        return Tvh.nextEvent(shownUuid, nowEvent.start ?? Date.now());
     }
     property bool infoShown: false
     property string message
 
     function play(uuid) {
+        zapDelay.stop();
+        pendingUuid = "";
         player.play(uuid);
         Settings.lastChannel = uuid;
         showInfo();
     }
 
+    // Up/down only update the info bar; the stream starts once the user stops
+    // pressing, so zapping through channels doesn't open a stream for each one.
     function zap(delta) {
         const n = Tvh.channels.count;
         if (n === 0)
             return;
         const i = channelIndex < 0 ? 0 : (channelIndex + delta + n) % n;
-        play(Tvh.channels.get(i).uuid);
+        pendingUuid = Tvh.channels.get(i).uuid;
+        zapDelay.restart();
+        showInfo();
     }
 
     function showInfo() {
@@ -154,6 +163,17 @@ FocusScope {
         id: zapTimer
         interval: 15000
         onTriggered: root.closeZapList()
+    }
+    Timer {
+        id: zapDelay
+        interval: 450
+        onTriggered: {
+            if (root.pendingUuid === root.player.channelUuid && root.player.error.length === 0) {
+                root.pendingUuid = "";
+            } else {
+                root.play(root.pendingUuid);
+            }
+        }
     }
 
     // --- Error ------------------------------------------------------------
