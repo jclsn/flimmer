@@ -28,6 +28,11 @@ qt_add_qml_module(plasma-tv
         src/networkauth.h src/networkauth.cpp
         src/appsettings.h src/appsettings.cpp
         src/tvhapi.h src/tvhapi.cpp
+        src/epgdatabase.h src/epgdatabase.cpp
+        src/epgstore.h src/epgstore.cpp
+        src/channelmodel.h src/channelmodel.cpp
+        src/tvhbackend.h src/tvhbackend.cpp
+        src/screensaverinhibitor.h src/screensaverinhibitor.cpp
 )
 
 target_include_directories(plasma-tv PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)

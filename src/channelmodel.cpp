@@ -1,0 +1,190 @@
+#include "channelmodel.h"
+
+#include <QDateTime>
+
+ChannelModel::ChannelModel(const EpgStore *store, QObject *parent)
+    : QAbstractListModel(parent)
+    , m_store(store)
+{
+}
+
+int ChannelModel::rowCount(const QModelIndex &parent) const
+{
+    return parent.isValid() ? 0 : int(m_channels.size());
+}
+
+QHash<int, QByteArray> ChannelModel::roleNames() const
+{
+    return {
+        {UuidRole, "uuid"},
+        {NumberRole, "number"},
+        {NameRole, "name"},
+        {IconUrlRole, "iconUrl"},
+        {NowIdRole, "nowId"},
+        {NowTitleRole, "nowTitle"},
+        {NowSubtitleRole, "nowSubtitle"},
+        {NowSummaryRole, "nowSummary"},
+        {NowStartRole, "nowStart"},
+        {NowStopRole, "nowStop"},
+        {NowProgressRole, "nowProgress"},
+        {NowGenreRole, "nowGenre"},
+        {NowRecordingRole, "nowRecording"},
+        {NextTitleRole, "nextTitle"},
+        {NextStartRole, "nextStart"},
+    };
+}
+
+QVariant ChannelModel::data(const QModelIndex &index, int role) const
+{
+    if (!checkIndex(index, CheckIndexOption::IndexIsValid)) {
+        return {};
+    }
+    const Channel &channel = m_channels.at(index.row());
+    const NowNext &nowNext = m_nowNext.at(index.row());
+
+    switch (role) {
+    case UuidRole:
+        return channel.uuid;
+    case NumberRole:
+        return channel.number;
+    case NameRole:
+        return channel.name;
+    case IconUrlRole:
+        return iconUrl(index.row());
+    case NowIdRole:
+        return nowNext.now ? QVariant(nowNext.now->id) : QVariant(-1);
+    case NowTitleRole:
+        return nowNext.now ? nowNext.now->title : QString();
+    case NowSubtitleRole:
+        return nowNext.now ? nowNext.now->subtitle : QString();
+    case NowSummaryRole:
+        if (!nowNext.now) {
+            return QString();
+        }
+        return nowNext.now->summary.isEmpty() ? nowNext.now->description : nowNext.now->summary;
+    case NowStartRole:
+        return nowNext.now ? double(nowNext.now->start) * 1000.0 : 0.0;
+    case NowStopRole:
+        return nowNext.now ? double(nowNext.now->stop) * 1000.0 : 0.0;
+    case NowProgressRole: {
+        if (!nowNext.now) {
+            return 0.0;
+        }
+        const double now = QDateTime::currentSecsSinceEpoch();
+        return qBound(0.0,
+                      (now - nowNext.now->start) / double(nowNext.now->stop - nowNext.now->start),
+                      1.0);
+    }
+    case NowGenreRole:
+        return nowNext.now ? nowNext.now->genre & 0xF0 : 0;
+    case NowRecordingRole:
+        return nowNext.now && nowNext.now->dvrState == QLatin1String("recording");
+    case NextTitleRole:
+        return nowNext.next ? nowNext.next->title : QString();
+    case NextStartRole:
+        return nowNext.next ? double(nowNext.next->start) * 1000.0 : 0.0;
+    }
+
+    return {};
+}
+
+void ChannelModel::setChannels(const QVector<Channel> &channels)
+{
+    const bool countChange = channels.size() != m_channels.size();
+    beginResetModel();
+    m_channels = channels;
+    m_nowNext.fill({}, m_channels.size());
+    endResetModel();
+    refreshNow();
+
+    if (countChange) {
+        Q_EMIT countChanged();
+    }
+}
+
+void ChannelModel::setBaseUrl(const QUrl &url)
+{
+    if (url == m_baseUrl) {
+        return;
+    }
+
+    m_baseUrl = url;
+
+    if (!m_channels.isEmpty()) {
+        Q_EMIT dataChanged(index(0), index(rowCount() - 1), {IconUrlRole});
+    }
+}
+
+void ChannelModel::refreshNow()
+{
+    if (m_channels.isEmpty()) {
+        return;
+    }
+
+    const qint64 now = QDateTime::currentSecsSinceEpoch();
+    for (int i = 0; i < m_channels.size(); ++i) {
+        const EpgEvent *current = m_store->eventAt(m_channels.at(i).uuid, now);
+        m_nowNext[i] = {current,
+                        m_store->nextAfter(m_channels.at(i).uuid, current ? current->start : now)};
+    }
+
+    // Every row's progress moves, so a single ranged notification is cheapest.
+    Q_EMIT dataChanged(index(0), index(rowCount() - 1));
+}
+
+int ChannelModel::indexOfUuid(const QString &uuid) const
+{
+    for (int i = 0; i < m_channels.size(); ++i) {
+        if (m_channels.at(i).uuid == uuid) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+int ChannelModel::indexOfNumber(int number) const
+{
+    for (int i = 0; i < m_channels.size(); ++i) {
+        if (m_channels.at(i).number == number) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+QVariantMap ChannelModel::get(int row) const
+{
+    QVariantMap result;
+    if (row < 0 || row >= m_channels.size()) {
+        return result;
+    }
+
+    const QHash<int, QByteArray> roles = roleNames();
+
+    for (auto it = roles.cbegin(); it != roles.cend(); ++it) {
+        result.insert(QString::fromLatin1(it.value()), data(index(row), it.key()));
+    }
+
+    return result;
+}
+
+QUrl ChannelModel::iconUrl(int row) const
+{
+    if (row < 0 || row >= m_channels.size()) {
+        return {};
+    }
+
+    const QString icon = m_channels.at(row).icon;
+    if (icon.isEmpty() || m_baseUrl.isEmpty()) {
+        return {};
+    }
+
+    // Local file paths (icon_public_url falls back to them) cannot be fetched remotely.
+    if (icon.startsWith(QLatin1String("file://")) || icon.startsWith(QLatin1Char('/'))) {
+        return {};
+    }
+
+    return m_baseUrl.resolved(QUrl(icon));
+}
