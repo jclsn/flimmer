@@ -9,6 +9,12 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Don't export template instances from the executable. Otherwise libraries that
+# carry their own copies (e.g. QtKeychain built against an older Qt) are bound
+# to ours at runtime, which crashed in QList<QVariant> code when talking to KWallet.
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Widgets Quick QuickControls2 Network Sql Multimedia DBus)
 find_package(Qt6Keychain REQUIRED)
 
