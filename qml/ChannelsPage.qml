@@ -53,6 +53,12 @@ FocusScope {
         preferredHighlightEnd: height * 0.62
         cacheBuffer: 1200
 
+        // Channels may arrive after the page is shown (first start, no cache yet).
+        onCountChanged: {
+            if (currentIndex < 0 && count > 0)
+                root.selectIndex(Math.max(0, Tvh.channels.indexOfUuid(Settings.lastChannel)));
+        }
+
         Keys.onPressed: event => {
             if (event.key === Qt.Key_Up && currentIndex <= 0) {
                 root.exitUp();
