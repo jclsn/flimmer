@@ -1,5 +1,5 @@
 #include "appsettings.h"
-#include "networkauth.h"
+#include "logoimageprovider.h"
 #ifdef PLASMA_TV_DEV_TOOLS
 #include "devscript.h"
 #endif
@@ -7,34 +7,9 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QIcon>
-#include <QNetworkAccessManager>
-#include <QNetworkDiskCache>
 #include <QQmlApplicationEngine>
-#include <QQmlNetworkAccessManagerFactory>
 #include <QQuickStyle>
-#include <QStandardPaths>
 #include <QStyleFactory>
-
-namespace
-{
-// Network access for QML (channel logos): authenticates against TVHeadend's
-// image cache and keeps logos on disk so the channel list renders instantly.
-class AuthenticatedNamFactory : public QQmlNetworkAccessManagerFactory
-{
-public:
-    QNetworkAccessManager *create(QObject *parent) override
-    {
-        auto *nam = new QNetworkAccessManager(parent);
-        auto *cache = new QNetworkDiskCache(nam);
-        cache->setCacheDirectory(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
-                                 + QStringLiteral("/images"));
-        cache->setMaximumCacheSize(64 * 1024 * 1024);
-        nam->setCache(cache);
-        NetworkAuth::install(nam);
-        return nam;
-    }
-};
-}
 
 int main(int argc, char *argv[])
 {
@@ -80,9 +55,8 @@ int main(int argc, char *argv[])
 
     AppSettings::instance()->applyColorScheme();
 
-    AuthenticatedNamFactory namFactory;
     QQmlApplicationEngine engine;
-    engine.setNetworkAccessManagerFactory(&namFactory);
+    engine.addImageProvider(QStringLiteral("logo"), new LogoImageProvider);
     engine.setInitialProperties({{QStringLiteral("startWindowed"), parser.isSet(windowed)}});
     QObject::connect(
         &engine,

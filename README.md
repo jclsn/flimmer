@@ -12,8 +12,10 @@ Breeze Dark by default.
   and subtitle switching, numeric channel entry
 * **Settings**: reachable from the top bar or with the MENU key; credentials
   go into the system wallet (KWallet / Secret Service via QtKeychain)
-* **EPG cache**: SQLite (`~/.local/share/plasma-tv/epg-cache.sqlite`),
+* **EPG cache**: SQLite (`~/.local/share/plasma-tv/plasma-tv/epg-cache.sqlite`),
   so the guide is shown instantly and also works while offline
+* **Logo cache**: channel logos are kept in `~/.cache/plasma-tv/plasma-tv/logos/`
+  and refreshed weekly, so they still show when the server refuses them
 
 ## Build
 
