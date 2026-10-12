@@ -1,4 +1,5 @@
 #include "appsettings.h"
+#include "inputdebug.h"
 #include "logoimageprovider.h"
 #ifdef PLASMA_TV_DEV_TOOLS
 #include "devscript.h"
@@ -67,6 +68,7 @@ int main(int argc, char *argv[])
         },
         Qt::QueuedConnection);
     engine.loadFromModule("PlasmaTv", "Main");
+    InputDebug::install(&engine);
 #ifdef PLASMA_TV_DEV_TOOLS
     DevScript::runFromEnvironment(&engine);
 #endif

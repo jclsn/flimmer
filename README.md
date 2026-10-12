@@ -131,6 +131,19 @@ KWin normally shows the virtual keyboard only after touch input. If it doesn't
 appear when using a remote, set `KWIN_IM_SHOW_ALWAYS=1` in KWin's environment
 (e.g. in `~/.config/plasma-workspace/env/`).
 
+## Troubleshooting
+
+If the remote stops working, run Plasma TV with input logging and reproduce
+the problem:
+
+```sh
+QT_LOGGING_RULES="plasmatv.input.debug=true" plasma-tv 2>&1 | tee ~/plasma-tv-input.log
+```
+
+The log lists every key press with the element that had the keyboard focus,
+focus changes, window/application focus changes and any time the event loop
+was blocked for more than half a second.
+
 ## Notes
 
 * Streams use a short-lived TVHeadend ticket URL, so the password never ends up
