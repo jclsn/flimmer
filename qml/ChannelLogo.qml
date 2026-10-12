@@ -15,7 +15,8 @@ Rectangle {
         id: image
         anchors.fill: parent
         anchors.margins: parent.height * 0.12
-        source: root.source
+        // Logos go through the caching provider (see LogoImageProvider).
+        source: root.source.toString().length > 0 ? "image://logo/" + encodeURIComponent(root.source.toString()) : ""
         fillMode: Image.PreserveAspectFit
         asynchronous: true
         smooth: true
