@@ -11,7 +11,7 @@ QQC2.ApplicationWindow {
     property string page: Settings.configured ? "channels" : "settings"
     property string numberEntry: ""
     property bool cursorVisible: true
-    // Channel stopped because the window lost focus; resumed when it returns.
+    // Channel stopped because the application lost focus; resumed when it returns.
     property string backgroundResumeUuid
 
     width: 1600
@@ -41,8 +41,12 @@ QQC2.ApplicationWindow {
 
     onActiveFocusItemChanged: Qt.callLater(ensureFocus)
 
-    onActiveChanged: {
-        if (!active) {
+    // Only the application as a whole counts: switching between pages,
+    // dialogs or the guide inside Plasma TV never stops playback.
+    readonly property bool appActive: Qt.application.state === Qt.ApplicationActive
+
+    onAppActiveChanged: {
+        if (!appActive) {
             if (Settings.stopInBackground && player.active)
                 backgroundTimer.restart();
             return;
@@ -121,7 +125,7 @@ QQC2.ApplicationWindow {
         // Short focus changes (notifications, dialogs) shouldn't interrupt the stream.
         interval: 1500
         onTriggered: {
-            if (window.active || !player.active)
+            if (window.appActive || !player.active)
                 return;
             window.backgroundResumeUuid = player.channelUuid;
             player.stop();
