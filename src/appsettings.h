@@ -27,6 +27,7 @@ class AppSettings : public QObject
     Q_PROPERTY(bool hasPassword READ hasPassword NOTIFY changed)
     Q_PROPERTY(QString streamProfile READ streamProfile NOTIFY changed)
     Q_PROPERTY(int guideDays READ guideDays NOTIFY changed)
+    Q_PROPERTY(bool stopInBackground READ stopInBackground NOTIFY changed)
     Q_PROPERTY(bool configured READ configured NOTIFY changed)
     Q_PROPERTY(bool credentialsReady READ credentialsReady NOTIFY credentialsReadyChanged)
     Q_PROPERTY(QString secretStoreStatus READ secretStoreStatus NOTIFY secretStoreStatusChanged)
@@ -66,6 +67,11 @@ public:
     {
         return m_guideDays;
     }
+    // Stop the stream while the window isn't focused (and resume afterwards).
+    bool stopInBackground() const
+    {
+        return m_stopInBackground;
+    }
     bool configured() const
     {
         return m_server.isValid();
@@ -99,8 +105,8 @@ public:
         return m_server;
     }
 
-    // Expected keys: host, port, useHttps, username, streamProfile, guideDays, colorScheme and,
-    // only when the password was edited, password.
+    // Expected keys: host, port, useHttps, username, streamProfile, guideDays, stopInBackground,
+    // colorScheme and, only when the password was edited, password.
     Q_INVOKABLE void save(const QVariantMap &values);
 
 Q_SIGNALS:
@@ -120,6 +126,7 @@ private:
     ServerConfig m_server;
     QString m_streamProfile;
     int m_guideDays = 3;
+    bool m_stopInBackground = true;
     QString m_lastChannel;
     QString m_colorScheme;
     QVariantList m_colorSchemes;

@@ -13,7 +13,7 @@ FocusScope {
     signal decrement
     signal increment
 
-    implicitHeight: 80
+    implicitHeight: 72
     activeFocusOnTab: true
 
     Keys.onPressed: event => {

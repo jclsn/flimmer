@@ -9,7 +9,8 @@ Breeze Dark by default.
 * **TV guide**: timeline EPG grid with genre colours, programme details,
   scheduling/cancelling recordings
 * **Watching**: zap with up/down, channel list overlay, info bar, audio-track
-  and subtitle switching, numeric channel entry
+  and subtitle switching, numeric channel entry; playback stops while the
+  window is in the background and resumes when it returns (configurable)
 * **Settings**: reachable from the top bar or with the MENU key; credentials
   go into the system wallet (KWallet / Secret Service via QtKeychain)
 * **EPG cache**: SQLite (`~/.local/share/plasma-tv/plasma-tv/epg-cache.sqlite`),

@@ -11,6 +11,8 @@ QQC2.ApplicationWindow {
     property string page: Settings.configured ? "channels" : "settings"
     property string numberEntry: ""
     property bool cursorVisible: true
+    // Channel stopped because the window lost focus; resumed when it returns.
+    property string backgroundResumeUuid
 
     width: 1600
     height: 900
@@ -18,6 +20,19 @@ QQC2.ApplicationWindow {
     visibility: startWindowed ? Window.Windowed : Window.FullScreen
     title: qsTr("Plasma TV")
     color: "black"
+
+    onActiveChanged: {
+        if (!active) {
+            if (Settings.stopInBackground && player.active)
+                backgroundTimer.restart();
+            return;
+        }
+        backgroundTimer.stop();
+        if (backgroundResumeUuid.length > 0) {
+            player.play(backgroundResumeUuid);
+            backgroundResumeUuid = "";
+        }
+    }
 
     function pageItem(name) {
         return name === "guide" ? guidePage : name === "settings" ? settingsPage : channelsPage;
@@ -79,6 +94,18 @@ QQC2.ApplicationWindow {
         target: Theme
         property: "source"
         value: stage
+    }
+
+    Timer {
+        id: backgroundTimer
+        // Short focus changes (notifications, dialogs) shouldn't interrupt the stream.
+        interval: 1500
+        onTriggered: {
+            if (window.active || !player.active)
+                return;
+            window.backgroundResumeUuid = player.channelUuid;
+            player.stop();
+        }
     }
 
     ScreenSaverInhibitor {
