@@ -1,0 +1,46 @@
+# Maintainer: Jan Claussen <jan.claussen at web dot de>
+
+pkgname=plasma-tv
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Fullscreen, remote-controllable TVHeadend client for Plasma'
+arch=('x86_64' 'aarch64')
+url='https://github.com/jclsn/plasma-tv'
+license=('unknown')
+depends=(
+  'breeze'
+  'breeze-icons'
+  'gcc-libs'
+  'glibc'
+  'kirigami'
+  'qqc2-desktop-style'
+  'qt6-base'
+  'qt6-declarative'
+  'qt6-multimedia'
+  'qt6-multimedia-ffmpeg'
+  'qt6-svg'
+  'qtkeychain-qt6'
+)
+makedepends=('cmake' 'git')
+optdepends=(
+  'plasma-keyboard: on-screen keyboard for text entry (Plasma Wayland session)'
+  'kwallet: secure password storage outside Plasma'
+)
+source=("$pkgname::git+file://${startdir%/packaging/arch}")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$pkgname"
+  printf '0.1.0.r%s.g%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cmake -S "$pkgname" -B build \
+    -DCMAKE_BUILD_TYPE=None \
+    -DCMAKE_INSTALL_PREFIX=/usr
+  cmake --build build
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+}
