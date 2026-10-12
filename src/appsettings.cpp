@@ -67,6 +67,11 @@ void AppSettings::applyColorScheme()
     ColorSchemes::apply(m_colorScheme);
 }
 
+void AppSettings::previewColorScheme(const QString &id)
+{
+    ColorSchemes::apply(id);
+}
+
 void AppSettings::loadPassword()
 {
     if (m_server.username.isEmpty()) {
@@ -157,7 +162,6 @@ void AppSettings::save(const QVariantMap &values)
     m_guideDays = qBound(1, values.value(QStringLiteral("guideDays"), m_guideDays).toInt(), 14);
     m_stopInBackground =
         values.value(QStringLiteral("stopInBackground"), m_stopInBackground).toBool();
-    const QString previousScheme = m_colorScheme;
     m_colorScheme = values.value(QStringLiteral("colorScheme"), m_colorScheme).toString();
 
     QSettings settings;
@@ -171,10 +175,7 @@ void AppSettings::save(const QVariantMap &values)
     settings.setValue(QStringLiteral("guide/days"), m_guideDays);
     settings.setValue(QStringLiteral("playback/stopInBackground"), m_stopInBackground);
     settings.setValue(QStringLiteral("appearance/colorScheme"), m_colorScheme);
-
-    if (m_colorScheme != previousScheme) {
-        applyColorScheme();
-    }
+    applyColorScheme();
 
     if (m_server.password != previous.password) {
         storePassword(m_server.password);
