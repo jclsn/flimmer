@@ -132,7 +132,7 @@ QQC2.ApplicationWindow {
     Timer {
         id: backgroundTimer
         // Short focus changes (notifications, dialogs) shouldn't interrupt the stream.
-        interval: 1500
+        interval: 250
         onTriggered: {
             if (window.appActive || !player.active)
                 return;
