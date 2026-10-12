@@ -40,6 +40,7 @@ AppSettings::AppSettings(QObject *parent)
     m_streamProfile =
         settings.value(QStringLiteral("playback/profile"), QStringLiteral("pass")).toString();
     m_guideDays = qBound(1, settings.value(QStringLiteral("guide/days"), 3).toInt(), 14);
+    m_stopInBackground = settings.value(QStringLiteral("playback/stopInBackground"), true).toBool();
     m_lastChannel = settings.value(QStringLiteral("playback/lastChannel")).toString();
     m_colorScheme =
         settings.value(QStringLiteral("appearance/colorScheme"), ColorSchemes::s_default)
@@ -154,6 +155,8 @@ void AppSettings::save(const QVariantMap &values)
     }
 
     m_guideDays = qBound(1, values.value(QStringLiteral("guideDays"), m_guideDays).toInt(), 14);
+    m_stopInBackground =
+        values.value(QStringLiteral("stopInBackground"), m_stopInBackground).toBool();
     const QString previousScheme = m_colorScheme;
     m_colorScheme = values.value(QStringLiteral("colorScheme"), m_colorScheme).toString();
 
@@ -166,6 +169,7 @@ void AppSettings::save(const QVariantMap &values)
     settings.endGroup();
     settings.setValue(QStringLiteral("playback/profile"), m_streamProfile);
     settings.setValue(QStringLiteral("guide/days"), m_guideDays);
+    settings.setValue(QStringLiteral("playback/stopInBackground"), m_stopInBackground);
     settings.setValue(QStringLiteral("appearance/colorScheme"), m_colorScheme);
 
     if (m_colorScheme != previousScheme) {

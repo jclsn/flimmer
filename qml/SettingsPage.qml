@@ -15,13 +15,14 @@ FocusScope {
     property var dPassword: null   // null = unchanged
     property string dProfile
     property int dDays: 3
+    property bool dStopInBackground: true
     property string dScheme
     readonly property int schemeIndex: Math.max(0, Settings.colorSchemes.findIndex(s => s.id === dScheme))
     property string testMessage
     property bool testOk: false
     property bool testing: false
 
-    readonly property bool dirty: dHost !== Settings.host || dPort !== Settings.port || dHttps !== Settings.useHttps || dUser !== Settings.username || dPassword !== null || dProfile !== Settings.streamProfile || dDays !== Settings.guideDays || dScheme !== Settings.colorScheme
+    readonly property bool dirty: dHost !== Settings.host || dPort !== Settings.port || dHttps !== Settings.useHttps || dUser !== Settings.username || dPassword !== null || dProfile !== Settings.streamProfile || dDays !== Settings.guideDays || dStopInBackground !== Settings.stopInBackground || dScheme !== Settings.colorScheme
 
     function load() {
         dHost = Settings.host;
@@ -31,6 +32,7 @@ FocusScope {
         dPassword = null;
         dProfile = Settings.streamProfile;
         dDays = Settings.guideDays;
+        dStopInBackground = Settings.stopInBackground;
         dScheme = Settings.colorScheme;
     }
 
@@ -47,6 +49,7 @@ FocusScope {
             username: dUser,
             streamProfile: dProfile,
             guideDays: dDays,
+            stopInBackground: dStopInBackground,
             colorScheme: dScheme
         };
         if (dPassword !== null)
@@ -184,6 +187,17 @@ FocusScope {
                 placeholder: "pass"
                 onActivated: root.editText(label, root.dProfile, "text", v => root.dProfile = v.trim().length > 0 ? v.trim() : "pass")
                 KeyNavigation.up: passwordRow
+                KeyNavigation.down: backgroundRow
+                KeyNavigation.right: testButton
+            }
+            SettingRow {
+                id: backgroundRow
+                width: parent.width
+                kind: "toggle"
+                label: qsTr("Stop playback in background")
+                checked: root.dStopInBackground
+                onActivated: root.dStopInBackground = !root.dStopInBackground
+                KeyNavigation.up: profileRow
                 KeyNavigation.down: daysRow
                 KeyNavigation.right: testButton
             }
@@ -196,7 +210,7 @@ FocusScope {
                 onDecrement: root.dDays = Math.max(1, root.dDays - 1)
                 onIncrement: root.dDays = Math.min(14, root.dDays + 1)
                 onActivated: root.dDays = root.dDays >= 14 ? 1 : root.dDays + 1
-                KeyNavigation.up: profileRow
+                KeyNavigation.up: backgroundRow
                 KeyNavigation.down: schemeRow
                 KeyNavigation.right: testButton
             }
