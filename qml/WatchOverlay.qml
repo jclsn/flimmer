@@ -79,6 +79,10 @@ FocusScope {
     function closeZapList() {
         zapTimer.stop();
         zapPanel.shown = false;
+        // The overlay is a focus scope that remembers the list as its focused
+        // child; without clearing that, focusing the overlay would hand the keys
+        // straight back to the hidden list.
+        zapList.focus = false;
         // Only reclaim focus while watching; the overlay may already be hidden.
         if (root.visible)
             root.forceActiveFocus();
@@ -88,6 +92,7 @@ FocusScope {
         if (!visible) {
             zapTimer.stop();
             zapPanel.shown = false;
+            zapList.focus = false;
         }
     }
 

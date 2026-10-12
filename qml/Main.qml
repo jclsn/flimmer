@@ -23,11 +23,12 @@ QQC2.ApplicationWindow {
 
     // A remote control can't click anything, so never leave keyboard focus on
     // nothing or on a hidden item: put it back where the user currently is.
+    function focusUsable(item) {
+        return item && item.visible && item !== contentItem && item !== keyRoot && item !== home;
+    }
+
     function ensureFocus() {
-        if (!active)
-            return;
-        const item = activeFocusItem;
-        if (item && item.visible && item !== contentItem && item !== keyRoot && item !== home)
+        if (!active || focusUsable(activeFocusItem))
             return;
         if (textEntry.visible)
             textEntry.forceActiveFocus();
@@ -37,6 +38,14 @@ QQC2.ApplicationWindow {
             overlay.forceActiveFocus();
         else
             pageItem(page).forceActiveFocus();
+        // A focus scope may still route focus to a hidden child; fall back to
+        // something that always works.
+        if (!focusUsable(activeFocusItem)) {
+            if (mode === "watch")
+                overlay.closeZapList();
+            else
+                nav.forceActiveFocus();
+        }
     }
 
     onActiveFocusItemChanged: Qt.callLater(ensureFocus)
