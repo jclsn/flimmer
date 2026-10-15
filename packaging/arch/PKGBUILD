@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Jan Claußen <jan.claussen10@web.de>
+#
+# SPDX-License-Identifier: BSD-2-Clause
+
 # Maintainer: Jan Claussen <jan.claussen at web dot de>
 
 pkgname=plasma-tv
@@ -6,7 +10,7 @@ pkgrel=1
 pkgdesc='Fullscreen, remote-controllable TVHeadend client for Plasma'
 arch=('x86_64' 'aarch64')
 url='https://github.com/jclsn/plasma-tv'
-license=('unknown')
+license=('GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL')
 depends=(
   'breeze'
   'breeze-icons'

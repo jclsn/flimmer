@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 Jan Claußen <jan.claussen10@web.de>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+version = 1
+
+# Files that can't carry a comment header (images) or shouldn't (the README)
+# get their copyright and licence here instead.
+
+[[annotations]]
+path = ["README.md", "img/**", "data/icons/**"]
+SPDX-FileCopyrightText = "2026 Jan Claußen <jan.claussen10@web.de>"
+SPDX-License-Identifier = "CC-BY-SA-4.0"

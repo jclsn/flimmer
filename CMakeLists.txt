@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Jan Claußen <jan.claussen10@web.de>
+#
+# SPDX-License-Identifier: BSD-2-Clause
+
 cmake_minimum_required(VERSION 3.21)
 project(plasma-tv VERSION 0.1.0 LANGUAGES CXX)
 
