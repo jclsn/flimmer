@@ -1,0 +1,95 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * 1"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ubuntu:
+    name: Ubuntu 26.04 (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-latest
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    container: ubuntu:26.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            cmake \
+            libqt6sql6-sqlite \
+            ninja-build g++ \
+            qt6-base-dev \
+            qt6-declarative-dev \
+            qt6-declarative-dev-tools \
+            qt6-multimedia-dev \
+            qtkeychain-qt6-dev
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Install (smoke test)
+        run: DESTDIR="$PWD/stage" cmake --install build
+
+  arch:
+    name: Arch Linux
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Install toolchain and dependencies
+        run: |
+          pacman -Syu --noconfirm --needed \
+            base-devel \
+            breeze \
+            breeze-icons \
+            cmake \
+            git \
+            kirigami \
+            qqc2-desktop-style \
+            qt6-base \
+            qt6-declarative \
+            qt6-multimedia \
+            qt6-multimedia-ffmpeg \
+            qt6-svg \
+            qtkeychain-qt6
+
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Build package
+        run: |
+          useradd -m builder
+          chown -R builder: "$GITHUB_WORKSPACE"
+          su builder -c "cd '$GITHUB_WORKSPACE/packaging/arch' && makepkg --noconfirm"
+
+      - name: Upload package
+        uses: actions/upload-artifact@v7
+        with:
+          name: plasma-tv-arch-x86_64
+          path: packaging/arch/*.pkg.tar.zst
+
