@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Jan Claußen <jan.claussen10@web.de>
+//
+// SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
+
 import QtQuick
 
 // One focusable settings line. kind: "text" (OK edits), "toggle" (OK flips),

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Jan Claußen <jan.claussen10@web.de>
+#
+# SPDX-License-Identifier: BSD-2-Clause
+
 name: Build
 
 on:
@@ -16,6 +20,13 @@ permissions:
   contents: read
 
 jobs:
+  reuse:
+    name: Licensing (REUSE)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: fsfe/reuse-action@v6
+
   ubuntu:
     name: Ubuntu 26.04 (${{ matrix.arch }})
     strategy:
