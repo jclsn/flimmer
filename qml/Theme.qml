@@ -48,6 +48,7 @@ QtObject {
     readonly property int fontTitle: 35
     readonly property int fontHuge: 56
 
+    readonly property int animFast: 120
     readonly property int animNormal: 220
 
     function genreColor(genre) {

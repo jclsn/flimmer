@@ -61,6 +61,7 @@ qt_add_qml_module(plasma-tv
         qml/PlayerView.qml
         qml/WatchOverlay.qml
         qml/ChannelLogo.qml
+        qml/ThinProgress.qml
     RESOURCES
         data/icons/hicolor/scalable/apps/plasmatv.svg
 )

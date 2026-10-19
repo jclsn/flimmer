@@ -49,7 +49,7 @@ FocusScope {
         model: Tvh.channels
         focus: !root.empty
         clip: true
-        spacing: 4
+        spacing: 9
         visible: !root.empty
         keyNavigationEnabled: true
         highlightMoveDuration: 160
@@ -83,7 +83,7 @@ FocusScope {
             event.accepted = true;
         }
 
-        delegate: BigscreenUI.ItemDelegate {
+        delegate: Item {
             id: row
             required property int index
             required property string uuid
@@ -98,27 +98,28 @@ FocusScope {
             readonly property bool focused: ListView.isCurrentItem && list.activeFocus
 
             width: ListView.view.width - 21
-            height: 69
-            padding: 0
-            // The list handles the keys.
-            focusPolicy: Qt.NoFocus
+            height: 77
             z: focused ? 2 : 1
 
-            background: BigscreenUI.DelegateBackground {
-                control: row
-                highlighted: row.focused
-                checked: row.ListView.isCurrentItem && !row.focused
-            }
-
-            onClicked: {
-                list.forceActiveFocus();
-                if (list.currentIndex === row.index)
-                    root.watch(row.uuid);
-                list.currentIndex = row.index;
-            }
-
-            contentItem: Item {
+            Rectangle {
                 id: card
+                anchors.fill: parent
+                radius: Theme.radius
+                color: row.focused ? Theme.surfaceHover : (row.ListView.isCurrentItem ? Theme.surfaceRaised : Theme.surface)
+                border.width: row.focused ? 2 : 0
+                border.color: Theme.focusRing
+                scale: row.focused ? 1.03 : 1
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: Theme.animFast
+                    }
+                }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Theme.animFast
+                    }
+                }
+
                 Rectangle {
                     width: 4
                     radius: 2
@@ -189,10 +190,12 @@ FocusScope {
                             elide: Text.ElideRight
                         }
                     }
-                    BigscreenUI.ProgressBar {
+                    ThinProgress {
                         width: parent.width
+                        height: 3
                         value: row.nowProgress
                         visible: row.nowTitle.length > 0
+                        fillColor: row.focused ? Theme.accent : Theme.textFaint
                     }
                 }
 
@@ -205,6 +208,16 @@ FocusScope {
                     text: qsTr("%1 min").arg(Theme.minutesLeft(row.nowStop, Tvh.now))
                     color: Theme.textFaint
                     font.pixelSize: Theme.fontSmall
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    list.forceActiveFocus();
+                    if (list.currentIndex === row.index)
+                        root.watch(row.uuid);
+                    list.currentIndex = row.index;
                 }
             }
         }
