@@ -85,9 +85,10 @@ target_link_libraries(plasma-tv PRIVATE
     Qt6Keychain::Qt6Keychain)
 
 include(GNUInstallDirs)
-# Kirigami and the Plasma Qt Quick Controls style are only used from QML, so they
-# are runtime dependencies (Ubuntu: qml6-module-org-kde-kirigami, qml6-module-org-kde-desktop,
-# kde-style-breeze, qt6-svg-plugins; Arch: kirigami, qqc2-desktop-style, breeze, qt6-svg).
+# Kirigami, Bigscreen UI and the Plasma Qt Quick Controls style are only used from QML, so
+# they are runtime dependencies (Ubuntu: qml6-module-org-kde-kirigami, qml6-module-org-kde-desktop,
+# kde-style-breeze, qt6-svg-plugins; Arch: kirigami, bigscreen-ui, qqc2-desktop-style, breeze,
+# qt6-svg).
 
 install(TARGETS plasma-tv RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES data/plasma-tv.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)

@@ -78,7 +78,9 @@ jobs:
             breeze \
             breeze-icons \
             cmake \
+            extra-cmake-modules \
             git \
+            ki18n \
             kirigami \
             qqc2-desktop-style \
             qt6-base \
@@ -96,6 +98,9 @@ jobs:
         run: |
           useradd -m builder
           chown -R builder: "$GITHUB_WORKSPACE"
+          # Bigscreen UI isn't in the Arch repositories yet
+          su builder -c "cd '$GITHUB_WORKSPACE/packaging/arch/bigscreen-ui' && makepkg --noconfirm"
+          pacman -U --noconfirm packaging/arch/bigscreen-ui/*.pkg.tar.zst
           su builder -c "cd '$GITHUB_WORKSPACE/packaging/arch' && makepkg --noconfirm"
 
       - name: Upload package

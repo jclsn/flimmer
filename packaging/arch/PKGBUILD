@@ -12,6 +12,7 @@ arch=('x86_64' 'aarch64')
 url='https://github.com/jclsn/plasma-tv'
 license=('GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL')
 depends=(
+  'bigscreen-ui'  # not in the Arch repositories yet, see bigscreen-ui/PKGBUILD
   'breeze'
   'breeze-icons'
   'gcc-libs'

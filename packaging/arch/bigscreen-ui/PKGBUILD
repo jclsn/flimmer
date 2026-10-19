@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: 2026 Jan Claußen <jan.claussen10@web.de>
+#
+# SPDX-License-Identifier: BSD-2-Clause
+
+# Maintainer: Jan Claussen <jan.claussen at web dot de>
+
+# Bigscreen UI isn't packaged by Arch yet. Plasma TV needs it at runtime, so
+# build and install this package once before Plasma TV.
+
+pkgname=bigscreen-ui
+pkgver=1.0.0.r56.gb5ad9c0
+pkgrel=1
+pkgdesc='Qt Quick components for TV and console style applications'
+arch=('x86_64' 'aarch64')
+url='https://invent.kde.org/devinlin/bigscreen-ui'
+license=('LGPL-2.0-or-later')
+depends=(
+  'gcc-libs'
+  'glibc'
+  'kirigami'
+  'qt6-base'
+  'qt6-declarative'
+)
+makedepends=('cmake' 'extra-cmake-modules' 'git' 'ki18n')
+# The version Plasma TV is tested with
+_commit=b5ad9c098a684b8bec23dd79a807532c4c49af2b
+source=("$pkgname::git+$url.git#commit=$_commit")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$pkgname"
+  printf '1.0.0.r%s.g%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cmake -S "$pkgname" -B build \
+    -DCMAKE_BUILD_TYPE=None \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DBUILD_EXAMPLES=OFF
+  cmake --build build
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+}

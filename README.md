@@ -1,8 +1,9 @@
 # Plasma TV
 
 A fullscreen, remote-controllable TV client for [TVHeadend](https://tvheadend.org),
-built with Qt 6, Qt Quick and Kirigami. It follows Plasma theming and uses
-Breeze Dark by default.
+built with Qt 6, Qt Quick, Kirigami and
+[Bigscreen UI](https://invent.kde.org/devinlin/bigscreen-ui). It follows Plasma
+theming and uses Breeze Dark by default.
 
 ## Features
 
@@ -37,11 +38,14 @@ architecture-specific parts, so build natively on the target machine.
 
 ### Arch Linux / Arch Linux ARM
 
-Build and install a proper package with the bundled PKGBUILD:
+Build and install a proper package with the bundled PKGBUILDs. Bigscreen UI
+isn't in the Arch repositories yet, so build and install it once first:
 
 ```sh
 sudo pacman -Syu --needed base-devel git   # toolchain (gcc, binutils, make)
-cd packaging/arch
+cd packaging/arch/bigscreen-ui
+makepkg -si        # Bigscreen UI
+cd ..
 makepkg -si        # installs the dependencies, builds and installs the package
 ```
 
@@ -79,8 +83,11 @@ sudo cmake --install build   # optional: installs to /usr/local with a launcher 
 ./build/plasma-tv --windowed # for development (F11 toggles)
 ```
 
-Kirigami, the Plasma Qt Quick Controls style and Breeze (style and color
-schemes) are used at runtime only, so no KF6 `-dev` packages are needed.
+Kirigami, [Bigscreen UI](https://invent.kde.org/devinlin/bigscreen-ui), the
+Plasma Qt Quick Controls style and Breeze (style and color schemes) are used at
+runtime only, so no KF6 `-dev` packages are needed. Bigscreen UI isn't packaged
+by distributions yet: on Arch, use `packaging/arch/bigscreen-ui`; elsewhere,
+build and install it from source (it needs Qt 6.11 or later).
 
 ## Remote control
 
