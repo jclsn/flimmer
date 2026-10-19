@@ -4,6 +4,7 @@
 
 import QtQuick
 import org.kde.kirigami as Kirigami
+import org.kde.bigscreen.ui as BigscreenUI
 import PlasmaTv
 
 // On-screen display while watching: info bar, zapping, channel list overlay.
@@ -39,7 +40,6 @@ FocusScope {
         return Tvh.nextEvent(shownUuid, nowEvent.start ?? Date.now());
     }
     property bool infoShown: false
-    property string message
 
     function play(uuid) {
         zapDelay.stop();
@@ -67,8 +67,7 @@ FocusScope {
     }
 
     function flash(text) {
-        message = text;
-        messageTimer.restart();
+        feedback.show(text, "");
         showInfo();
     }
 
@@ -168,11 +167,6 @@ FocusScope {
         onTriggered: root.infoShown = false
     }
     Timer {
-        id: messageTimer
-        interval: 3000
-        onTriggered: root.message = ""
-    }
-    Timer {
         id: zapTimer
         interval: 15000
         onTriggered: root.closeZapList()
@@ -193,66 +187,29 @@ FocusScope {
     Rectangle {
         anchors.centerIn: parent
         visible: root.player.error.length > 0 && !zapPanel.shown
-        width: 1000
-        height: errorColumn.implicitHeight + 80
-        radius: Theme.radius + 8
+        width: 667
+        height: errorColumn.implicitHeight + 53
+        radius: Theme.radius + 5
         color: Kirigami.Theme.backgroundColor
         opacity: 0.95
 
-        Column {
+        BigscreenUI.PlaceholderMessage {
             id: errorColumn
             anchors.centerIn: parent
-            width: parent.width - 80
-            spacing: 20
-            Kirigami.Icon {
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 96
-                height: 96
-                source: "dialog-error"
-            }
-            Text {
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                text: qsTr("Playback problem")
-                color: Kirigami.Theme.textColor
-                font.pixelSize: Theme.fontLarge
-                font.weight: Font.DemiBold
-            }
-            Text {
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                text: root.player.error
-                color: Kirigami.Theme.disabledTextColor
-                font.pixelSize: Theme.fontNormal
-                wrapMode: Text.Wrap
-            }
-            Text {
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                text: qsTr("Press OK to retry, BACK to return")
-                color: Kirigami.Theme.textColor
-                font.pixelSize: Theme.fontSmall
-            }
+            width: parent.width - 53
+            iconName: "dialog-error"
+            text: qsTr("Playback problem")
+            explanation: root.player.error + "\n\n" + qsTr("Press OK to retry, BACK to return")
         }
     }
 
     // --- Short feedback (audio track, …) ------------------------------------
-    Rectangle {
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: 64
-        visible: root.message.length > 0
-        width: messageText.implicitWidth + 64
-        height: messageText.implicitHeight + 28
-        radius: height / 2
-        color: Kirigami.Theme.backgroundColor
-        opacity: 0.9
-        Text {
-            id: messageText
-            anchors.centerIn: parent
-            text: root.message
-            color: Kirigami.Theme.textColor
-            font.pixelSize: Theme.fontNormal
-        }
+    BigscreenUI.Toast {
+        id: feedback
+        anchors.bottom: undefined
+        anchors.top: parent.top
+        anchors.topMargin: 43
+        timeout: 3000
     }
 
     // --- Info bar ---------------------------------------------------------
@@ -261,7 +218,7 @@ FocusScope {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        height: 380
+        height: 253
         opacity: root.infoShown && !zapPanel.shown ? 1 : 0
         visible: opacity > 0
         Behavior on opacity {
@@ -293,21 +250,21 @@ FocusScope {
             anchors.left: parent.left
             anchors.leftMargin: Theme.margin
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 72
-            width: 220
-            height: 132
+            anchors.bottomMargin: 48
+            width: 147
+            height: 88
             source: root.channel.iconUrl ?? ""
             name: root.channel.name ?? ""
         }
 
         Column {
             anchors.left: osdLogo.right
-            anchors.leftMargin: 40
+            anchors.leftMargin: 27
             anchors.right: clock.left
-            anchors.rightMargin: 40
+            anchors.rightMargin: 27
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 64
-            spacing: 10
+            anchors.bottomMargin: 43
+            spacing: 7
 
             Text {
                 text: (root.channel.number > 0 ? root.channel.number + "  " : "") + (root.channel.name ?? "")
@@ -324,7 +281,7 @@ FocusScope {
                 elide: Text.ElideRight
             }
             Row {
-                spacing: 24
+                spacing: 16
                 width: parent.width
                 visible: root.nowEvent.start !== undefined
                 Text {
@@ -334,12 +291,9 @@ FocusScope {
                     color: "#d0d6df"
                     font.pixelSize: Theme.fontSmall
                 }
-                ThinProgress {
+                BigscreenUI.ProgressBar {
                     anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width - rangeText.width - leftText.width - 48
-                    height: 8
-                    color: Qt.rgba(1, 1, 1, 0.2)
-                    fillColor: Kirigami.Theme.highlightColor
+                    width: parent.width - rangeText.width - leftText.width - 32
                     value: root.nowEvent.start !== undefined ? (Tvh.now - root.nowEvent.start) / (root.nowEvent.stop - root.nowEvent.start) : 0
                 }
                 Text {
@@ -365,7 +319,7 @@ FocusScope {
             anchors.right: parent.right
             anchors.rightMargin: Theme.margin
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 72
+            anchors.bottomMargin: 48
             text: Theme.formatTime(Tvh.now)
             color: "white"
             font.pixelSize: Theme.fontHuge
@@ -377,7 +331,7 @@ FocusScope {
     Rectangle {
         id: zapPanel
         property bool shown: false
-        width: 760
+        width: 507
         height: parent.height
         x: shown ? 0 : -width
         // Visible as soon as it opens (before the slide-in has moved it), so
@@ -393,8 +347,8 @@ FocusScope {
 
         Text {
             id: zapTitle
-            x: 48
-            y: 48
+            x: 32
+            y: 32
             text: qsTr("Channels")
             color: Kirigami.Theme.textColor
             font.pixelSize: Theme.fontLarge
@@ -403,14 +357,14 @@ FocusScope {
         ListView {
             id: zapList
             anchors.top: zapTitle.bottom
-            anchors.topMargin: 24
+            anchors.topMargin: 16
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 32
-            x: 24
-            width: parent.width - 48
+            anchors.bottomMargin: 21
+            x: 16
+            width: parent.width - 32
             clip: true
             model: Tvh.channels
-            spacing: 8
+            spacing: 3
             keyNavigationEnabled: true
             highlightMoveDuration: 120
             highlightRangeMode: ListView.ApplyRange
@@ -436,7 +390,7 @@ FocusScope {
                 event.accepted = true;
             }
 
-            delegate: Rectangle {
+            delegate: BigscreenUI.ButtonDelegate {
                 id: zapRow
                 required property int index
                 required property string uuid
@@ -444,79 +398,47 @@ FocusScope {
                 required property string name
                 required property url iconUrl
                 required property string nowTitle
-                required property double nowProgress
                 readonly property bool current: ListView.isCurrentItem
                 readonly property bool playing: uuid === root.player.channelUuid
 
                 width: ListView.view.width
-                height: 100
-                radius: Theme.radiusSmall
-                color: current ? Kirigami.Theme.highlightColor : "transparent"
-
-                Text {
-                    id: zapNumber
-                    anchors.left: parent.left
-                    anchors.leftMargin: 16
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 60
-                    horizontalAlignment: Text.AlignRight
-                    text: zapRow.number > 0 ? zapRow.number : ""
-                    color: zapRow.current ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.disabledTextColor
-                    font.pixelSize: Theme.fontSmall
+                // The list handles the keys.
+                focusPolicy: Qt.NoFocus
+                text: name
+                description: nowTitle
+                background: BigscreenUI.DelegateBackground {
+                    control: zapRow
+                    highlighted: zapRow.current
+                    alternateBackgroundColor: true
                 }
-                ChannelLogo {
-                    id: zapLogo
-                    anchors.left: zapNumber.right
-                    anchors.leftMargin: 20
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 110
-                    height: 66
-                    source: zapRow.iconUrl
-                    name: zapRow.name
-                }
-                Column {
-                    anchors.left: zapLogo.right
-                    anchors.leftMargin: 20
-                    anchors.right: parent.right
-                    anchors.rightMargin: 24
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 6
-                    Row {
-                        spacing: 12
-                        width: parent.width
-                        Kirigami.Icon {
-                            visible: zapRow.playing
-                            width: 26
-                            height: 26
-                            anchors.verticalCenter: parent.verticalCenter
-                            source: "media-playback-start"
-                            isMask: true
-                            color: zapRow.current ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.highlightColor
-                        }
-                        Text {
-                            width: parent.width - (zapRow.playing ? 38 : 0)
-                            text: zapRow.name
-                            color: zapRow.current ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
-                            font.pixelSize: Theme.fontNormal
-                            font.weight: Font.DemiBold
-                            elide: Text.ElideRight
-                        }
-                    }
+                leading: Row {
+                    spacing: 13
                     Text {
-                        width: parent.width
-                        text: zapRow.nowTitle
-                        color: zapRow.current ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.disabledTextColor
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 32
+                        horizontalAlignment: Text.AlignRight
+                        text: zapRow.number > 0 ? zapRow.number : ""
+                        color: Kirigami.Theme.disabledTextColor
                         font.pixelSize: Theme.fontSmall
-                        elide: Text.ElideRight
+                    }
+                    ChannelLogo {
+                        width: 64
+                        height: 39
+                        source: zapRow.iconUrl
+                        name: zapRow.name
                     }
                 }
+                trailing: Kirigami.Icon {
+                    visible: zapRow.playing
+                    implicitWidth: Kirigami.Units.iconSizes.smallMedium
+                    implicitHeight: Kirigami.Units.iconSizes.smallMedium
+                    source: "media-playback-start"
+                    color: Kirigami.Theme.highlightColor
+                }
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        root.play(zapRow.uuid);
-                        root.closeZapList();
-                    }
+                onClicked: {
+                    root.play(zapRow.uuid);
+                    root.closeZapList();
                 }
             }
         }

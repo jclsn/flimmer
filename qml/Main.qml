@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
+import org.kde.bigscreen.ui as BigscreenUI
 import PlasmaTv
 
 QQC2.ApplicationWindow {
@@ -18,8 +19,8 @@ QQC2.ApplicationWindow {
     // Channel stopped because the application lost focus; resumed when it returns.
     property string backgroundResumeUuid
 
-    width: 1600
-    height: 900
+    width: 1067
+    height: 600
     visible: true
     visibility: startWindowed ? Window.Windowed : Window.FullScreen
     title: qsTr("Plasma TV")
@@ -112,7 +113,7 @@ QQC2.ApplicationWindow {
         numberEntry = "";
         const index = Tvh.channels.indexOfNumber(number);
         if (index < 0) {
-            toast.show(qsTr("Channel %1 not found").arg(number));
+            toast.show(qsTr("Channel %1 not found").arg(number), "dialog-warning");
             return;
         }
         const uuid = Tvh.channels.get(index).uuid;
@@ -154,11 +155,11 @@ QQC2.ApplicationWindow {
         anchors.fill: parent
     }
 
-    // The whole UI is laid out on a 1920x1080 canvas and scaled to the screen.
+    // The whole UI is laid out on a 1280x720 canvas and scaled to the screen.
     Item {
         id: stage
-        width: 1920
-        height: 1080
+        width: 1280
+        height: 720
         anchors.centerIn: parent
         scale: Math.min(window.width / width, window.height / height)
 
@@ -237,6 +238,7 @@ QQC2.ApplicationWindow {
                     visible: window.page === "channels"
                     onExitUp: nav.forceActiveFocus()
                     onWatch: uuid => window.watch(uuid)
+                    onOpenSettings: window.goPage("settings", true)
                     onOpenGuide: uuid => {
                         window.goPage("guide", true);
                         guidePage.showChannel(uuid);
@@ -251,7 +253,8 @@ QQC2.ApplicationWindow {
                     visible: window.page === "guide"
                     onExitUp: nav.forceActiveFocus()
                     onWatch: uuid => window.watch(uuid)
-                    onOpenEvent: ev => eventDialog.open(ev)
+                    onOpenSettings: window.goPage("settings", true)
+                    onOpenEvent: ev => eventDialog.show(ev)
                 }
 
                 SettingsPage {
@@ -261,7 +264,7 @@ QQC2.ApplicationWindow {
                     height: parent.height - nav.height
                     visible: window.page === "settings"
                     onExitUp: nav.forceActiveFocus()
-                    onEditText: (title, value, mode, callback) => textEntry.open(title, value, mode, callback)
+                    onEditText: (title, value, mode, callback) => textEntry.show(title, value, mode, callback)
                 }
             }
 
@@ -276,13 +279,11 @@ QQC2.ApplicationWindow {
 
             EventDialog {
                 id: eventDialog
-                anchors.fill: parent
                 onWatch: uuid => window.watch(uuid)
             }
 
             TextEntryDialog {
                 id: textEntry
-                anchors.fill: parent
             }
         }
 
@@ -290,14 +291,14 @@ QQC2.ApplicationWindow {
         Rectangle {
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.margins: 64
+            anchors.margins: 43
             visible: window.numberEntry.length > 0
-            width: Math.max(200, numberText.implicitWidth + 80)
-            height: 150
+            width: Math.max(133, numberText.implicitWidth + 53)
+            height: 100
             radius: Theme.radius
             color: Theme.background
             border.color: Theme.accent
-            border.width: 3
+            border.width: 2
             z: 200
             Text {
                 id: numberText
@@ -309,11 +310,10 @@ QQC2.ApplicationWindow {
             }
         }
 
-        Toast {
+        BigscreenUI.Toast {
             id: toast
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 72
+            anchors.bottomMargin: 48
+            timeout: 4000
             z: 300
         }
     }
@@ -327,14 +327,14 @@ QQC2.ApplicationWindow {
     Connections {
         target: Tvh
         function onNotification(message) {
-            toast.show(message);
+            toast.show(message, "dialog-information");
         }
     }
 
     Connections {
         target: Settings
         function onSaved(serverChanged) {
-            toast.show(qsTr("Settings saved"));
+            toast.show(qsTr("Settings saved"), "dialog-ok");
         }
     }
 

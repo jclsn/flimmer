@@ -55,15 +55,12 @@ qt_add_qml_module(plasma-tv
         qml/ChannelsPage.qml
         qml/GuidePage.qml
         qml/SettingsPage.qml
-        qml/SettingRow.qml
         qml/TvButton.qml
         qml/TextEntryDialog.qml
         qml/EventDialog.qml
         qml/PlayerView.qml
         qml/WatchOverlay.qml
         qml/ChannelLogo.qml
-        qml/ThinProgress.qml
-        qml/Toast.qml
     RESOURCES
         data/icons/hicolor/scalable/apps/plasmatv.svg
 )

@@ -3,181 +3,116 @@
 // SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 
 import QtQuick
-import QtQuick.Controls as QQC2
+import QtQuick.Templates as T
 import org.kde.kirigami as Kirigami
+import org.kde.bigscreen.ui as BigscreenUI
 import PlasmaTv
 
 // Top navigation. Moving left/right switches pages immediately; down/OK enters the page.
-FocusScope {
+BigscreenUI.NavigationBar {
     id: root
     property string currentPage: "channels"
     signal pageSelected(string page)
     signal enterPage
 
-    readonly property var pages: [
-        {
-            id: "channels",
-            label: qsTr("Live TV"),
-            icon: "video-television"
+    readonly property var pages: ["channels", "guide", "settings"]
+
+    currentIndex: Math.max(0, pages.indexOf(currentPage))
+    SafeArea.additionalMargins.left: Theme.margin
+    SafeArea.additionalMargins.right: Theme.margin
+
+    actions: [
+        Kirigami.Action {
+            text: qsTr("Live TV")
+            icon.name: "video-television"
         },
-        {
-            id: "guide",
-            label: qsTr("TV Guide"),
-            icon: "view-calendar-timeline"
+        Kirigami.Action {
+            text: qsTr("TV Guide")
+            icon.name: "view-calendar-timeline"
         },
-        {
-            id: "settings",
-            label: qsTr("Settings"),
-            icon: "configure"
+        Kirigami.Action {
+            text: qsTr("Settings")
+            icon.name: "configure"
         }
     ]
-    readonly property int currentIndex: Math.max(0, pages.findIndex(p => p.id === currentPage))
 
-    implicitHeight: 128
-
-    Keys.onPressed: event => {
-        if (event.key === Qt.Key_Left && currentIndex > 0) {
-            pageSelected(pages[currentIndex - 1].id);
-            event.accepted = true;
-        } else if (event.key === Qt.Key_Right && currentIndex < pages.length - 1) {
-            pageSelected(pages[currentIndex + 1].id);
-            event.accepted = true;
-        } else if (event.key === Qt.Key_Down || Theme.isAccept(event.key)) {
-            enterPage();
-            event.accepted = true;
-        }
+    onActivated: index => {
+        pageSelected(pages[index]);
+        enterPage();
     }
 
-    Row {
-        id: brand
-        anchors.left: parent.left
-        anchors.leftMargin: Theme.margin
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: 16
+    Keys.onDownPressed: enterPage()
 
-        Image {
-            anchors.verticalCenter: parent.verticalCenter
-            width: 64
-            height: 64
-            source: Qt.resolvedUrl("../data/icons/hicolor/scalable/apps/plasmatv.svg")
-            sourceSize: Qt.size(128, 128)
-            smooth: true
-        }
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: "Plasma TV"
-            color: Theme.text
-            font.pixelSize: Theme.fontLarge
-            font.weight: Font.DemiBold
-        }
-    }
+    // Focusing a tab already shows its page.
+    Connections {
+        target: root.Window.window
+        function onActiveFocusItemChanged() {
+            const item = root.Window.activeFocusItem;
 
-    Row {
-        id: tabs
-        anchors.centerIn: parent
-        spacing: 12
+            if (!root.activeFocus || !(item instanceof T.AbstractButton))
+                return;
 
-        Repeater {
-            model: root.pages
-            delegate: Item {
-                required property var modelData
-                required property int index
-                readonly property bool selected: index === root.currentIndex
-                readonly property bool focused: selected && root.activeFocus
-                width: tabContent.implicitWidth + 64
-                height: 68
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: height / 2
-                    color: parent.focused ? Theme.accent : (parent.selected ? Theme.surfaceRaised : "transparent")
-                    border.width: parent.focused ? 3 : 0
-                    border.color: Theme.focusRing
-                    scale: parent.focused ? 1.06 : 1
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.animFast
-                        }
-                    }
-                    Behavior on scale {
-                        NumberAnimation {
-                            duration: Theme.animFast
-                        }
-                    }
-                }
-                Row {
-                    id: tabContent
-                    anchors.centerIn: parent
-                    spacing: 14
-                    Kirigami.Icon {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 30
-                        height: 30
-                        source: parent.parent.modelData.icon
-                        isMask: true
-                        color: tabLabel.color
-                    }
-                    Text {
-                        id: tabLabel
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: parent.parent.modelData.label
-                        color: parent.parent.focused ? Theme.onAccent : (parent.parent.selected ? Theme.text : Theme.textDim)
-                        font.pixelSize: Theme.fontNormal
-                        font.weight: parent.parent.selected ? Font.DemiBold : Font.Normal
-                    }
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        root.pageSelected(parent.modelData.id);
-                        root.enterPage();
-                    }
-                }
+            for (let i = 0; i < root.actions.length; ++i) {
+                if (root.actions[i] === item.action && i !== root.currentIndex)
+                    root.pageSelected(root.pages[i]);
             }
         }
     }
 
-    Row {
-        anchors.right: parent.right
-        anchors.rightMargin: Theme.margin
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: 28
+    leading: Row {
+        spacing: 11
+
+        Image {
+            anchors.verticalCenter: parent.verticalCenter
+            width: 32
+            height: 32
+            source: Qt.resolvedUrl("../data/icons/hicolor/scalable/apps/plasmatv.svg")
+            sourceSize: Qt.size(96, 96)
+            smooth: true
+        }
+        BigscreenUI.Label {
+            anchors.verticalCenter: parent.verticalCenter
+            text: "Plasma TV"
+            type: BigscreenUI.Label.Heading
+            font.weight: Font.DemiBold
+        }
+    }
+
+    trailing: Row {
+        spacing: 19
 
         Row {
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 12
+            spacing: 8
             visible: Tvh.status !== Tvh.Online || Tvh.busy
-            QQC2.BusyIndicator {
-                width: 40
-                height: 40
+            BigscreenUI.BusyIndicator {
+                width: 21
+                height: 21
                 running: visible
                 anchors.verticalCenter: parent.verticalCenter
                 visible: Tvh.busy || Tvh.status === Tvh.Connecting
             }
             Rectangle {
-                width: 14
-                height: 14
-                radius: 7
+                width: 8
+                height: 8
+                radius: 4
                 anchors.verticalCenter: parent.verticalCenter
                 visible: !Tvh.busy && Tvh.status !== Tvh.Connecting
                 color: Tvh.status === Tvh.Offline ? Theme.danger : Theme.warning
             }
-            Text {
+            BigscreenUI.Label {
                 anchors.verticalCenter: parent.verticalCenter
                 text: Tvh.busy && Tvh.status === Tvh.Online ? qsTr("Updating guide…") : Tvh.statusText
                 color: Theme.textDim
-                font.pixelSize: Theme.fontSmall
                 elide: Text.ElideRight
-                width: Math.min(implicitWidth, 420)
+                width: Math.min(implicitWidth, 280)
             }
         }
 
-        Text {
+        BigscreenUI.Label {
             id: clock
             anchors.verticalCenter: parent.verticalCenter
-            color: Theme.text
-            font.pixelSize: Theme.fontLarge
-            font.weight: Font.Light
+            type: BigscreenUI.Label.Section
             text: Theme.formatTime(Date.now())
             Timer {
                 interval: 1000

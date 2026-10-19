@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 
 import QtQuick
+import QtQuick.Templates as T
+import org.kde.kirigami as Kirigami
+import org.kde.bigscreen.ui as BigscreenUI
 import PlasmaTv
 
 FocusScope {
@@ -40,9 +43,8 @@ FocusScope {
         dScheme = Settings.colorScheme;
     }
 
-    function cycleScheme(delta) {
-        const n = Settings.colorSchemes.length;
-        dScheme = Settings.colorSchemes[(schemeIndex + delta + n) % n].id;
+    function setScheme(id) {
+        dScheme = id;
         // Show the scheme right away; it is only stored by "Save".
         Settings.previewColorScheme(dScheme);
     }
@@ -89,186 +91,271 @@ FocusScope {
         }
     }
 
+    // Keeps the focused row in view; the form is taller than the page.
+    function ensureVisible(item) {
+        let parent = item;
+
+        while (parent && parent !== form)
+            parent = parent.parent;
+
+        if (!parent)
+            return;
+
+        const top = item.mapToItem(formCard, 0, 0).y - 16;
+        const bottom = top + item.height + 32;
+
+        // Near the top, show the section header too.
+        if (top < formView.contentY)
+            formView.contentY = top < item.height ? 0 : top;
+        else if (bottom > formView.contentY + formView.height)
+            formView.contentY = Math.min(formView.contentHeight - formView.height, bottom - formView.height);
+    }
+
+    Connections {
+        target: root.Window.window
+        function onActiveFocusItemChanged() {
+            root.ensureVisible(root.Window.activeFocusItem);
+        }
+    }
+
     // --- Form ---------------------------------------------------------
-    Rectangle {
-        id: formCard
+    Flickable {
+        id: formView
         x: Theme.margin
-        y: 16
-        width: 1080
-        height: form.implicitHeight + 48
-        radius: Theme.radius + 8
-        color: Theme.card
-        border.color: Theme.outline
-
-        Column {
-            id: form
-            anchors.fill: parent
-            anchors.margins: 24
-            spacing: 4
-
-            Text {
-                text: qsTr("Server")
-                color: Theme.accent
-                font.pixelSize: Theme.fontSmall
-                font.weight: Font.DemiBold
-                font.capitalization: Font.AllUppercase
-                font.letterSpacing: 2
-                leftPadding: 32
-                bottomPadding: 8
-            }
-
-            SettingRow {
-                id: hostRow
-                width: parent.width
-                focus: true
-                label: qsTr("Address")
-                value: root.dHost
-                placeholder: qsTr("e.g. 192.168.1.10")
-                onActivated: root.editText(label, root.dHost, "text", v => root.dHost = v.trim())
-                KeyNavigation.down: portRow
-                KeyNavigation.right: testButton
-                Keys.onUpPressed: root.exitUp()
-            }
-            SettingRow {
-                id: portRow
-                width: parent.width
-                label: qsTr("Port")
-                value: root.dPort
-                onActivated: root.editText(label, String(root.dPort), "number", v => {
-                    const p = parseInt(v);
-                    if (p > 0 && p < 65536)
-                        root.dPort = p;
-                })
-                KeyNavigation.up: hostRow
-                KeyNavigation.down: httpsRow
-                KeyNavigation.right: testButton
-            }
-            SettingRow {
-                id: httpsRow
-                width: parent.width
-                kind: "toggle"
-                label: qsTr("Use HTTPS")
-                checked: root.dHttps
-                onActivated: root.dHttps = !root.dHttps
-                KeyNavigation.up: portRow
-                KeyNavigation.down: userRow
-                KeyNavigation.right: testButton
-            }
-            SettingRow {
-                id: userRow
-                width: parent.width
-                label: qsTr("Username")
-                value: root.dUser
-                placeholder: qsTr("none (anonymous)")
-                onActivated: root.editText(label, root.dUser, "text", v => root.dUser = v.trim())
-                KeyNavigation.up: httpsRow
-                KeyNavigation.down: passwordRow
-                KeyNavigation.right: testButton
-            }
-            SettingRow {
-                id: passwordRow
-                width: parent.width
-                label: qsTr("Password")
-                value: root.dPassword !== null ? "•".repeat(Math.min(root.dPassword.length, 16)) : (Settings.hasPassword ? "••••••••" : "")
-                placeholder: qsTr("not set")
-                onActivated: root.editText(label, "", "password", v => root.dPassword = v)
-                KeyNavigation.up: userRow
-                KeyNavigation.down: profileRow
-                KeyNavigation.right: testButton
-            }
-
-            Text {
-                text: qsTr("Playback & Appearance")
-                color: Theme.accent
-                font.pixelSize: Theme.fontSmall
-                font.weight: Font.DemiBold
-                font.capitalization: Font.AllUppercase
-                font.letterSpacing: 2
-                leftPadding: 32
-                topPadding: 24
-                bottomPadding: 8
-            }
-
-            SettingRow {
-                id: profileRow
-                width: parent.width
-                label: qsTr("Streaming profile")
-                value: root.dProfile
-                placeholder: "pass"
-                onActivated: root.editText(label, root.dProfile, "text", v => root.dProfile = v.trim().length > 0 ? v.trim() : "pass")
-                KeyNavigation.up: passwordRow
-                KeyNavigation.down: backgroundRow
-                KeyNavigation.right: testButton
-            }
-            SettingRow {
-                id: backgroundRow
-                width: parent.width
-                kind: "toggle"
-                label: qsTr("Stop playback in background")
-                checked: root.dStopInBackground
-                onActivated: root.dStopInBackground = !root.dStopInBackground
-                KeyNavigation.up: profileRow
-                KeyNavigation.down: daysRow
-                KeyNavigation.right: testButton
-            }
-            SettingRow {
-                id: daysRow
-                width: parent.width
-                kind: "stepper"
-                label: qsTr("Days of guide data")
-                value: root.dDays === 1 ? qsTr("1 day") : qsTr("%1 days").arg(root.dDays)
-                onDecrement: root.dDays = Math.max(1, root.dDays - 1)
-                onIncrement: root.dDays = Math.min(14, root.dDays + 1)
-                onActivated: root.dDays = root.dDays >= 14 ? 1 : root.dDays + 1
-                KeyNavigation.up: backgroundRow
-                KeyNavigation.down: schemeRow
-                KeyNavigation.right: testButton
-            }
-            SettingRow {
-                id: schemeRow
-                width: parent.width
-                kind: "stepper"
-                label: qsTr("Color scheme")
-                value: Settings.colorSchemes[root.schemeIndex].name
-                onDecrement: root.cycleScheme(-1)
-                onIncrement: root.cycleScheme(1)
-                onActivated: root.cycleScheme(1)
-                KeyNavigation.up: daysRow
-                KeyNavigation.down: testButton
-                KeyNavigation.right: testButton
+        y: 11
+        width: 720
+        height: parent.height - y - 32
+        contentHeight: formCard.height
+        boundsBehavior: Flickable.StopAtBounds
+        clip: true
+        Behavior on contentY {
+            NumberAnimation {
+                duration: Theme.animNormal
             }
         }
+
+        Rectangle {
+            id: formCard
+            width: parent.width
+            height: form.implicitHeight + 32
+            radius: Theme.radius + 5
+            color: Theme.card
+            border.color: Theme.outline
+
+            Column {
+                id: form
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 3
+
+                Text {
+                    text: qsTr("Server")
+                    color: Theme.accent
+                    font.pixelSize: Theme.fontSmall
+                    font.weight: Font.DemiBold
+                    font.capitalization: Font.AllUppercase
+                    font.letterSpacing: 1
+                    leftPadding: 16
+                    topPadding: 5
+                    bottomPadding: 5
+                }
+
+                BigscreenUI.ButtonDelegate {
+                    id: hostRow
+                    width: parent.width
+                    focus: true
+                    text: qsTr("Address")
+                    description: root.dHost.length > 0 ? root.dHost : qsTr("e.g. 192.168.1.10")
+                    trailing: EditIcon {}
+                    onClicked: root.editText(text, root.dHost, "text", v => root.dHost = v.trim())
+                    KeyNavigation.down: portRow
+                    KeyNavigation.right: testButton
+                    Keys.onUpPressed: root.exitUp()
+                }
+                BigscreenUI.ButtonDelegate {
+                    id: portRow
+                    width: parent.width
+                    text: qsTr("Port")
+                    description: root.dPort
+                    trailing: EditIcon {}
+
+                    onClicked: root.editText(text, String(root.dPort), "number", v => {
+                        const p = parseInt(v);
+
+                        if (p > 0 && p < 65536)
+                            root.dPort = p;
+                    })
+
+                    KeyNavigation.up: hostRow
+                    KeyNavigation.down: httpsRow
+                    KeyNavigation.right: testButton
+                }
+                BigscreenUI.SwitchDelegate {
+                    id: httpsRow
+                    width: parent.width
+                    text: qsTr("Use HTTPS")
+                    checked: root.dHttps
+
+                    onToggled: {
+                        root.dHttps = checked;
+                        checked = Qt.binding(() => root.dHttps);
+                    }
+
+                    KeyNavigation.up: portRow
+                    KeyNavigation.down: userRow
+                    KeyNavigation.right: testButton
+                }
+                BigscreenUI.ButtonDelegate {
+                    id: userRow
+                    width: parent.width
+                    text: qsTr("Username")
+                    description: root.dUser.length > 0 ? root.dUser : qsTr("none (anonymous)")
+                    trailing: EditIcon {}
+                    onClicked: root.editText(text, root.dUser, "text", v => root.dUser = v.trim())
+                    KeyNavigation.up: httpsRow
+                    KeyNavigation.down: passwordRow
+                    KeyNavigation.right: testButton
+                }
+                BigscreenUI.ButtonDelegate {
+                    id: passwordRow
+                    width: parent.width
+                    text: qsTr("Password")
+                    description: root.dPassword !== null ? "•".repeat(Math.min(root.dPassword.length, 16)) : (Settings.hasPassword ? "••••••••" : qsTr("not set"))
+                    trailing: EditIcon {}
+                    onClicked: root.editText(text, "", "password", v => root.dPassword = v)
+                    KeyNavigation.up: userRow
+                    KeyNavigation.down: profileRow
+                    KeyNavigation.right: testButton
+                }
+
+                Text {
+                    text: qsTr("Playback & Appearance")
+                    color: Theme.accent
+                    font.pixelSize: Theme.fontSmall
+                    font.weight: Font.DemiBold
+                    font.capitalization: Font.AllUppercase
+                    font.letterSpacing: 1
+                    leftPadding: 16
+                    topPadding: 16
+                    bottomPadding: 5
+                }
+
+                BigscreenUI.ButtonDelegate {
+                    id: profileRow
+                    width: parent.width
+                    text: qsTr("Streaming profile")
+                    description: root.dProfile.length > 0 ? root.dProfile : "pass"
+                    trailing: EditIcon {}
+                    onClicked: root.editText(text, root.dProfile, "text", v => root.dProfile = v.trim().length > 0 ? v.trim() : "pass")
+                    KeyNavigation.up: passwordRow
+                    KeyNavigation.down: backgroundRow
+                    KeyNavigation.right: testButton
+                }
+                BigscreenUI.SwitchDelegate {
+                    id: backgroundRow
+                    width: parent.width
+                    text: qsTr("Stop playback in background")
+                    checked: root.dStopInBackground
+
+                    onToggled: {
+                        root.dStopInBackground = checked;
+                        checked = Qt.binding(() => root.dStopInBackground);
+                    }
+
+                    KeyNavigation.up: profileRow
+                    KeyNavigation.down: daysRow
+                    KeyNavigation.right: testButton
+                }
+                // Left/right change the value; too many choices for a ComboBoxDelegate.
+                BigscreenUI.ButtonDelegate {
+                    id: daysRow
+                    width: parent.width
+                    text: qsTr("Days of guide data")
+                    description: root.dDays === 1 ? qsTr("1 day") : qsTr("%1 days").arg(root.dDays)
+                    trailing: Row {
+                        spacing: 5
+                        Kirigami.Icon {
+                            source: "go-previous"
+                            implicitWidth: Kirigami.Units.iconSizes.small
+                            implicitHeight: Kirigami.Units.iconSizes.small
+                            opacity: root.dDays > 1 ? 1 : 0.3
+                        }
+                        Kirigami.Icon {
+                            source: "go-next"
+                            implicitWidth: Kirigami.Units.iconSizes.small
+                            implicitHeight: Kirigami.Units.iconSizes.small
+                            opacity: root.dDays < 14 ? 1 : 0.3
+                        }
+                    }
+                    onClicked: root.dDays = root.dDays >= 14 ? 1 : root.dDays + 1
+                    Keys.onLeftPressed: root.dDays = Math.max(1, root.dDays - 1)
+                    Keys.onRightPressed: root.dDays = Math.min(14, root.dDays + 1)
+                    KeyNavigation.up: backgroundRow
+                    KeyNavigation.down: schemeRow
+                }
+                BigscreenUI.ComboBoxDelegate {
+                    id: schemeRow
+                    width: parent.width
+                    text: qsTr("Color scheme")
+                    model: Settings.colorSchemes.map(scheme => scheme.name)
+                    currentIndex: root.schemeIndex
+
+                    // The option dialog grows with the options; keep it on the screen.
+                    Component.onCompleted: {
+                        for (const object of data) {
+                            if (object instanceof T.Dialog)
+                                object.height = Qt.binding(() => Math.min(object.implicitHeight, object.parent.height * 0.9));
+                        }
+                    }
+
+                    onActivated: index => {
+                        root.setScheme(Settings.colorSchemes[index].id);
+                        currentIndex = Qt.binding(() => root.schemeIndex);
+                    }
+
+                    KeyNavigation.up: daysRow
+                    KeyNavigation.down: testButton
+                    KeyNavigation.right: testButton
+                }
+            }
+        }
+    }
+
+    component EditIcon: Kirigami.Icon {
+        source: "document-edit"
+        implicitWidth: Kirigami.Units.iconSizes.smallMedium
+        implicitHeight: Kirigami.Units.iconSizes.smallMedium
     }
 
     // --- Status & actions --------------------------------------------
     Column {
         id: side
-        anchors.left: formCard.right
-        anchors.leftMargin: 48
+        anchors.left: formView.right
+        anchors.leftMargin: 32
         anchors.right: parent.right
         anchors.rightMargin: Theme.margin
-        y: 16
-        spacing: 22
+        y: 11
+        spacing: 15
 
         Rectangle {
             width: parent.width
-            height: statusColumn.implicitHeight + 56
-            radius: Theme.radius + 8
+            height: statusColumn.implicitHeight + 37
+            radius: Theme.radius + 5
             color: Theme.card
             border.color: Theme.outline
 
             Column {
                 id: statusColumn
                 anchors.fill: parent
-                anchors.margins: 28
-                spacing: 12
+                anchors.margins: 19
+                spacing: 8
 
                 Row {
-                    spacing: 14
+                    spacing: 9
                     Rectangle {
-                        width: 18
-                        height: 18
-                        radius: 9
+                        width: 12
+                        height: 12
+                        radius: 6
                         anchors.verticalCenter: parent.verticalCenter
                         color: Tvh.status === Tvh.Online ? Theme.success : Tvh.status === Tvh.Offline ? Theme.danger : Theme.warning
                     }
@@ -277,7 +364,7 @@ FocusScope {
                         color: Theme.text
                         font.pixelSize: Theme.fontNormal
                         font.weight: Font.DemiBold
-                        width: side.width - 90
+                        width: side.width - 60
                         elide: Text.ElideRight
                     }
                 }
@@ -315,9 +402,9 @@ FocusScope {
             id: testButton
             width: parent.width
             text: qsTr("Test connection")
-            iconName: "network-connect"
+            icon.name: "network-connect"
             available: root.dHost.length > 0 && !root.testing
-            onClicked: {
+            onActivated: {
                 root.testing = true;
                 root.testMessage = "";
                 Tvh.testConnection(root.values());
@@ -329,11 +416,10 @@ FocusScope {
         TvButton {
             id: saveButton
             width: parent.width
-            primary: true
             text: root.dirty ? qsTr("Save & connect") : qsTr("Saved")
-            iconName: root.dirty ? "document-save" : "dialog-ok"
+            icon.name: root.dirty ? "document-save" : "dialog-ok"
             available: root.dirty && root.dHost.length > 0
-            onClicked: root.save()
+            onActivated: root.save()
             KeyNavigation.left: hostRow
             KeyNavigation.up: testButton
             KeyNavigation.down: refreshButton
@@ -342,9 +428,9 @@ FocusScope {
             id: refreshButton
             width: parent.width
             text: qsTr("Reload channels & guide")
-            iconName: "view-refresh"
+            icon.name: "view-refresh"
             available: Settings.configured && !Tvh.busy
-            onClicked: Tvh.refresh()
+            onActivated: Tvh.refresh()
             KeyNavigation.left: hostRow
             KeyNavigation.up: saveButton
             KeyNavigation.down: clearButton
@@ -353,8 +439,8 @@ FocusScope {
             id: clearButton
             width: parent.width
             text: qsTr("Clear guide cache")
-            iconName: "edit-clear-all"
-            onClicked: {
+            icon.name: "edit-clear-all"
+            onActivated: {
                 Tvh.clearCache();
                 Tvh.refresh();
             }
@@ -365,17 +451,16 @@ FocusScope {
         TvButton {
             id: quitButton
             width: parent.width
-            destructive: true
             text: qsTr("Quit application")
-            iconName: "application-exit"
-            onClicked: Qt.quit()
+            icon.name: "application-exit"
+            onActivated: Qt.quit()
             KeyNavigation.left: hostRow
             KeyNavigation.up: clearButton
         }
 
         Text {
             width: parent.width
-            topPadding: 8
+            topPadding: 5
             text: qsTr("Remote: arrows to move, OK to select, BACK to return, MENU for settings, GUIDE for the TV guide.")
             color: Theme.textFaint
             font.pixelSize: Theme.fontTiny

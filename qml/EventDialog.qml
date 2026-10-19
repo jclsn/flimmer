@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 
 import QtQuick
+import QtQuick.Layouts
+import org.kde.bigscreen.ui as BigscreenUI
 import PlasmaTv
 
 // Programme details with Watch / Record actions.
-FocusScope {
+BigscreenUI.Dialog {
     id: root
     property var event: ({})
     property var channel: ({})
@@ -15,23 +17,19 @@ FocusScope {
     readonly property bool hasRecording: (event.dvrState ?? "").length > 0
     signal watch(string uuid)
 
-    visible: false
-    z: 90
+    width: 933
+    openFocusItem: airing ? watchButton : recordButton
 
-    function open(ev) {
+    function show(ev) {
         event = ev;
         channel = Tvh.channels.get(Tvh.channels.indexOfUuid(ev.channel));
         returnFocus = Window.activeFocusItem;
         description.contentY = 0;
-        visible = true;
-        if (airing)
-            watchButton.forceActiveFocus();
-        else
-            recordButton.forceActiveFocus();
+
+        open();
     }
 
-    function close() {
-        visible = false;
+    onAboutToHide: {
         if (returnFocus)
             returnFocus.forceActiveFocus();
     }
@@ -46,82 +44,45 @@ FocusScope {
         }
     }
 
-    Keys.onPressed: event => {
-        if (Theme.isBack(event.key)) {
-            close();
-        } else if (event.key === Qt.Key_Up) {
-            description.contentY = Math.max(0, description.contentY - 120);
-        } else if (event.key === Qt.Key_Down) {
-            description.contentY = Math.max(0, Math.min(description.contentHeight - description.height, description.contentY + 120));
-        } else if (event.key >= Qt.Key_0 && event.key <= Qt.Key_9) {
-            // don't let digits reach the global channel number entry
-        } else {
-            return;
-        }
-        event.accepted = true;
-    }
-
-    Rectangle {
-        anchors.fill: parent
-        color: Qt.rgba(0, 0, 0, 0.72)
-        MouseArea {
-            anchors.fill: parent
-            onClicked: root.close()
-        }
-    }
-
-    Rectangle {
-        anchors.centerIn: parent
-        width: 1400
-        height: 800
-        radius: Theme.radius + 12
-        color: Theme.surface
-        border.color: Theme.outline
-        clip: true
-        MouseArea {
-            anchors.fill: parent
-        }
+    contentItem: ColumnLayout {
+        spacing: 11
 
         Rectangle {
-            width: parent.width
-            height: 10
+            Layout.fillWidth: true
+            implicitHeight: 4
+            radius: 2
             color: Theme.genreColor(root.event.genre ?? 0)
         }
 
-        Row {
-            id: top
-            x: 56
-            y: 56
-            spacing: 28
+        RowLayout {
+            Layout.topMargin: 11
+            spacing: 19
             ChannelLogo {
-                width: 160
-                height: 96
+                implicitWidth: 107
+                implicitHeight: 64
                 source: root.channel.iconUrl ?? ""
                 name: root.channel.name ?? ""
             }
-            Column {
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 6
+            ColumnLayout {
+                spacing: 4
                 Text {
                     text: root.channel.name ?? ""
                     color: Theme.accent
                     font.pixelSize: Theme.fontSmall
                     font.weight: Font.DemiBold
                     font.capitalization: Font.AllUppercase
-                    font.letterSpacing: 2
+                    font.letterSpacing: 1
                 }
-                Row {
-                    spacing: 16
-                    Text {
+                RowLayout {
+                    spacing: 11
+                    BigscreenUI.Label {
                         text: root.event.start ? Theme.formatDay(root.event.start) + "  ·  " + Theme.formatRange(root.event.start, root.event.stop) + "  ·  " + Theme.formatDuration(root.event.stop - root.event.start) : ""
                         color: Theme.textDim
-                        font.pixelSize: Theme.fontNormal
                     }
                     Rectangle {
                         visible: (root.event.genreName ?? "").length > 0
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: g.implicitWidth + 24
-                        height: g.implicitHeight + 6
+                        implicitWidth: g.implicitWidth + 16
+                        implicitHeight: g.implicitHeight + 4
                         radius: height / 2
                         color: Theme.genreColor(root.event.genre ?? 0)
                         Text {
@@ -133,62 +94,46 @@ FocusScope {
                             font.weight: Font.DemiBold
                         }
                     }
-                    Text {
+                    BigscreenUI.Label {
                         visible: root.hasRecording
                         text: root.event.dvrState === "recording" ? qsTr("● Recording") : qsTr("● Scheduled")
                         color: Theme.recording
-                        font.pixelSize: Theme.fontNormal
                         font.weight: Font.DemiBold
                     }
                 }
             }
         }
 
-        Text {
-            id: title
-            anchors.top: top.bottom
-            anchors.topMargin: 36
-            x: 56
-            width: parent.width - 112
+        BigscreenUI.Label {
+            Layout.fillWidth: true
+            Layout.topMargin: 8
             text: root.event.title ?? ""
-            color: Theme.text
-            font.pixelSize: Theme.fontTitle
-            font.weight: Font.Bold
+            type: BigscreenUI.Label.Title
+            font.weight: Font.Normal
             wrapMode: Text.Wrap
             maximumLineCount: 2
             elide: Text.ElideRight
         }
-        Text {
-            id: subtitle
-            anchors.top: title.bottom
-            anchors.topMargin: 8
-            x: 56
-            width: parent.width - 112
+        BigscreenUI.Label {
+            Layout.fillWidth: true
             visible: text.length > 0
             text: root.event.subtitle ?? ""
+            type: BigscreenUI.Label.Heading
             color: Theme.textDim
-            font.pixelSize: Theme.fontLarge
             elide: Text.ElideRight
         }
 
-        ThinProgress {
-            id: progress
-            anchors.top: subtitle.visible ? subtitle.bottom : title.bottom
-            anchors.topMargin: 20
-            x: 56
-            width: parent.width - 112
+        BigscreenUI.ProgressBar {
+            Layout.fillWidth: true
             visible: root.airing
             value: root.airing ? (Tvh.now - root.event.start) / (root.event.stop - root.event.start) : 0
         }
 
         Flickable {
             id: description
-            anchors.top: progress.bottom
-            anchors.topMargin: 24
-            anchors.bottom: buttons.top
-            anchors.bottomMargin: 32
-            x: 56
-            width: parent.width - 112
+            Layout.fillWidth: true
+            Layout.preferredHeight: 187
+            Layout.topMargin: 5
             contentHeight: descText.implicitHeight
             clip: true
             Behavior on contentY {
@@ -197,7 +142,7 @@ FocusScope {
                 }
             }
 
-            Text {
+            BigscreenUI.Label {
                 id: descText
                 width: parent.width
                 text: {
@@ -208,50 +153,45 @@ FocusScope {
                     return d.length > 0 ? d : (s.length > 0 ? s : qsTr("No description available."));
                 }
                 color: Theme.textDim
-                font.pixelSize: Theme.fontNormal
                 lineHeight: 1.25
                 wrapMode: Text.Wrap
             }
         }
 
-        Row {
-            id: buttons
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 48
-            x: 56
-            spacing: 24
+        RowLayout {
+            Layout.topMargin: 11
+            spacing: 11
+            BigscreenUI.KeyNavigationGroup.orientation: Qt.Horizontal
+
+            // Up/down scroll the description; the buttons keep the focus.
+            Keys.onUpPressed: description.contentY = Math.max(0, description.contentY - 80)
+            Keys.onDownPressed: description.contentY = Math.max(0, Math.min(description.contentHeight - description.height, description.contentY + 80))
 
             TvButton {
                 id: watchButton
                 visible: root.airing
-                primary: true
                 text: qsTr("Watch now")
-                iconName: "media-playback-start"
-                onClicked: {
+                icon.name: "media-playback-start"
+                onActivated: {
                     root.close();
                     root.watch(root.event.channel);
                 }
-                KeyNavigation.right: recordButton
             }
             TvButton {
                 id: recordButton
                 text: !root.hasRecording ? qsTr("Record") : root.event.dvrState === "recording" ? qsTr("Stop recording") : qsTr("Cancel recording")
-                iconName: root.hasRecording ? "media-playback-stop" : "media-record"
-                destructive: root.hasRecording
-                onClicked: {
+                icon.name: root.hasRecording ? "media-playback-stop" : "media-record"
+                onActivated: {
                     if (root.hasRecording)
                         Tvh.cancelRecording(root.event.id);
                     else
                         Tvh.record(root.event.id);
                 }
-                KeyNavigation.left: root.airing ? watchButton : null
-                KeyNavigation.right: closeButton
             }
             TvButton {
-                id: closeButton
                 text: qsTr("Close")
-                onClicked: root.close()
-                KeyNavigation.left: recordButton
+                icon.name: "dialog-close"
+                onActivated: root.close()
             }
         }
     }

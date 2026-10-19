@@ -19,6 +19,12 @@
 
 int main(int argc, char *argv[])
 {
+    // Bigscreen UI is sized for TVs at 1.5 times its native size, so scale the
+    // whole window (popups included) unless the user chose a factor.
+    if (qEnvironmentVariableIsEmpty("QT_SCALE_FACTOR")) {
+        qputenv("QT_SCALE_FACTOR", "1.5");
+    }
+
     // QApplication (not QGuiApplication): the Plasma Qt Quick Controls style
     // (org.kde.desktop) paints through the widget style.
     QApplication app(argc, argv);

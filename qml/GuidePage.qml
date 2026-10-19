@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 
 import QtQuick
+import org.kde.kirigami as Kirigami
+import org.kde.bigscreen.ui as BigscreenUI
 import PlasmaTv
 
 // Electronic programme guide: channels vertically, time horizontally.
@@ -11,11 +13,12 @@ FocusScope {
     signal exitUp
     signal watch(string uuid)
     signal openEvent(var event)
+    signal openSettings
 
     readonly property real slotMs: 30 * 60 * 1000
     readonly property real spanMs: 3 * 3600 * 1000
-    readonly property int channelColumnWidth: 330
-    readonly property int rowHeight: 96
+    readonly property int channelColumnWidth: 220
+    readonly property int rowHeight: 64
     readonly property real gridWidth: width - 2 * Theme.margin - channelColumnWidth
     readonly property real pxPerMs: gridWidth / spanMs
     readonly property real minTime: floorSlot(Tvh.now)
@@ -125,7 +128,7 @@ FocusScope {
         visible: !root.empty
         x: Theme.margin
         width: parent.width - 2 * Theme.margin
-        height: 220
+        height: 147
 
         readonly property var channel: {
             Tvh.epgRevision;
@@ -137,18 +140,18 @@ FocusScope {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.topMargin: 8
-            spacing: 10
+            anchors.topMargin: 5
+            spacing: 7
 
             Row {
-                spacing: 18
+                spacing: 12
                 Text {
                     text: header.channel.name ?? ""
                     color: Theme.accent
                     font.pixelSize: Theme.fontSmall
                     font.weight: Font.DemiBold
                     font.capitalization: Font.AllUppercase
-                    font.letterSpacing: 2
+                    font.letterSpacing: 1
                 }
                 Text {
                     visible: header.hasEvent
@@ -158,8 +161,8 @@ FocusScope {
                 }
                 Rectangle {
                     visible: header.hasEvent && root.selected.genreName.length > 0
-                    width: genreText.implicitWidth + 24
-                    height: genreText.implicitHeight + 6
+                    width: genreText.implicitWidth + 16
+                    height: genreText.implicitHeight + 4
                     radius: height / 2
                     color: Theme.genreColor(root.selected.genre ?? 0)
                     Text {
@@ -218,7 +221,7 @@ FocusScope {
         anchors.top: header.bottom
         x: Theme.margin
         width: parent.width - 2 * Theme.margin
-        height: 52
+        height: 35
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
@@ -235,13 +238,13 @@ FocusScope {
                 x: root.channelColumnWidth + index * root.slotMs * root.pxPerMs
                 height: parent.height
                 Rectangle {
-                    width: 2
-                    height: 14
+                    width: 1
+                    height: 9
                     anchors.bottom: parent.bottom
                     color: Theme.outline
                 }
                 Text {
-                    x: 10
+                    x: 7
                     anchors.verticalCenter: parent.verticalCenter
                     text: Theme.formatTime(root.windowStart + parent.index * root.slotMs)
                     color: Theme.textDim
@@ -256,20 +259,20 @@ FocusScope {
         id: rows
         visible: !root.empty
         anchors.top: timeline.bottom
-        anchors.topMargin: 10
+        anchors.topMargin: 7
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 24
+        anchors.bottomMargin: 16
         x: Theme.margin
         width: parent.width - 2 * Theme.margin
         model: Tvh.channels
-        focus: true
+        focus: !root.empty
         clip: true
-        spacing: 8
+        spacing: 5
         highlightMoveDuration: 140
         highlightRangeMode: ListView.ApplyRange
         preferredHighlightBegin: rowHeight + spacing
         preferredHighlightEnd: height - 2 * (rowHeight + spacing)
-        cacheBuffer: 600
+        cacheBuffer: 400
 
         onCurrentIndexChanged: root.selected = Tvh.eventAt(root.currentUuid(), root.focusTime)
 
@@ -340,19 +343,19 @@ FocusScope {
 
             Rectangle {
                 id: channelCell
-                width: root.channelColumnWidth - 12
+                width: root.channelColumnWidth - 8
                 height: parent.height
                 radius: Theme.radiusSmall
                 color: row.isCurrent ? Theme.surfaceHover : Theme.surface
-                border.width: row.focused ? 2 : 0
+                border.width: row.focused ? 1 : 0
                 border.color: Theme.accent
 
                 Text {
                     id: num
                     anchors.left: parent.left
-                    anchors.leftMargin: 14
+                    anchors.leftMargin: 9
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 46
+                    width: 31
                     horizontalAlignment: Text.AlignRight
                     text: row.number > 0 ? row.number : ""
                     color: Theme.textFaint
@@ -361,18 +364,18 @@ FocusScope {
                 ChannelLogo {
                     id: logo
                     anchors.left: num.right
-                    anchors.leftMargin: 14
+                    anchors.leftMargin: 9
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 96
-                    height: 60
+                    width: 64
+                    height: 40
                     source: row.iconUrl
                     name: row.name
                 }
                 Text {
                     anchors.left: logo.right
-                    anchors.leftMargin: 14
+                    anchors.leftMargin: 9
                     anchors.right: parent.right
-                    anchors.rightMargin: 12
+                    anchors.rightMargin: 8
                     anchors.verticalCenter: parent.verticalCenter
                     text: row.name
                     color: row.isCurrent ? Theme.text : Theme.textDim
@@ -393,14 +396,14 @@ FocusScope {
                 Rectangle {
                     visible: row.events.length === 0
                     anchors.fill: parent
-                    anchors.rightMargin: 6
+                    anchors.rightMargin: 4
                     radius: Theme.radiusSmall
                     color: row.focused ? Theme.accentDeep : Theme.surface
-                    border.width: row.focused ? 3 : 0
+                    border.width: row.focused ? 2 : 0
                     border.color: Theme.focusRing
                     Text {
                         anchors.left: parent.left
-                        anchors.leftMargin: 24
+                        anchors.leftMargin: 16
                         anchors.verticalCenter: parent.verticalCenter
                         text: qsTr("No information")
                         color: Theme.textFaint
@@ -420,47 +423,47 @@ FocusScope {
                         readonly property real clipStop: Math.min(modelData.stop, root.windowEnd)
 
                         x: (clipStart - root.windowStart) * root.pxPerMs
-                        width: Math.max(4, (clipStop - clipStart) * root.pxPerMs - 6)
+                        width: Math.max(3, (clipStop - clipStart) * root.pxPerMs - 4)
                         height: row.height
                         radius: Theme.radiusSmall
                         color: active ? Theme.accent : selected ? Theme.accentDeep : airing ? Theme.surfaceRaised : Theme.surface
-                        border.width: active ? 3 : 0
+                        border.width: active ? 2 : 0
                         border.color: Theme.focusRing
                         z: selected ? 1 : 0
 
                         Rectangle {
-                            width: 5
-                            radius: 2
+                            width: 3
+                            radius: 1
                             anchors.left: parent.left
-                            anchors.leftMargin: 8
+                            anchors.leftMargin: 5
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
-                            anchors.margins: 16
+                            anchors.margins: 11
                             color: Theme.genreColor(cell.modelData.genre)
-                            visible: parent.width > 40 && !cell.active
+                            visible: parent.width > 27 && !cell.active
                         }
 
                         Column {
                             anchors.left: parent.left
-                            anchors.leftMargin: 24
+                            anchors.leftMargin: 16
                             anchors.right: parent.right
-                            anchors.rightMargin: 14
+                            anchors.rightMargin: 9
                             anchors.verticalCenter: parent.verticalCenter
-                            spacing: 4
-                            visible: parent.width > 60
+                            spacing: 3
+                            visible: parent.width > 40
                             Row {
                                 width: parent.width
-                                spacing: 8
+                                spacing: 5
                                 Rectangle {
                                     visible: cell.modelData.dvrState.length > 0
-                                    width: 12
-                                    height: 12
-                                    radius: 6
+                                    width: 8
+                                    height: 8
+                                    radius: 4
                                     anchors.verticalCenter: parent.verticalCenter
                                     color: Theme.recording
                                 }
                                 Text {
-                                    width: parent.width - (cell.modelData.dvrState.length > 0 ? 20 : 0)
+                                    width: parent.width - (cell.modelData.dvrState.length > 0 ? 13 : 0)
                                     text: cell.modelData.title
                                     color: cell.active ? Theme.onAccent : Theme.text
                                     font.pixelSize: Theme.fontSmall
@@ -500,27 +503,34 @@ FocusScope {
     Rectangle {
         visible: !root.empty && Tvh.now >= root.windowStart && Tvh.now < root.windowEnd
         x: Theme.margin + root.channelColumnWidth + (Tvh.now - root.windowStart) * root.pxPerMs - 1
-        y: timeline.y + timeline.height - 16
-        width: 3
+        y: timeline.y + timeline.height - 11
+        width: 2
         height: rows.y + rows.height - y
         color: Theme.danger
         opacity: 0.85
         z: 5
         Rectangle {
-            width: 14
-            height: 14
-            radius: 7
+            width: 9
+            height: 9
+            radius: 5
             anchors.horizontalCenter: parent.horizontalCenter
             color: Theme.danger
         }
     }
 
-    Text {
+    BigscreenUI.PlaceholderMessage {
         anchors.centerIn: parent
+        width: 733
         visible: root.empty
+        focus: root.empty
+        iconName: "view-calendar-timeline"
         text: Tvh.status === Tvh.Unconfigured ? qsTr("Configure your server in Settings to see the TV guide") : qsTr("No guide data yet")
-        color: Theme.textDim
-        font.pixelSize: Theme.fontLarge
+        helpfulAction: Kirigami.Action {
+            text: qsTr("Open Settings")
+            icon.name: "configure"
+            visible: Tvh.status === Tvh.Unconfigured || Tvh.status === Tvh.Offline
+            onTriggered: root.openSettings()
+        }
     }
 
     Keys.onUpPressed: root.exitUp()

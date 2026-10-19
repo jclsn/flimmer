@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 
 import QtQuick
-import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
+import org.kde.bigscreen.ui as BigscreenUI
 import PlasmaTv
 
 // Live TV: channel list on the left, details of the highlighted channel on the right.
@@ -13,6 +13,7 @@ FocusScope {
     signal exitUp
     signal watch(string uuid)
     signal openGuide(string uuid)
+    signal openSettings
 
     property alias currentIndex: list.currentIndex
     readonly property bool empty: Tvh.channels.count === 0
@@ -38,24 +39,24 @@ FocusScope {
 
     ListView {
         id: list
-        x: Theme.margin - 16
-        width: 960
+        x: Theme.margin - 11
+        width: 640
         height: parent.height
-        topMargin: 16
-        bottomMargin: 48
-        leftMargin: 16
-        rightMargin: 16
+        topMargin: 11
+        bottomMargin: 32
+        leftMargin: 11
+        rightMargin: 11
         model: Tvh.channels
-        focus: true
+        focus: !root.empty
         clip: true
-        spacing: 14
+        spacing: 4
         visible: !root.empty
         keyNavigationEnabled: true
         highlightMoveDuration: 160
         highlightRangeMode: ListView.ApplyRange
         preferredHighlightBegin: height * 0.3
         preferredHighlightEnd: height * 0.62
-        cacheBuffer: 1200
+        cacheBuffer: 800
 
         // Channels may arrive after the page is shown (first start, no cache yet).
         onCountChanged: {
@@ -82,7 +83,7 @@ FocusScope {
             event.accepted = true;
         }
 
-        delegate: Item {
+        delegate: BigscreenUI.ItemDelegate {
             id: row
             required property int index
             required property string uuid
@@ -96,36 +97,35 @@ FocusScope {
             required property bool nowRecording
             readonly property bool focused: ListView.isCurrentItem && list.activeFocus
 
-            width: ListView.view.width - 32
-            height: 116
+            width: ListView.view.width - 21
+            height: 69
+            padding: 0
+            // The list handles the keys.
+            focusPolicy: Qt.NoFocus
             z: focused ? 2 : 1
 
-            Rectangle {
-                id: card
-                anchors.fill: parent
-                radius: Theme.radius
-                color: row.focused ? Theme.surfaceHover : (row.ListView.isCurrentItem ? Theme.surfaceRaised : Theme.surface)
-                border.width: row.focused ? 3 : 0
-                border.color: Theme.focusRing
-                scale: row.focused ? 1.03 : 1
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: Theme.animFast
-                    }
-                }
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.animFast
-                    }
-                }
+            background: BigscreenUI.DelegateBackground {
+                control: row
+                highlighted: row.focused
+                checked: row.ListView.isCurrentItem && !row.focused
+            }
 
+            onClicked: {
+                list.forceActiveFocus();
+                if (list.currentIndex === row.index)
+                    root.watch(row.uuid);
+                list.currentIndex = row.index;
+            }
+
+            contentItem: Item {
+                id: card
                 Rectangle {
-                    width: 6
-                    radius: 3
+                    width: 4
+                    radius: 2
                     anchors.left: parent.left
-                    anchors.leftMargin: 10
+                    anchors.leftMargin: 7
                     anchors.verticalCenter: parent.verticalCenter
-                    height: parent.height - 40
+                    height: parent.height - 27
                     color: Theme.genreColor(row.nowGenre)
                     visible: row.nowTitle.length > 0
                 }
@@ -133,9 +133,9 @@ FocusScope {
                 Text {
                     id: numberLabel
                     anchors.left: parent.left
-                    anchors.leftMargin: 24
+                    anchors.leftMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 72
+                    width: 48
                     horizontalAlignment: Text.AlignRight
                     text: row.number > 0 ? row.number : ""
                     color: row.focused ? Theme.text : Theme.textFaint
@@ -146,21 +146,21 @@ FocusScope {
                 ChannelLogo {
                     id: logo
                     anchors.left: numberLabel.right
-                    anchors.leftMargin: 24
+                    anchors.leftMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 132
-                    height: 80
+                    width: 88
+                    height: 53
                     source: row.iconUrl
                     name: row.name
                 }
 
                 Column {
                     anchors.left: logo.right
-                    anchors.leftMargin: 28
+                    anchors.leftMargin: 19
                     anchors.right: remaining.left
-                    anchors.rightMargin: 20
+                    anchors.rightMargin: 13
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 6
+                    spacing: 4
 
                     Text {
                         width: parent.width
@@ -172,51 +172,39 @@ FocusScope {
                     }
                     Row {
                         width: parent.width
-                        spacing: 10
+                        spacing: 7
                         Rectangle {
                             visible: row.nowRecording
-                            width: 14
-                            height: 14
-                            radius: 7
+                            width: 9
+                            height: 9
+                            radius: 5
                             color: Theme.recording
                             anchors.verticalCenter: parent.verticalCenter
                         }
                         Text {
-                            width: parent.width - (row.nowRecording ? 24 : 0)
+                            width: parent.width - (row.nowRecording ? 16 : 0)
                             text: row.nowTitle.length > 0 ? row.nowTitle : qsTr("No programme information")
                             color: row.nowTitle.length > 0 ? Theme.textDim : Theme.textFaint
                             font.pixelSize: Theme.fontSmall
                             elide: Text.ElideRight
                         }
                     }
-                    ThinProgress {
+                    BigscreenUI.ProgressBar {
                         width: parent.width
-                        height: 5
                         value: row.nowProgress
                         visible: row.nowTitle.length > 0
-                        fillColor: row.focused ? Theme.accent : Theme.textFaint
                     }
                 }
 
                 Text {
                     id: remaining
                     anchors.right: parent.right
-                    anchors.rightMargin: 28
+                    anchors.rightMargin: 19
                     anchors.verticalCenter: parent.verticalCenter
                     visible: row.nowTitle.length > 0
                     text: qsTr("%1 min").arg(Theme.minutesLeft(row.nowStop, Tvh.now))
                     color: Theme.textFaint
                     font.pixelSize: Theme.fontSmall
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    list.forceActiveFocus();
-                    if (list.currentIndex === row.index)
-                        root.watch(row.uuid);
-                    list.currentIndex = row.index;
                 }
             }
         }
@@ -227,17 +215,17 @@ FocusScope {
         id: details
         visible: !root.empty && root.current.uuid !== undefined
         anchors.left: list.right
-        anchors.leftMargin: 56
+        anchors.leftMargin: 37
         anchors.right: parent.right
         anchors.rightMargin: Theme.margin
         anchors.top: parent.top
-        anchors.topMargin: 16
+        anchors.topMargin: 11
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 48
+        anchors.bottomMargin: 32
 
         Rectangle {
             anchors.fill: parent
-            radius: Theme.radius + 8
+            radius: Theme.radius + 5
             gradient: Gradient {
                 GradientStop {
                     position: 0
@@ -253,32 +241,32 @@ FocusScope {
 
         Column {
             anchors.fill: parent
-            anchors.margins: 48
+            anchors.margins: 32
             anchors.bottomMargin: 110   // room for the key hints
-            spacing: 22
+            spacing: 15
             clip: true
 
             Row {
-                spacing: 32
+                spacing: 21
                 ChannelLogo {
-                    width: 220
-                    height: 132
+                    width: 147
+                    height: 88
                     source: root.current.iconUrl ?? ""
                     name: root.current.name ?? ""
                 }
                 Column {
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 4
+                    spacing: 3
                     Text {
                         text: root.current.number > 0 ? qsTr("Channel %1").arg(root.current.number) : ""
                         color: Theme.accent
                         font.pixelSize: Theme.fontSmall
                         font.weight: Font.DemiBold
                         font.capitalization: Font.AllUppercase
-                        font.letterSpacing: 2
+                        font.letterSpacing: 1
                     }
                     Text {
-                        width: details.width - 96 - 252
+                        width: details.width - 64 - 168
                         text: root.current.name ?? ""
                         color: Theme.text
                         font.pixelSize: Theme.fontTitle
@@ -290,16 +278,16 @@ FocusScope {
 
             Item {
                 width: 1
-                height: 8
+                height: 5
             }
 
             Row {
-                spacing: 16
+                spacing: 11
                 visible: (root.current.nowTitle ?? "").length > 0
                 Rectangle {
-                    width: nowLabel.implicitWidth + 28
-                    height: 40
-                    radius: 8
+                    width: nowLabel.implicitWidth + 19
+                    height: 27
+                    radius: 5
                     color: root.current.nowRecording ? Theme.recording : Theme.accent
                     Text {
                         id: nowLabel
@@ -339,9 +327,8 @@ FocusScope {
                 elide: Text.ElideRight
             }
 
-            ThinProgress {
+            BigscreenUI.ProgressBar {
                 width: parent.width
-                height: 8
                 value: root.current.nowProgress ?? 0
                 visible: (root.current.nowTitle ?? "").length > 0
             }
@@ -360,7 +347,7 @@ FocusScope {
 
             Item {
                 width: 1
-                height: 8
+                height: 5
             }
 
             Text {
@@ -370,17 +357,17 @@ FocusScope {
                 font.pixelSize: Theme.fontSmall
                 font.weight: Font.DemiBold
                 font.capitalization: Font.AllUppercase
-                font.letterSpacing: 2
+                font.letterSpacing: 1
             }
 
             Repeater {
                 model: root.upcoming
                 delegate: Row {
                     required property var modelData
-                    spacing: 24
+                    spacing: 16
                     width: parent.width
                     Text {
-                        width: 100
+                        width: 67
                         text: Theme.formatTime(modelData.start)
                         color: Theme.textDim
                         font.pixelSize: Theme.fontNormal
@@ -389,14 +376,14 @@ FocusScope {
                         }
                     }
                     Rectangle {
-                        width: 6
-                        height: 28
-                        radius: 3
+                        width: 4
+                        height: 19
+                        radius: 2
                         anchors.verticalCenter: parent.verticalCenter
                         color: Theme.genreColor(modelData.genre)
                     }
                     Text {
-                        width: parent.width - 160
+                        width: parent.width - 107
                         text: modelData.title
                         color: Theme.text
                         font.pixelSize: Theme.fontNormal
@@ -409,8 +396,8 @@ FocusScope {
         Row {
             anchors.left: parent.left
             anchors.bottom: parent.bottom
-            anchors.margins: 40
-            spacing: 36
+            anchors.margins: 27
+            spacing: 24
             Repeater {
                 model: [
                     {
@@ -428,14 +415,14 @@ FocusScope {
                 ]
                 delegate: Row {
                     required property var modelData
-                    spacing: 12
+                    spacing: 8
                     Rectangle {
-                        width: Math.max(44, keyText.implicitWidth + 20)
-                        height: 36
-                        radius: 8
+                        width: Math.max(29, keyText.implicitWidth + 13)
+                        height: 24
+                        radius: 5
                         color: "transparent"
                         border.color: Theme.textFaint
-                        border.width: 2
+                        border.width: 1
                         Text {
                             id: keyText
                             anchors.centerIn: parent
@@ -460,40 +447,27 @@ FocusScope {
     Column {
         anchors.centerIn: parent
         visible: root.empty
-        spacing: 28
-        width: 1100
+        spacing: 19
+        width: 733
 
-        QQC2.BusyIndicator {
+        BigscreenUI.BusyIndicator {
             anchors.horizontalCenter: parent.horizontalCenter
-            width: 96
-            height: 96
             visible: Tvh.status === Tvh.Connecting || Tvh.busy
             running: visible
         }
-        Kirigami.Icon {
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: 160
-            height: 160
-            visible: !(Tvh.status === Tvh.Connecting || Tvh.busy)
-            source: Tvh.status === Tvh.Offline ? "network-disconnect" : "video-television"
-            color: Theme.textFaint
-            isMask: true
-        }
-        Text {
+        BigscreenUI.PlaceholderMessage {
             width: parent.width
-            horizontalAlignment: Text.AlignHCenter
+            focus: root.empty
+            iconName: Tvh.status === Tvh.Connecting || Tvh.busy ? "" : Tvh.status === Tvh.Offline ? "network-disconnect" : "video-television"
             text: Tvh.status === Tvh.Unconfigured ? qsTr("Welcome!") : Tvh.status === Tvh.Offline ? qsTr("Can't reach the server") : Tvh.status === Tvh.Online && !Tvh.busy ? qsTr("No channels found") : qsTr("Loading channels…")
-            color: Theme.text
-            font.pixelSize: Theme.fontTitle
-            font.weight: Font.DemiBold
-        }
-        Text {
-            width: parent.width
-            horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.Wrap
-            text: Tvh.status === Tvh.Unconfigured ? qsTr("Open Settings (press ▲ and go to Settings, or the MENU key) to connect to your TVHeadend server.") : Tvh.status === Tvh.Offline ? Tvh.statusText : Tvh.status === Tvh.Online && !Tvh.busy ? qsTr("The server has no enabled channels for this user.") : ""
-            color: Theme.textDim
-            font.pixelSize: Theme.fontNormal
+            explanation: Tvh.status === Tvh.Unconfigured ? qsTr("Connect to your TVHeadend server in Settings.") : Tvh.status === Tvh.Offline ? Tvh.statusText : Tvh.status === Tvh.Online && !Tvh.busy ? qsTr("The server has no enabled channels for this user.") : ""
+            helpfulAction: Kirigami.Action {
+                text: qsTr("Open Settings")
+                icon.name: "configure"
+                visible: Tvh.status === Tvh.Unconfigured || Tvh.status === Tvh.Offline
+                onTriggered: root.openSettings()
+            }
+            Keys.onUpPressed: root.exitUp()
         }
     }
 }

@@ -5,8 +5,10 @@
 pragma Singleton
 import QtQuick
 import org.kde.kirigami as Kirigami
+import org.kde.bigscreen.ui as BigscreenUI
 
-// Sizes for a 10-foot UI designed on a 1920x1080 canvas. Colors come from the
+// Sizes for a 10-foot UI designed on a 1280x720 canvas, in the units of
+// Bigscreen UI (the window is scaled by 1.5, see main.cpp). Colors come from the
 // active Plasma color scheme via Kirigami.Theme (Breeze Dark by default).
 QtObject {
     // An item inside the window that provides Kirigami's theme. Kirigami only
@@ -34,19 +36,18 @@ QtObject {
     readonly property color accentDeep: Kirigami.ColorUtils.tintWithAlpha(background, accent, 0.55)
     readonly property color textDim: Kirigami.ColorUtils.tintWithAlpha(text, background, 0.30)
 
-    readonly property int radius: 16
-    readonly property int radiusSmall: 10
-    readonly property int margin: 72
-    readonly property int spacing: 24
+    readonly property int radius: 11
+    readonly property int radiusSmall: 7
+    readonly property int margin: 48
+    readonly property int spacing: 16
 
-    readonly property int fontTiny: 20
-    readonly property int fontSmall: 24
-    readonly property int fontNormal: 28
-    readonly property int fontLarge: 36
-    readonly property int fontTitle: 52
-    readonly property int fontHuge: 84
+    readonly property int fontTiny: BigscreenUI.Units.smallFontPixelSize
+    readonly property int fontSmall: 16
+    readonly property int fontNormal: BigscreenUI.Units.defaultFontPixelSize
+    readonly property int fontLarge: 24
+    readonly property int fontTitle: 35
+    readonly property int fontHuge: 56
 
-    readonly property int animFast: 120
     readonly property int animNormal: 220
 
     function genreColor(genre) {
