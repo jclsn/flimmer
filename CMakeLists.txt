@@ -48,6 +48,7 @@ qt_add_qml_module(plasma-tv
         src/logoimageprovider.h src/logoimageprovider.cpp
         src/inputdebug.h src/inputdebug.cpp
         src/remotekeys.h src/remotekeys.cpp
+        src/streamrecorder.h src/streamrecorder.cpp
     QML_FILES
         qml/Main.qml
         qml/Theme.qml

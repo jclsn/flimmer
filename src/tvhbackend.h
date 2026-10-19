@@ -14,7 +14,6 @@
 #include <QObject>
 #include <QTimer>
 #include <QUrl>
-#include <QUrlQuery>
 #include <qqmlregistration.h>
 
 class ChannelModel;
@@ -110,12 +109,6 @@ public:
     Q_INVOKABLE void record(double eventId);
     Q_INVOKABLE void cancelRecording(double eventId);
 
-    // Pausing live TV records the channel on the server; playback continues from the
-    // recording. streamReady() reports the recording's URL with its DVR uuid.
-    Q_INVOKABLE void startTimeshift(const QString &channelUuid);
-    Q_INVOKABLE void requestRecording(const QString &dvrUuid);
-    Q_INVOKABLE void removeTimeshift(const QString &dvrUuid);
-
 Q_SIGNALS:
     void statusChanged();
     void busyChanged();
@@ -125,7 +118,6 @@ Q_SIGNALS:
     void streamReady(const QString &uuid, const QUrl &url);
     void streamFailed(const QString &uuid, const QString &message);
     void connectionTestFinished(bool ok, const QString &message);
-    void timeshiftStarted(const QString &channelUuid, const QString &dvrUuid);
     void notification(const QString &message);
 
 private:
@@ -139,14 +131,6 @@ private:
     void setStatus(Status status, const QString &text);
     void setBusy(bool busy);
     void setRecordingState(qint64 eventId, const QString &dvrUuid, const QString &dvrState);
-    // Emits streamReady() for the ticket URL of the playlist entry at entryPath (or the
-    // first one), or for directPath with the credentials in the URL on old servers.
-    void requestPlaylist(const QString &key,
-                         const QString &path,
-                         const QString &directPath,
-                         const QUrlQuery &query,
-                         const QString &entryPath = {});
-    void removeStaleTimeshifts();
 
     TvhApi *m_api;
     ChannelModel *m_channels;
@@ -162,7 +146,6 @@ private:
     QString m_serverVersion;
     QDateTime m_lastUpdate;
     int m_epgRevision = 0;
-    QString m_timeshiftUuid;
 
     QTimer m_tickTimer;
     QTimer m_epgTimer;

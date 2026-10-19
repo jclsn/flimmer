@@ -17,14 +17,13 @@ Item {
     readonly property int maxRetries: 3
     readonly property bool active: channelUuid.length > 0
     readonly property alias mediaPlayer: player
+    signal notice(string text)
 
-    // Pausing records the channel on the server; resuming plays that recording, so
-    // the programme continues where it was paused.
+    // Pausing records the channel to a file; resuming plays that file, so the
+    // programme continues where it was paused.
     property bool paused: false
-    property string timeshiftUuid   // DVR entry of the recording
     property bool timeshifting: false   // playing the recording instead of live TV
     property double pausedAt: 0
-    property real pendingSeek: 0
     readonly property real behindLive: timeshifting || paused ? Math.max(0, Tvh.now - pausedAt - (timeshifting ? player.position : 0)) : 0
 
     function togglePause() {
@@ -35,9 +34,9 @@ Item {
             player.pause();
             paused = true;
 
-            if (!timeshifting && timeshiftUuid.length === 0) {
+            if (!timeshifting && !recorder.recording) {
                 pausedAt = Date.now();
-                Tvh.startTimeshift(channelUuid);
+                recorder.start(channelUuid, Tvh.channels.get(Tvh.channels.indexOfUuid(channelUuid)).name ?? "");
             }
 
             return;
@@ -45,25 +44,27 @@ Item {
 
         paused = false;
 
-        // Without a recording (yet), the paused live stream simply continues.
-        if (!timeshifting && timeshiftUuid.length > 0)
-            openRecording(0);
-        else
+        // Without a recording, the paused live stream simply continues.
+        if (timeshifting || !recorder.recording) {
             player.play();
-    }
 
-    function openRecording(position) {
-        pendingSeek = position;
-        awaitingUrl = true;
-        Tvh.requestRecording(timeshiftUuid);
+            return;
+        }
+
+        timeshifting = true;
+        player.source = recorder.url;
+        player.play();
     }
 
     function endTimeshift() {
-        Tvh.removeTimeshift(timeshiftUuid);
-        timeshiftUuid = "";
+        if (timeshifting) {
+            player.stop();
+            player.source = "";
+        }
+
+        recorder.stop();
         timeshifting = false;
         paused = false;
-        pendingSeek = 0;
     }
 
     function play(uuid) {
@@ -169,21 +170,12 @@ Item {
             if (mediaStatus === MediaPlayer.BufferedMedia)
                 root.retries = 0;
 
-            if (root.pendingSeek > 0 && (mediaStatus === MediaPlayer.LoadedMedia || mediaStatus === MediaPlayer.BufferedMedia)) {
-                player.position = root.pendingSeek;
-                root.pendingSeek = 0;
-            }
-
             if (mediaStatus !== MediaPlayer.EndOfMedia || !root.active || root.paused)
                 return;
 
-            // The end of the recording so far: continue from the grown file, or with
-            // live TV once playback has caught up.
+            // The recording only ends when it broke off; continue with live TV.
             if (root.timeshifting) {
-                if (Date.now() - root.pausedAt - player.position < 15000)
-                    root.play(root.channelUuid);
-                else
-                    root.openRecording(player.position);
+                root.play(root.channelUuid);
 
                 return;
             }
@@ -191,6 +183,11 @@ Item {
             // A live stream never ends on its own; reconnect a few times.
             root.scheduleReconnect(qsTr("The stream ended"));
         }
+    }
+
+    StreamRecorder {
+        id: recorder
+        onFailed: message => root.notice(message)
     }
 
     Timer {
@@ -202,17 +199,6 @@ Item {
     Connections {
         target: Tvh
         function onStreamReady(uuid, url) {
-            if (uuid === root.timeshiftUuid && uuid.length > 0) {
-                root.awaitingUrl = false;
-                root.timeshifting = true;
-                // The URL may not change when the grown recording is reopened.
-                player.source = "";
-                player.source = url;
-                player.play();
-
-                return;
-            }
-
             if (uuid !== root.channelUuid)
                 return;
             root.awaitingUrl = false;
@@ -220,27 +206,10 @@ Item {
             player.play();
         }
         function onStreamFailed(uuid, message) {
-            if (uuid === root.timeshiftUuid && uuid.length > 0) {
-                // The recording can't be played; continue with live TV.
-                root.play(root.channelUuid);
-
-                return;
-            }
-
             if (uuid !== root.channelUuid)
                 return;
             root.awaitingUrl = false;
             root.error = message;
-        }
-        function onTimeshiftStarted(channelUuid, dvrUuid) {
-            // Resumed (or switched channels) before the server answered.
-            if (channelUuid !== root.channelUuid || !root.paused) {
-                Tvh.removeTimeshift(dvrUuid);
-
-                return;
-            }
-
-            root.timeshiftUuid = dvrUuid;
         }
     }
 }

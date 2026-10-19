@@ -221,6 +221,13 @@ FocusScope {
         timeout: 3000
     }
 
+    Connections {
+        target: root.player
+        function onNotice(text) {
+            root.flash(text);
+        }
+    }
+
     // --- BACK: quit or leave -------------------------------------------------
     BigscreenUI.Dialog {
         id: quitMenu
@@ -269,7 +276,14 @@ FocusScope {
         anchors.margins: Theme.margin
         visible: root.player.paused || root.player.timeshifting
         type: BigscreenUI.Label.Heading
-        text: root.player.paused ? qsTr("❚❚  Paused") : qsTr("%1 min behind live").arg(Math.max(1, Math.round(root.player.behindLive / 60000)))
+        text: {
+            const minutes = Math.floor(root.player.behindLive / 60000);
+
+            if (root.player.paused)
+                return qsTr("❚❚  Paused");
+
+            return minutes < 1 ? qsTr("Behind live") : qsTr("%1 min behind live").arg(minutes);
+        }
     }
 
     // --- Info bar ---------------------------------------------------------
