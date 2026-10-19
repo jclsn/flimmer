@@ -66,6 +66,11 @@ FocusScope {
         infoTimer.restart();
     }
 
+    function togglePause() {
+        player.togglePause();
+        showInfo();
+    }
+
     function flash(text) {
         feedback.show(text, "");
         showInfo();
@@ -132,6 +137,12 @@ FocusScope {
         case Qt.Key_S:
             flash(player.cycleSubtitles());
             break;
+        case Qt.Key_MediaPlay:
+        case Qt.Key_MediaPause:
+        case Qt.Key_MediaTogglePlayPause:
+        case Qt.Key_P:
+            togglePause();
+            break;
         case Qt.Key_MediaStop:
         case Qt.Key_X:
             player.stop();
@@ -142,7 +153,7 @@ FocusScope {
                 if (player.error.length > 0)
                     player.retry();
                 else
-                    openZapList();
+                    togglePause();
             } else if (Theme.isBack(event.key)) {
                 if (infoShown)
                     infoShown = false;
@@ -210,6 +221,16 @@ FocusScope {
         anchors.top: parent.top
         anchors.topMargin: 43
         timeout: 3000
+    }
+
+    // --- Paused / behind live ------------------------------------------------
+    BigscreenUI.Badge {
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: Theme.margin
+        visible: root.player.paused || root.player.timeshifting
+        type: BigscreenUI.Label.Heading
+        text: root.player.paused ? qsTr("❚❚  Paused") : qsTr("%1 min behind live").arg(Math.max(1, Math.round(root.player.behindLive / 60000)))
     }
 
     // --- Info bar ---------------------------------------------------------

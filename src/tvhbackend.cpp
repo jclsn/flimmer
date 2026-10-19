@@ -21,6 +21,10 @@ constexpr int s_maxEpgEvents = 200000;
 constexpr int s_tickMs = 15 * 1000;
 constexpr int s_epgRefreshMs = 30 * 60 * 1000;
 constexpr int s_retryMs = 60 * 1000;
+// Longest pause; the recording stops on its own after that.
+constexpr int s_timeshiftSecs = 4 * 3600;
+// Marks the recordings made for pausing, so leftovers can be found and removed.
+const QLatin1String s_timeshiftComment("plasma-tv-timeshift");
 
 ServerConfig configFromValues(const QVariantMap &values, const ServerConfig &fallback)
 {
@@ -239,6 +243,7 @@ void TvhBackend::fetchChannels(int generation)
                    m_channels->setChannels(channels);
                    setStatus(Online, tr("Connected"));
                    m_epgTimer.start();
+                   removeStaleTimeshifts();
 
                    m_incoming.clear();
                    fetchEpgPage(generation, 0);
@@ -384,60 +389,150 @@ QVariantMap TvhBackend::eventById(double id) const
 
 void TvhBackend::requestStream(const QString &uuid)
 {
-    const ServerConfig server = m_api->server();
-    const QString profile = AppSettings::instance()->streamProfile();
-    QUrlQuery profileQuery;
-    profileQuery.addQueryItem(QStringLiteral("profile"), profile);
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("profile"), AppSettings::instance()->streamProfile());
+    requestPlaylist(uuid,
+                    QStringLiteral("channel/") + uuid,
+                    QStringLiteral("stream/channel/") + uuid,
+                    query);
+}
 
-    QUrl direct = server.url(QStringLiteral("stream/channel/") + uuid);
-    direct.setQuery(profileQuery);
+void TvhBackend::requestRecording(const QString &dvrUuid)
+{
+    // The playlist of all recordings is the one that hands out tickets for them, recordings
+    // still in progress included.
+    const QString path = QStringLiteral("dvrfile/") + dvrUuid;
+    requestPlaylist(dvrUuid, QStringLiteral("recordings"), path, {}, QLatin1Char('/') + path);
+}
+
+void TvhBackend::requestPlaylist(const QString &key,
+                                 const QString &path,
+                                 const QString &directPath,
+                                 const QUrlQuery &query,
+                                 const QString &entryPath)
+{
+    const ServerConfig server = m_api->server();
+    QUrl direct = server.url(directPath);
+    direct.setQuery(query);
 
     if (server.username.isEmpty()) {
-        Q_EMIT streamReady(uuid, direct);
+        Q_EMIT streamReady(key, direct);
         return;
     }
 
     // Prefer a short-lived ticket so the password never ends up in the media URL.
-    m_api->get(
-        QStringLiteral("playlist/ticket/channel/") + uuid,
-        profileQuery,
-        [this, uuid, server, direct, profileQuery](const ApiResult &result) {
-            if (result.ok) {
-                const QStringList lines = QString::fromUtf8(result.body).split(QLatin1Char('\n'));
-                for (const QString &line : lines) {
-                    const QUrl ticketUrl(line.trimmed());
+    m_api->get(QStringLiteral("playlist/ticket/") + path,
+               query,
+               [this, key, server, direct, query, entryPath](const ApiResult &result) {
+                   if (result.ok) {
+                       const QStringList lines =
+                           QString::fromUtf8(result.body).split(QLatin1Char('\n'));
+                       for (const QString &line : lines) {
+                           const QUrl ticketUrl(line.trimmed());
 
-                    if (!ticketUrl.isValid()
-                        || !ticketUrl.scheme().startsWith(QLatin1String("http"))) {
-                        continue;
+                           if (!ticketUrl.isValid()
+                               || !ticketUrl.scheme().startsWith(QLatin1String("http"))) {
+                               continue;
+                           }
+
+                           // Rebuild against our own base URL: the server may advertise an address
+                           // we can't reach.
+                           QUrl url = server.baseUrl();
+                           url.setPath(ticketUrl.path());
+                           QUrlQuery ticketQuery(ticketUrl);
+
+                           for (const auto &[name, value] : query.queryItems()) {
+                               if (!ticketQuery.hasQueryItem(name)) {
+                                   ticketQuery.addQueryItem(name, value);
+                               }
+                           }
+
+                           url.setQuery(ticketQuery);
+                           Q_EMIT streamReady(key, url);
+                           return;
+                       }
+                   } else if (result.httpStatus == 401 || result.httpStatus == 403) {
+                       Q_EMIT streamFailed(key, result.error);
+                       return;
+                   }
+
+                   // Older servers without ticket support: fall back to credentials in the URL.
+                   QUrl url = direct;
+                   url.setUserName(server.username);
+                   url.setPassword(server.password);
+                   Q_EMIT streamReady(key, url);
+               });
+}
+
+void TvhBackend::startTimeshift(const QString &channelUuid)
+{
+    const qint64 now = QDateTime::currentSecsSinceEpoch();
+    const QJsonObject title{{QStringLiteral("eng"), tr("Paused in Plasma TV")}};
+    const QJsonObject conf{
+        {QStringLiteral("channel"), channelUuid},
+        {QStringLiteral("start"), now},
+        {QStringLiteral("stop"), now + s_timeshiftSecs},
+        {QStringLiteral("title"), title},
+        {QStringLiteral("comment"), s_timeshiftComment},
+    };
+    QUrlQuery form;
+    form.addQueryItem(QStringLiteral("conf"),
+                      QString::fromUtf8(QJsonDocument(conf).toJson(QJsonDocument::Compact)));
+    m_api->post(QStringLiteral("api/dvr/entry/create"),
+                form,
+                [this, channelUuid](const ApiResult &result) {
+                    const QString dvrUuid = result.ok ? firstUuid(result.json()) : QString();
+
+                    if (dvrUuid.isEmpty()) {
+                        // Playback stays paused; resuming continues the live stream.
+                        Q_EMIT notification(
+                            tr("Could not record while paused: %1")
+                                .arg(result.ok ? tr("no recording was created") : result.error));
+
+                        return;
                     }
 
-                    // Rebuild against our own base URL: the server may advertise an address we
-                    // can't reach.
-                    QUrl url = server.baseUrl();
-                    url.setPath(ticketUrl.path());
-                    QUrlQuery query(ticketUrl);
+                    m_timeshiftUuid = dvrUuid;
+                    Q_EMIT timeshiftStarted(channelUuid, dvrUuid);
+                });
+}
 
-                    if (!query.hasQueryItem(QStringLiteral("profile"))) {
-                        query.addQueryItem(QStringLiteral("profile"),
-                                           profileQuery.queryItemValue(QStringLiteral("profile")));
-                    }
+void TvhBackend::removeTimeshift(const QString &dvrUuid)
+{
+    if (dvrUuid.isEmpty()) {
+        return;
+    }
 
-                    url.setQuery(query);
-                    Q_EMIT streamReady(uuid, url);
-                    return;
-                }
-            } else if (result.httpStatus == 401 || result.httpStatus == 403) {
-                Q_EMIT streamFailed(uuid, result.error);
-                return;
+    if (dvrUuid == m_timeshiftUuid) {
+        m_timeshiftUuid.clear();
+    }
+
+    // Deleting the entry also stops the recording and removes its file.
+    QUrlQuery form;
+    form.addQueryItem(QStringLiteral("uuid"), dvrUuid);
+    m_api->post(QStringLiteral("api/idnode/delete"), form, [](const ApiResult &) { });
+}
+
+void TvhBackend::removeStaleTimeshifts()
+{
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("limit"), QStringLiteral("100000"));
+    m_api->get(QStringLiteral("api/dvr/entry/grid"), query, [this](const ApiResult &result) {
+        if (!result.ok) {
+            return;
+        }
+
+        // Left over when Plasma TV quit or crashed while paused.
+        for (const QJsonValue &value : entriesOf(result.json())) {
+            const QJsonObject entry = value.toObject();
+            const QString uuid = entry.value(QLatin1String("uuid")).toString();
+
+            if (entry.value(QLatin1String("comment")).toString() == s_timeshiftComment
+                && uuid != m_timeshiftUuid) {
+                removeTimeshift(uuid);
             }
-
-            // Older servers without ticket support: fall back to credentials in the URL.
-            QUrl url = direct;
-            url.setUserName(server.username);
-            url.setPassword(server.password);
-            Q_EMIT streamReady(uuid, url);
-        });
+        }
+    });
 }
 
 void TvhBackend::record(double eventId)

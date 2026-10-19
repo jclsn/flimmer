@@ -94,7 +94,8 @@ build and install it from source (it needs Qt 6.11 or later).
 | Key (remote / keyboard)                | Action                                      |
 |----------------------------------------|---------------------------------------------|
 | Arrows                                 | Navigate                                     |
-| OK / Enter                             | Select, watch, open programme details       |
+| OK / Enter                             | Select, watch, open programme details; pause/resume while watching |
+| Play/Pause / P                         | Pause/resume while watching                 |
 | Back / Esc / Backspace                 | Go back (from the top bar: return to video) |
 | Menu / Settings / F2                   | Settings                                    |
 | Guide / G / F3                         | TV guide                                    |
