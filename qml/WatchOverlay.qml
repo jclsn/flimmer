@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 
 import QtQuick
+import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.bigscreen.ui as BigscreenUI
 import PlasmaTv
@@ -155,10 +156,7 @@ FocusScope {
                 else
                     togglePause();
             } else if (Theme.isBack(event.key)) {
-                if (infoShown)
-                    infoShown = false;
-                else
-                    leave("channels");
+                quitMenu.open();
             } else {
                 return;
             }
@@ -221,6 +219,47 @@ FocusScope {
         anchors.top: parent.top
         anchors.topMargin: 43
         timeout: 3000
+    }
+
+    // --- BACK: quit or leave -------------------------------------------------
+    BigscreenUI.Dialog {
+        id: quitMenu
+        title: qsTr("Quit Plasma TV?")
+        openFocusItem: quitButton
+
+        onAboutToHide: {
+            if (root.visible)
+                root.forceActiveFocus();
+        }
+
+        contentItem: RowLayout {
+            spacing: 11
+            BigscreenUI.KeyNavigationGroup.orientation: Qt.Horizontal
+
+            TvButton {
+                id: quitButton
+                text: qsTr("Quit")
+                icon.name: "application-exit"
+                onActivated: {
+                    // Also deletes the recording made while paused.
+                    root.player.stop();
+                    Qt.quit();
+                }
+            }
+            TvButton {
+                text: qsTr("Live TV")
+                icon.name: "video-television"
+                onActivated: {
+                    quitMenu.close();
+                    root.leave("channels");
+                }
+            }
+            TvButton {
+                text: qsTr("Keep watching")
+                icon.name: "media-playback-start"
+                onActivated: quitMenu.close()
+            }
+        }
     }
 
     // --- Paused / behind live ------------------------------------------------
