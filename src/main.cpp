@@ -5,6 +5,7 @@
 #include "appsettings.h"
 #include "inputdebug.h"
 #include "logoimageprovider.h"
+#include "remotekeys.h"
 #ifdef PLASMA_TV_DEV_TOOLS
 #include "devscript.h"
 #endif
@@ -59,6 +60,8 @@ int main(int argc, char *argv[])
     }
 
     AppSettings::instance()->applyColorScheme();
+
+    RemoteKeys::install(&app);
 
     QQmlApplicationEngine engine;
     engine.addImageProvider(QStringLiteral("logo"), new LogoImageProvider);
