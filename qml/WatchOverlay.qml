@@ -385,7 +385,7 @@ FocusScope {
             width: parent.width - 32
             clip: true
             model: Tvh.channels
-            spacing: 3
+            spacing: 5
             keyNavigationEnabled: true
             highlightMoveDuration: 120
             highlightRangeMode: ListView.ApplyRange
@@ -411,7 +411,7 @@ FocusScope {
                 event.accepted = true;
             }
 
-            delegate: BigscreenUI.ButtonDelegate {
+            delegate: Rectangle {
                 id: zapRow
                 required property int index
                 required property string uuid
@@ -419,47 +419,79 @@ FocusScope {
                 required property string name
                 required property url iconUrl
                 required property string nowTitle
+                required property double nowProgress
                 readonly property bool current: ListView.isCurrentItem
                 readonly property bool playing: uuid === root.player.channelUuid
 
                 width: ListView.view.width
-                // The list handles the keys.
-                focusPolicy: Qt.NoFocus
-                text: name
-                description: nowTitle
-                background: BigscreenUI.DelegateBackground {
-                    control: zapRow
-                    highlighted: zapRow.current
-                    alternateBackgroundColor: true
+                height: 67
+                radius: Theme.radiusSmall
+                color: current ? Kirigami.Theme.highlightColor : "transparent"
+
+                Text {
+                    id: zapNumber
+                    anchors.left: parent.left
+                    anchors.leftMargin: 11
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 40
+                    horizontalAlignment: Text.AlignRight
+                    text: zapRow.number > 0 ? zapRow.number : ""
+                    color: zapRow.current ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.disabledTextColor
+                    font.pixelSize: Theme.fontSmall
                 }
-                leading: Row {
-                    spacing: 13
+                ChannelLogo {
+                    id: zapLogo
+                    anchors.left: zapNumber.right
+                    anchors.leftMargin: 13
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 73
+                    height: 44
+                    source: zapRow.iconUrl
+                    name: zapRow.name
+                }
+                Column {
+                    anchors.left: zapLogo.right
+                    anchors.leftMargin: 13
+                    anchors.right: parent.right
+                    anchors.rightMargin: 16
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 4
+                    Row {
+                        spacing: 8
+                        width: parent.width
+                        Kirigami.Icon {
+                            visible: zapRow.playing
+                            width: 17
+                            height: 17
+                            anchors.verticalCenter: parent.verticalCenter
+                            source: "media-playback-start"
+                            isMask: true
+                            color: zapRow.current ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.highlightColor
+                        }
+                        Text {
+                            width: parent.width - (zapRow.playing ? 25 : 0)
+                            text: zapRow.name
+                            color: zapRow.current ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
+                            font.pixelSize: Theme.fontNormal
+                            font.weight: Font.DemiBold
+                            elide: Text.ElideRight
+                        }
+                    }
                     Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 32
-                        horizontalAlignment: Text.AlignRight
-                        text: zapRow.number > 0 ? zapRow.number : ""
-                        color: Kirigami.Theme.disabledTextColor
+                        width: parent.width
+                        text: zapRow.nowTitle
+                        color: zapRow.current ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.disabledTextColor
                         font.pixelSize: Theme.fontSmall
+                        elide: Text.ElideRight
                     }
-                    ChannelLogo {
-                        width: 64
-                        height: 39
-                        source: zapRow.iconUrl
-                        name: zapRow.name
-                    }
-                }
-                trailing: Kirigami.Icon {
-                    visible: zapRow.playing
-                    implicitWidth: Kirigami.Units.iconSizes.smallMedium
-                    implicitHeight: Kirigami.Units.iconSizes.smallMedium
-                    source: "media-playback-start"
-                    color: Kirigami.Theme.highlightColor
                 }
 
-                onClicked: {
-                    root.play(zapRow.uuid);
-                    root.closeZapList();
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        root.play(zapRow.uuid);
+                        root.closeZapList();
+                    }
                 }
             }
         }
