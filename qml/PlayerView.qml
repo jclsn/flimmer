@@ -23,8 +23,6 @@ Item {
     // programme continues where it was paused.
     property bool paused: false
     property bool timeshifting: false   // playing the recording instead of live TV
-    property double pausedAt: 0
-    readonly property real behindLive: timeshifting || paused ? Math.max(0, Tvh.now - pausedAt - (timeshifting ? player.position : 0)) : 0
 
     function togglePause() {
         if (!active || awaitingUrl)
@@ -35,7 +33,6 @@ Item {
             paused = true;
 
             if (!timeshifting && !recorder.recording) {
-                pausedAt = Date.now();
                 recorder.start(channelUuid, Tvh.channels.get(Tvh.channels.indexOfUuid(channelUuid)).name ?? "");
             }
 

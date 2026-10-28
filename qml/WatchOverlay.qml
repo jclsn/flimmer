@@ -238,6 +238,8 @@ FocusScope {
         id: quitMenu
         title: qsTr("Quit Plasma TV?")
         openFocusItem: quitButton
+        // Only as wide as the question; the default width is meant for longer content.
+        width: Math.max(implicitHeaderWidth, implicitContentWidth + leftPadding + rightPadding)
 
         onAboutToHide: {
             if (root.visible)
@@ -266,16 +268,22 @@ FocusScope {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: Theme.margin
-        visible: root.player.paused || root.player.timeshifting
+        visible: root.player.paused
         type: BigscreenUI.Label.Heading
-        text: {
-            const minutes = Math.floor(root.player.behindLive / 60000);
+        text: qsTr("❚❚  Paused")
+    }
 
-            if (root.player.paused)
-                return qsTr("❚❚  Paused");
-
-            return minutes < 1 ? qsTr("Behind live") : qsTr("%1 min behind live").arg(minutes);
-        }
+    // Watching the recording made while paused: a quiet hint, it stays on the whole time.
+    Kirigami.Icon {
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: Theme.margin
+        visible: root.player.timeshifting && !root.player.paused
+        implicitWidth: 32
+        implicitHeight: 32
+        // Breeze has no clock with an arrow turning back. Drawn white, as it is only shown on video.
+        source: Qt.resolvedUrl("../data/icons/symbolic/behind-live.svg")
+        opacity: 0.5
     }
 
     // --- Info bar ---------------------------------------------------------

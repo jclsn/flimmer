@@ -109,6 +109,7 @@ qt_add_qml_module(plasma-tv
         qml/ThinProgress.qml
     RESOURCES
         data/icons/hicolor/scalable/apps/plasmatv.svg
+        data/icons/symbolic/behind-live.svg
 )
 
 option(PLASMA_TV_DEV_TOOLS "Build the scripted UI driver used for screenshots/tests" OFF)
