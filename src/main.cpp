@@ -12,6 +12,7 @@
 
 #include <QApplication>
 #include <QCommandLineParser>
+#include <QDir>
 #include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
@@ -70,6 +71,14 @@ int main(int argc, char *argv[])
     RemoteKeys::install(&app);
 
     QQmlApplicationEngine engine;
+#ifdef PLASMA_TV_QML_DIR
+    // Bigscreen UI built along with the app: next to the executable in the build tree, in a
+    // private directory once installed.
+    const QDir binDir(QCoreApplication::applicationDirPath());
+    engine.addImportPath(binDir.filePath(QStringLiteral("bin")));
+    engine.addImportPath(binDir.filePath(QStringLiteral(PLASMA_TV_QML_DIR)));
+#endif
+
     engine.addImageProvider(QStringLiteral("logo"), new LogoImageProvider);
     engine.setInitialProperties({{QStringLiteral("startWindowed"), parser.isSet(windowed)}});
     QObject::connect(

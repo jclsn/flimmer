@@ -89,7 +89,8 @@ Kirigami, [Bigscreen UI](https://invent.kde.org/devinlin/bigscreen-ui), the
 Plasma Qt Quick Controls style and Breeze (style and color schemes) are used at
 runtime only, so no KF6 `-dev` packages are needed. Bigscreen UI isn't packaged
 by distributions yet: on Arch, use `packaging/arch/bigscreen-ui`; elsewhere,
-build and install it from source (it needs Qt 6.11 or later).
+configure with `-DUSE_SYSTEM_BIGSCREEN_UI=OFF` to build it along with Plasma TV
+(this needs ECM and the Kirigami and KI18n development files, and Qt 6.11 or later).
 
 ## M3U + XMLTV
 

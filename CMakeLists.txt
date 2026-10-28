@@ -22,6 +22,47 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Widgets Quick QuickControls2 Network Sql Multimedia DBus)
 find_package(Qt6Keychain REQUIRED)
 
+include(GNUInstallDirs)
+
+# Bigscreen UI (org.kde.bigscreen.ui) is only used from QML. By default the installed module
+# is used; without one it can be built along with the app and installed into a private QML
+# directory, which needs ECM and the Kirigami and KI18n development files.
+option(USE_SYSTEM_BIGSCREEN_UI "Use the installed Bigscreen UI instead of building it with Plasma TV" ON)
+set(PLASMA_TV_QML_DIR "${CMAKE_INSTALL_LIBDIR}/plasma-tv/qml")
+
+if(USE_SYSTEM_BIGSCREEN_UI)
+    find_path(BIGSCREEN_UI_QML_DIR org/kde/bigscreen/ui/qmldir
+        PATHS "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_QML}" ENV QML_IMPORT_PATH ENV QML2_IMPORT_PATH
+        NO_DEFAULT_PATH)
+
+    if(NOT BIGSCREEN_UI_QML_DIR)
+        message(FATAL_ERROR "Bigscreen UI (org.kde.bigscreen.ui) is not installed. Install it "
+            "(Arch: packaging/arch/bigscreen-ui) or build it with Plasma TV using "
+            "-DUSE_SYSTEM_BIGSCREEN_UI=OFF.")
+    endif()
+
+    message(STATUS "Using the installed Bigscreen UI from ${BIGSCREEN_UI_QML_DIR}")
+else()
+    include(FetchContent)
+    set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(KDE_INSTALL_QMLDIR "${PLASMA_TV_QML_DIR}" CACHE PATH "" FORCE)
+    # Keep our default install prefix; KDEInstallDirs would replace it with ECM's.
+    set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT FALSE)
+
+    # Install with the app's layout; setting these also keeps ECM from warning about it.
+    foreach(dir BINDIR SBINDIR LIBDIR LIBEXECDIR INCLUDEDIR DATAROOTDIR DATADIR LOCALEDIR MANDIR
+            INFODIR SYSCONFDIR LOCALSTATEDIR SHAREDSTATEDIR)
+        set(KDE_INSTALL_${dir} "${CMAKE_INSTALL_${dir}}")
+    endforeach()
+
+    # The same commit as packaging/arch/bigscreen-ui.
+    FetchContent_Declare(bigscreen-ui
+        GIT_REPOSITORY https://invent.kde.org/devinlin/bigscreen-ui.git
+        GIT_TAG b5ad9c098a684b8bec23dd79a807532c4c49af2b
+    )
+    FetchContent_MakeAvailable(bigscreen-ui)
+endif()
+
 qt_standard_project_setup(REQUIRES 6.5)
 qt_policy(SET QTP0004 NEW)
 
@@ -82,11 +123,18 @@ endif()
 
 target_include_directories(plasma-tv PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+if(NOT USE_SYSTEM_BIGSCREEN_UI)
+    # Where main.cpp looks for the bundled QML module, relative to the executable.
+    file(RELATIVE_PATH PLASMA_TV_QML_DIR_FROM_BIN
+        "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}" "${CMAKE_INSTALL_PREFIX}/${PLASMA_TV_QML_DIR}")
+    target_compile_definitions(plasma-tv PRIVATE PLASMA_TV_QML_DIR="${PLASMA_TV_QML_DIR_FROM_BIN}")
+    add_dependencies(plasma-tv bigscreenuiplugin)
+endif()
+
 target_link_libraries(plasma-tv PRIVATE
     Qt6::Widgets Qt6::Quick Qt6::QuickControls2 Qt6::Network Qt6::Sql Qt6::Multimedia Qt6::DBus
     Qt6Keychain::Qt6Keychain)
 
-include(GNUInstallDirs)
 # Kirigami, Bigscreen UI and the Plasma Qt Quick Controls style are only used from QML, so
 # they are runtime dependencies (Ubuntu: qml6-module-org-kde-kirigami, qml6-module-org-kde-desktop,
 # kde-style-breeze, qt6-svg-plugins; Arch: kirigami, bigscreen-ui, qqc2-desktop-style, breeze,
