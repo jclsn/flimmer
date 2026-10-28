@@ -154,12 +154,25 @@ void TvhBackend::loadCache()
         return;
     }
 
-    m_store.setEvents(m_database.loadEvents(QDateTime::currentSecsSinceEpoch()));
+    // The channels are few and wanted right away; the guide follows when it is loaded.
     m_channels->setChannels(m_database.loadChannels());
     const qint64 last = m_database.lastUpdate();
     m_lastUpdate = last > 0 ? QDateTime::fromSecsSinceEpoch(last) : QDateTime();
-    ++m_epgRevision;
-    Q_EMIT epgChanged();
+    const int revision = m_epgRevision;
+
+    m_database.loadEvents(QDateTime::currentSecsSinceEpoch(),
+                          this,
+                          [this, revision](const QVector<EpgEvent> &events) {
+                              // Fresh data from the server (or a cleared cache) wins.
+                              if (revision != m_epgRevision) {
+                                  return;
+                              }
+
+                              m_store.setEvents(events);
+                              m_channels->refreshNow();
+                              ++m_epgRevision;
+                              Q_EMIT epgChanged();
+                          });
 }
 
 void TvhBackend::clearCache()
