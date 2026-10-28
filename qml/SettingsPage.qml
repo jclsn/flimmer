@@ -27,6 +27,7 @@ FocusScope {
     property string dProfile
     property int dDays: 3
     property bool dStopInBackground: true
+    property bool dConfirmQuit: true
     property string dScheme
     readonly property int schemeIndex: Math.max(0, Settings.colorSchemes.findIndex(s => s.id === dScheme))
     property string testMessage
@@ -34,7 +35,7 @@ FocusScope {
     property bool testing: false
     readonly property bool hasSource: m3u ? dPlaylist.length > 0 : dHost.length > 0
 
-    readonly property bool dirty: dBackend !== Settings.backend || dPlaylist !== Settings.playlistUrl || dXmltv !== Settings.xmltvUrl || dHost !== Settings.host || dPort !== Settings.port || dHttps !== Settings.useHttps || dUser !== Settings.username || dPassword !== null || dProfile !== Settings.streamProfile || dDays !== Settings.guideDays || dStopInBackground !== Settings.stopInBackground || dScheme !== Settings.colorScheme
+    readonly property bool dirty: dBackend !== Settings.backend || dPlaylist !== Settings.playlistUrl || dXmltv !== Settings.xmltvUrl || dHost !== Settings.host || dPort !== Settings.port || dHttps !== Settings.useHttps || dUser !== Settings.username || dPassword !== null || dProfile !== Settings.streamProfile || dDays !== Settings.guideDays || dStopInBackground !== Settings.stopInBackground || dConfirmQuit !== Settings.confirmQuit || dScheme !== Settings.colorScheme
 
     function load() {
         dBackend = Settings.backend;
@@ -48,6 +49,7 @@ FocusScope {
         dProfile = Settings.streamProfile;
         dDays = Settings.guideDays;
         dStopInBackground = Settings.stopInBackground;
+        dConfirmQuit = Settings.confirmQuit;
         dScheme = Settings.colorScheme;
     }
 
@@ -69,6 +71,7 @@ FocusScope {
             streamProfile: dProfile,
             guideDays: dDays,
             stopInBackground: dStopInBackground,
+            confirmQuit: dConfirmQuit,
             colorScheme: dScheme
         };
         if (dPassword !== null)
@@ -318,6 +321,21 @@ FocusScope {
                     }
 
                     KeyNavigation.up: profileRow
+                    KeyNavigation.down: confirmQuitRow
+                    KeyNavigation.right: testButton
+                }
+                BigscreenUI.SwitchDelegate {
+                    id: confirmQuitRow
+                    width: parent.width
+                    text: qsTr("Ask to quit with BACK while watching")
+                    checked: root.dConfirmQuit
+
+                    onToggled: {
+                        root.dConfirmQuit = checked;
+                        checked = Qt.binding(() => root.dConfirmQuit);
+                    }
+
+                    KeyNavigation.up: backgroundRow
                     KeyNavigation.down: daysRow
                     KeyNavigation.right: testButton
                 }
@@ -345,7 +363,7 @@ FocusScope {
                     onClicked: root.dDays = root.dDays >= 14 ? 1 : root.dDays + 1
                     Keys.onLeftPressed: root.dDays = Math.max(1, root.dDays - 1)
                     Keys.onRightPressed: root.dDays = Math.min(14, root.dDays + 1)
-                    KeyNavigation.up: backgroundRow
+                    KeyNavigation.up: confirmQuitRow
                     KeyNavigation.down: schemeRow
                 }
                 BigscreenUI.ComboBoxDelegate {

@@ -156,7 +156,12 @@ FocusScope {
                 else
                     togglePause();
             } else if (Theme.isBack(event.key)) {
-                quitMenu.open();
+                if (Settings.confirmQuit)
+                    quitMenu.open();
+                else if (infoShown)
+                    infoShown = false;
+                else
+                    leave("channels");
             } else {
                 return;
             }
@@ -228,7 +233,7 @@ FocusScope {
         }
     }
 
-    // --- BACK: quit or leave -------------------------------------------------
+    // --- BACK: quit (BACK again keeps watching) --------------------------------
     BigscreenUI.Dialog {
         id: quitMenu
         title: qsTr("Quit Plasma TV?")
@@ -252,19 +257,6 @@ FocusScope {
                     root.player.stop();
                     Qt.quit();
                 }
-            }
-            TvButton {
-                text: qsTr("Live TV")
-                icon.name: "video-television"
-                onActivated: {
-                    quitMenu.close();
-                    root.leave("channels");
-                }
-            }
-            TvButton {
-                text: qsTr("Keep watching")
-                icon.name: "media-playback-start"
-                onActivated: quitMenu.close()
             }
         }
     }

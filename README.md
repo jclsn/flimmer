@@ -106,7 +106,7 @@ profiles need TVHeadend.
 | Arrows                                 | Navigate                                     |
 | OK / Enter                             | Select, watch, open programme details; pause/resume while watching |
 | Play/Pause / P                         | Pause/resume while watching                 |
-| Back / Esc / Backspace                 | Go back (from the top bar: return to video); while watching: quit menu |
+| Back / Esc / Backspace                 | Go back (from the top bar: return to video); while watching: ask to quit (can be turned off in Settings) |
 | Menu / Settings / F2                   | Settings                                    |
 | Guide / G / F3                         | TV guide                                    |
 | 0-9                                    | Jump to channel number                      |

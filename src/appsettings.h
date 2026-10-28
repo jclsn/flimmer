@@ -38,6 +38,7 @@ class AppSettings : public QObject
     Q_PROPERTY(QString streamProfile READ streamProfile NOTIFY changed)
     Q_PROPERTY(int guideDays READ guideDays NOTIFY changed)
     Q_PROPERTY(bool stopInBackground READ stopInBackground NOTIFY changed)
+    Q_PROPERTY(bool confirmQuit READ confirmQuit NOTIFY changed)
     Q_PROPERTY(bool configured READ configured NOTIFY changed)
     Q_PROPERTY(bool credentialsReady READ credentialsReady NOTIFY credentialsReadyChanged)
     Q_PROPERTY(QString secretStoreStatus READ secretStoreStatus NOTIFY secretStoreStatusChanged)
@@ -94,6 +95,11 @@ public:
     {
         return m_stopInBackground;
     }
+    // BACK while watching asks whether to quit instead of returning to the channel list.
+    bool confirmQuit() const
+    {
+        return m_confirmQuit;
+    }
     bool configured() const
     {
         return m_server.isValid();
@@ -131,7 +137,7 @@ public:
     }
 
     // Expected keys: backend, host, port, useHttps, playlistUrl, xmltvUrl, username, streamProfile,
-    // guideDays, stopInBackground, colorScheme and, only when the password was edited, password.
+    // guideDays, stopInBackground, confirmQuit, colorScheme and, only when the password was edited, password.
     Q_INVOKABLE void save(const QVariantMap &values);
 
 Q_SIGNALS:
@@ -152,6 +158,7 @@ private:
     QString m_streamProfile;
     int m_guideDays = 3;
     bool m_stopInBackground = true;
+    bool m_confirmQuit = true;
     QString m_lastChannel;
     QString m_colorScheme;
     QVariantList m_colorSchemes;
