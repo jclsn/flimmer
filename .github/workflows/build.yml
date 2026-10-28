@@ -1,5 +1,5 @@
-# SPDX-FileCopyrightText: 2026 Jan Claußen <jan.claussen10@web.de>
 #
+# SPDX-FileCopyrightText: 2026 Jan Claußen <jan.claussen10@web.de>
 # SPDX-License-Identifier: BSD-2-Clause
 
 name: Build
@@ -58,7 +58,7 @@ jobs:
             qtkeychain-qt6-dev
 
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_SYSTEM_BIGSCREEN_UI=OFF
 
       - name: Build
         run: cmake --build build
