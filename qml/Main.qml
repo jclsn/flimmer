@@ -14,6 +14,9 @@ QQC2.ApplicationWindow {
     // "home": navigation + pages, "watch": fullscreen video with OSD
     property string mode: "home"
     property string page: Settings.configured ? "channels" : "settings"
+    // The guide and settings pages are only built once they are first shown, then kept.
+    readonly property Item guidePage: guideLoader.item
+    readonly property Item settingsPage: settingsLoader.item
     property string numberEntry: ""
     property bool cursorVisible: true
     // Channel stopped because the application lost focus; resumed when it returns.
@@ -245,26 +248,34 @@ QQC2.ApplicationWindow {
                     }
                 }
 
-                GuidePage {
-                    id: guidePage
+                Loader {
+                    id: guideLoader
                     y: nav.height
                     width: parent.width
                     height: parent.height - nav.height
                     visible: window.page === "guide"
-                    onExitUp: nav.forceActiveFocus()
-                    onWatch: uuid => window.watch(uuid)
-                    onOpenSettings: window.goPage("settings", true)
-                    onOpenEvent: ev => eventDialog.show(ev)
+                    active: window.page === "guide" || item !== null
+
+                    sourceComponent: GuidePage {
+                        onExitUp: nav.forceActiveFocus()
+                        onWatch: uuid => window.watch(uuid)
+                        onOpenSettings: window.goPage("settings", true)
+                        onOpenEvent: ev => eventDialog.show(ev)
+                    }
                 }
 
-                SettingsPage {
-                    id: settingsPage
+                Loader {
+                    id: settingsLoader
                     y: nav.height
                     width: parent.width
                     height: parent.height - nav.height
                     visible: window.page === "settings"
-                    onExitUp: nav.forceActiveFocus()
-                    onEditText: (title, value, mode, callback) => textEntry.show(title, value, mode, callback)
+                    active: window.page === "settings" || item !== null
+
+                    sourceComponent: SettingsPage {
+                        onExitUp: nav.forceActiveFocus()
+                        onEditText: (title, value, mode, callback) => textEntry.show(title, value, mode, callback)
+                    }
                 }
             }
 

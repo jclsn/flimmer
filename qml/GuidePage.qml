@@ -104,6 +104,8 @@ FocusScope {
         moveTo(Math.max(t, Date.now()));
     }
 
+    // Built when first shown (see Main.qml), so there is no visibility change then.
+    Component.onCompleted: reselect()
     onVisibleChanged: {
         if (visible) {
             reselect();
