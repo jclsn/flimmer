@@ -368,12 +368,42 @@ QQC2.ApplicationWindow {
         }
     }
 
+    // Starts the channel watched last once it is known and the password is unlocked.
+    property bool startPending: Settings.configured
+
+    function startLastChannel() {
+        if (!startPending || !Settings.credentialsReady || Tvh.channels.indexOfUuid(Settings.lastChannel) < 0)
+            return;
+
+        startPending = false;
+        window.watch(Settings.lastChannel);
+    }
+
+    Connections {
+        target: Tvh.channels
+        enabled: window.startPending
+        function onCountChanged() {
+            window.startLastChannel();
+        }
+    }
+
+    Connections {
+        target: Settings
+        enabled: window.startPending
+        function onCredentialsReadyChanged() {
+            window.startLastChannel();
+        }
+    }
+
     Component.onCompleted: {
         if (Settings.configured) {
             window.goPage("channels", true);
             const index = Tvh.channels.indexOfUuid(Settings.lastChannel);
+
             if (index >= 0)
                 channelsPage.selectIndex(index);
+
+            startLastChannel();
         } else {
             window.goPage("settings", true);
         }
