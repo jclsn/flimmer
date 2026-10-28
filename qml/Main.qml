@@ -391,7 +391,9 @@ QQC2.ApplicationWindow {
         target: Settings
         enabled: window.startPending
         function onCredentialsReadyChanged() {
-            window.startLastChannel();
+            // After the backend has applied the unlocked credentials, or the stream request
+            // would go out without them.
+            Qt.callLater(window.startLastChannel);
         }
     }
 

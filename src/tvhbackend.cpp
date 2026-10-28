@@ -199,8 +199,9 @@ void TvhBackend::refresh()
         return;
     }
 
+    // Answers of an older refresh are ignored by their generation. Aborting everything instead
+    // would also drop stream and recording requests, leaving the player waiting forever.
     const int generation = ++m_generation;
-    m_api->abortAll();
     m_api->setServer(settings->server());
     setBusy(true);
 
