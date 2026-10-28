@@ -1,0 +1,3 @@
+[submodule "bigscreen-ui"]
+	path = bigscreen-ui
+	url = https://invent.kde.org/devinlin/bigscreen-ui.git

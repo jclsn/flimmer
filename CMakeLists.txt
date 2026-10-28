@@ -43,7 +43,6 @@ if(USE_SYSTEM_BIGSCREEN_UI)
 
     message(STATUS "Using the installed Bigscreen UI from ${BIGSCREEN_UI_QML_DIR}")
 else()
-    include(FetchContent)
     set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
     set(KDE_INSTALL_QMLDIR "${PLASMA_TV_QML_DIR}" CACHE PATH "" FORCE)
     # Keep our default install prefix; KDEInstallDirs would replace it with ECM's.
@@ -55,12 +54,9 @@ else()
         set(KDE_INSTALL_${dir} "${CMAKE_INSTALL_${dir}}")
     endforeach()
 
-    # The same commit as packaging/arch/bigscreen-ui.
-    FetchContent_Declare(bigscreen-ui
-        GIT_REPOSITORY https://invent.kde.org/devinlin/bigscreen-ui.git
-        GIT_TAG b5ad9c098a684b8bec23dd79a807532c4c49af2b
-    )
-    FetchContent_MakeAvailable(bigscreen-ui)
+    # Use the bigscreen-ui source checked out as a submodule instead of fetching a
+    # fixed git ref, so offline/CI builds work without network access.
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bigscreen-ui" bigscreen-ui-build)
 endif()
 
 qt_standard_project_setup(REQUIRES 6.5)
