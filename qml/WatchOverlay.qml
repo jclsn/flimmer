@@ -57,7 +57,7 @@ FocusScope {
         if (n === 0)
             return;
         const i = channelIndex < 0 ? 0 : (channelIndex + delta + n) % n;
-        pendingUuid = Tvh.channels.get(i).uuid;
+        pendingUuid = Tvh.channels.uuidAt(i);
         zapDelay.restart();
         showInfo();
     }
@@ -448,7 +448,7 @@ FocusScope {
             Keys.onPressed: event => {
                 zapTimer.restart();
                 if (Theme.isAccept(event.key) && !event.isAutoRepeat) {
-                    root.play(Tvh.channels.get(currentIndex).uuid);
+                    root.play(Tvh.channels.uuidAt(currentIndex));
                     root.closeZapList();
                 } else if (Theme.isBack(event.key) || event.key === Qt.Key_Left) {
                     root.closeZapList();

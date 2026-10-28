@@ -36,8 +36,7 @@ FocusScope {
     }
 
     function currentUuid() {
-        const ch = Tvh.channels.get(rows.currentIndex);
-        return ch.uuid ?? "";
+        return Tvh.channels.uuidAt(rows.currentIndex);
     }
 
     function reselect() {

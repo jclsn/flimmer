@@ -116,7 +116,7 @@ QQC2.ApplicationWindow {
             toast.show(qsTr("Channel %1 not found").arg(number), "dialog-warning");
             return;
         }
-        const uuid = Tvh.channels.get(index).uuid;
+        const uuid = Tvh.channels.uuidAt(index);
         if (mode === "watch")
             overlay.play(uuid);
         else if (page === "guide") {

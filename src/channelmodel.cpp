@@ -19,7 +19,7 @@ int ChannelModel::rowCount(const QModelIndex &parent) const
 
 QHash<int, QByteArray> ChannelModel::roleNames() const
 {
-    return {
+    static const QHash<int, QByteArray> roles = {
         {UuidRole, "uuid"},
         {NumberRole, "number"},
         {NameRole, "name"},
@@ -36,6 +36,8 @@ QHash<int, QByteArray> ChannelModel::roleNames() const
         {NextTitleRole, "nextTitle"},
         {NextStartRole, "nextStart"},
     };
+
+    return roles;
 }
 
 QVariant ChannelModel::data(const QModelIndex &index, int role) const
@@ -98,6 +100,12 @@ void ChannelModel::setChannels(const QVector<Channel> &channels)
     beginResetModel();
     m_channels = channels;
     m_nowNext.fill({}, m_channels.size());
+    m_rowOfUuid.clear();
+
+    for (int i = 0; i < m_channels.size(); ++i) {
+        m_rowOfUuid.insert(m_channels.at(i).uuid, i);
+    }
+
     endResetModel();
     refreshNow();
 
@@ -119,32 +127,42 @@ void ChannelModel::setBaseUrl(const QUrl &url)
     }
 }
 
-void ChannelModel::refreshNow()
+void ChannelModel::refreshNow(bool storeChanged)
 {
     if (m_channels.isEmpty()) {
         return;
     }
 
     const qint64 now = QDateTime::currentSecsSinceEpoch();
+
     for (int i = 0; i < m_channels.size(); ++i) {
         const EpgEvent *current = m_store->eventAt(m_channels.at(i).uuid, now);
-        m_nowNext[i] = {current,
-                        m_store->nextAfter(m_channels.at(i).uuid, current ? current->start : now)};
+        const NowNext nowNext = {
+            current,
+            m_store->nextAfter(m_channels.at(i).uuid, current ? current->start : now)};
+
+        // The events stayed where they were, so the pointers tell whether the programme changed.
+        const bool changed =
+            nowNext.now != m_nowNext.at(i).now || nowNext.next != m_nowNext.at(i).next;
+        m_nowNext[i] = nowNext;
+
+        if (changed && !storeChanged) {
+            Q_EMIT dataChanged(index(i), index(i));
+        }
     }
 
-    // Every row's progress moves, so a single ranged notification is cheapest.
-    Q_EMIT dataChanged(index(0), index(rowCount() - 1));
+    // Every row's progress moves, so a single ranged notification is cheapest. Updating only
+    // that role spares the delegates re-evaluating everything else.
+    if (storeChanged) {
+        Q_EMIT dataChanged(index(0), index(rowCount() - 1));
+    } else {
+        Q_EMIT dataChanged(index(0), index(rowCount() - 1), {NowProgressRole});
+    }
 }
 
 int ChannelModel::indexOfUuid(const QString &uuid) const
 {
-    for (int i = 0; i < m_channels.size(); ++i) {
-        if (m_channels.at(i).uuid == uuid) {
-            return i;
-        }
-    }
-
-    return -1;
+    return m_rowOfUuid.value(uuid, -1);
 }
 
 int ChannelModel::indexOfNumber(int number) const
@@ -172,6 +190,11 @@ QVariantMap ChannelModel::get(int row) const
     }
 
     return result;
+}
+
+QString ChannelModel::uuidAt(int row) const
+{
+    return row >= 0 && row < m_channels.size() ? m_channels.at(row).uuid : QString();
 }
 
 QUrl ChannelModel::iconUrl(int row) const

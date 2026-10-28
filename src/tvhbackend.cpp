@@ -93,7 +93,7 @@ TvhBackend::TvhBackend(QObject *parent)
 
     m_tickTimer.setInterval(s_tickMs);
     connect(&m_tickTimer, &QTimer::timeout, this, [this]() {
-        m_channels->refreshNow();
+        m_channels->refreshNow(false);
         Q_EMIT tick();
     });
     m_tickTimer.start();
