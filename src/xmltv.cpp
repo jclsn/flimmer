@@ -149,8 +149,9 @@ int Xmltv::genreFromCategory(const QString &category)
 {
     const QString text = category.toLower();
     const auto any = [&text](std::initializer_list<const char *> words) {
+        // The words are UTF-8 ("fußball"), so not Latin-1.
         return std::any_of(words.begin(), words.end(), [&text](const char *word) {
-            return text.contains(QLatin1String(word));
+            return text.contains(QString::fromUtf8(word));
         });
     };
 
