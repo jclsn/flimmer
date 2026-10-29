@@ -22,15 +22,14 @@ that is playing shows through behind the menus.
 ![Live TV page with the channel list and programme details](img/live-tv.png)
 
 **Watching**: the info bar shows the channel, the current programme with its
-progress and what's on next. Up/down zaps, OK opens the channel list.
+progress and what's on next. Up/down zaps, left opens the channel list and OK
+pauses.
 
 ![Watch mode with the info bar over live video](img/watch.png)
 
-**Settings**: server address, credentials (the password is stored in the
-wallet), streaming profile, days of guide data and color scheme, next to the
-connection status.
-
-![Settings page with server, playback and appearance options](img/settings.png)
+**Settings**: the source (TVHeadend or M3U + XMLTV), server address,
+credentials (the password is stored in the wallet), playback options, days of
+guide data and color scheme, next to the connection status.
 
 ## Build
 
