@@ -15,6 +15,7 @@ option(
     "Build the scripted UI driver used for screenshots/tests"
     OFF
 )
+option(BUILD_TESTING "Build the unit tests" ON)
 
 # Keep debug symbols by default so crash backtraces are useful.
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -199,6 +200,11 @@ if(PLASMA_TV_DEV_TOOLS)
     target_sources(plasma-tv PRIVATE src/devscript.h src/devscript.cpp)
     target_compile_definitions(plasma-tv PRIVATE PLASMA_TV_DEV_TOOLS)
     target_link_libraries(plasma-tv PRIVATE Qt6::GuiPrivate)
+endif()
+
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
 endif()
 
 install(TARGETS plasma-tv RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

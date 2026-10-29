@@ -72,6 +72,9 @@ jobs:
       - name: Build
         run: cmake --build build
 
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
       - name: Install (smoke test)
         run: DESTDIR="$PWD/stage" cmake --install build
 
