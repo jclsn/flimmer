@@ -56,6 +56,12 @@ else()
 
     # Use the bigscreen-ui source checked out as a submodule instead of fetching a
     # fixed git ref, so offline/CI builds work without network access.
+    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/bigscreen-ui/CMakeLists.txt")
+        message(FATAL_ERROR "The bigscreen-ui submodule is missing. Run "
+            "\"git submodule update --init\" or use an installed Bigscreen UI with "
+            "-DUSE_SYSTEM_BIGSCREEN_UI=ON.")
+    endif()
+
     add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bigscreen-ui" bigscreen-ui-build)
 endif()
 

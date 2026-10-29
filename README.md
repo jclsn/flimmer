@@ -34,7 +34,7 @@ connection status.
 
 ## Build
 
-Supported on **Ubuntu** (26.04 and later) and **Arch Linux**, on both x86_64
+Supported on **Ubuntu** (26.10 and later) and **Arch Linux**, on both x86_64
 and ARM64 (aarch64, including Arch Linux ARM). The code has no
 architecture-specific parts, so build natively on the target machine.
 
@@ -68,12 +68,17 @@ build directory and configure again.
 
 ### Ubuntu
 
+Ubuntu doesn't package Bigscreen UI, so it is built along with the app from the
+`bigscreen-ui` submodule:
+
 ```sh
-sudo apt install cmake g++ qt6-base-dev qt6-declarative-dev qt6-declarative-dev-tools \
+sudo apt install cmake g++ git qt6-base-dev qt6-declarative-dev qt6-declarative-dev-tools \
     qt6-multimedia-dev qtkeychain-qt6-dev libqt6sql6-sqlite \
+    extra-cmake-modules gettext libkf6i18n-dev libkirigami-dev \
     qml6-module-qtmultimedia qml6-module-qtquick-controls \
     qml6-module-org-kde-kirigami qml6-module-org-kde-desktop kde-style-breeze qt6-svg-plugins
-cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+git submodule update --init
+cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_SYSTEM_BIGSCREEN_UI=OFF
 cmake --build build -j$(nproc)
 sudo cmake --install build   # optional: installs to /usr/local with a launcher entry
 ```
@@ -87,8 +92,9 @@ sudo cmake --install build   # optional: installs to /usr/local with a launcher 
 
 Kirigami, [Bigscreen UI](https://invent.kde.org/devinlin/bigscreen-ui), the
 Plasma Qt Quick Controls style and Breeze (style and color schemes) are used at
-runtime only, so no KF6 `-dev` packages are needed. Bigscreen UI isn't packaged
-by distributions yet: on Arch, use `packaging/arch/bigscreen-ui`; elsewhere,
+runtime only, so no KF6 `-dev` packages are needed unless Bigscreen UI is built
+too. It isn't packaged by distributions yet: on Arch, use
+`packaging/arch/bigscreen-ui`; elsewhere, run `git submodule update --init` and
 configure with `-DUSE_SYSTEM_BIGSCREEN_UI=OFF` to build it along with Plasma TV
 (this needs ECM and the Kirigami and KI18n development files, and Qt 6.11 or later).
 
