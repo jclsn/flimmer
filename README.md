@@ -15,21 +15,23 @@ theming and uses Breeze Dark by default.
 
 ## Screenshots
 
-**Live TV**: channel logos, the programme on air with its progress and the
-time left, plus details and "up next" for the highlighted channel. The channel
-that is playing shows through behind the menus.
-
-![Live TV page with the channel list and programme details](img/live-tv.png)
-
 **Watching**: the info bar shows the channel, the current programme with its
 progress and what's on next. Up/down zaps, left opens the channel list and OK
 pauses.
 
 ![Watch mode with the info bar over live video](img/watch.png)
 
+**Live TV**: channel logos, the programme on air with its progress and the
+time left, plus details and "up next" for the highlighted channel. The channel
+that is playing shows through behind the menus.
+
+![Live TV page with the channel list and programme details](img/live-tv.png)
+
 **Settings**: the source (TVHeadend or M3U + XMLTV), server address,
 credentials (the password is stored in the wallet), playback options, days of
 guide data and color scheme, next to the connection status.
+
+![Settings page](img/settings.png)
 
 ## Build
 
