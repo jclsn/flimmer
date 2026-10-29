@@ -28,7 +28,8 @@ jobs:
       - uses: fsfe/reuse-action@v6
 
   ubuntu:
-    name: Ubuntu 26.04 (${{ matrix.arch }})
+    # 26.10 is the first release with Qt 6.11, which Bigscreen UI needs.
+    name: Ubuntu 26.10 (${{ matrix.arch }})
     strategy:
       fail-fast: false
       matrix:
@@ -38,7 +39,7 @@ jobs:
           - arch: aarch64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
-    container: ubuntu:26.04
+    container: ubuntu:26.10
     steps:
       - name: Install dependencies
         env:
@@ -46,8 +47,13 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends \
+            ca-certificates \
             cmake \
+            extra-cmake-modules \
+            gettext \
             git \
+            libkf6i18n-dev \
+            libkirigami-dev \
             libqt6sql6-sqlite \
             ninja-build g++ \
             qt6-base-dev \
