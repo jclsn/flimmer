@@ -1,4 +1,4 @@
-# Flimmer
+# ![](https://github.com/jclsn/flimmer/blob/main/data/icons/hicolor/48x48/apps/flimmer.png)  Flimmer 
 
 A fullscreen, remote-controllable live TV app for
 [Plasma Bigscreen](https://plasma-bigscreen.org), for [TVHeadend](https://tvheadend.org)
