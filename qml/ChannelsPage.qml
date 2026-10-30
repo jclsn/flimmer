@@ -5,7 +5,7 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 import org.kde.bigscreen.ui as BigscreenUI
-import PlasmaTv
+import Flimmer
 
 // Live TV: channel list on the left, details of the highlighted channel on the right.
 FocusScope {

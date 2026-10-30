@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
 import org.kde.bigscreen.ui as BigscreenUI
-import PlasmaTv
+import Flimmer
 
 QQC2.ApplicationWindow {
     id: window
@@ -26,7 +26,7 @@ QQC2.ApplicationWindow {
     height: 600
     visible: true
     visibility: startWindowed ? Window.Windowed : Window.FullScreen
-    title: qsTr("Plasma TV")
+    title: qsTr("Flimmer")
     color: "black"
 
     // A remote control can't click anything, so never leave keyboard focus on
@@ -59,7 +59,7 @@ QQC2.ApplicationWindow {
     onActiveFocusItemChanged: Qt.callLater(ensureFocus)
 
     // Only the application as a whole counts: switching between pages,
-    // dialogs or the guide inside Plasma TV never stops playback.
+    // dialogs or the guide inside Flimmer never stops playback.
     readonly property bool appActive: Qt.application.state === Qt.ApplicationActive
 
     onAppActiveChanged: {

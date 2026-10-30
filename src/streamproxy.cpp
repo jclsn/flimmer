@@ -129,7 +129,7 @@ void StreamProxy::serve(QTcpSocket *socket, const QByteArray &request)
 
     QNetworkRequest upstreamRequest(target->url);
     upstreamRequest.setTransferTimeout(s_timeoutMs);
-    upstreamRequest.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("plasma-tv/0.1"));
+    upstreamRequest.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("flimmer/0.1"));
     upstreamRequest.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                                  QNetworkRequest::NoLessSafeRedirectPolicy);
     QNetworkReply *reply = m_networkManager->get(upstreamRequest);

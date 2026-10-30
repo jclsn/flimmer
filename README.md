@@ -1,8 +1,9 @@
-# Plasma TV
+# Flimmer
 
-A fullscreen, remote-controllable TV client for [TVHeadend](https://tvheadend.org)
-and M3U playlists with an XMLTV guide (e.g. [Dispatcharr](https://github.com/Dispatcharr/Dispatcharr)),
-built with Qt 6, Qt Quick, Kirigami and
+A fullscreen, remote-controllable live TV app for
+[Plasma Bigscreen](https://plasma-bigscreen.org), for [TVHeadend](https://tvheadend.org)
+and M3U playlists with an XMLTV guide (e.g. [Dispatcharr](https://github.com/Dispatcharr/Dispatcharr)).
+It is built with Qt 6, Qt Quick, Kirigami and
 [Bigscreen UI](https://invent.kde.org/devinlin/bigscreen-ui). It follows Plasma
 theming and uses Breeze Dark by default.
 
@@ -87,8 +88,8 @@ sudo cmake --install build   # optional: installs to /usr/local with a launcher 
 ### Running
 
 ```sh
-./build/plasma-tv            # fullscreen
-./build/plasma-tv --windowed # for development (F11 toggles)
+./build/flimmer            # fullscreen
+./build/flimmer --windowed # for development (F11 toggles)
 ```
 
 Kirigami, [Bigscreen UI](https://invent.kde.org/devinlin/bigscreen-ui), the
@@ -96,8 +97,9 @@ Plasma Qt Quick Controls style and Breeze (style and color schemes) are used at
 runtime only, so no KF6 `-dev` packages are needed unless Bigscreen UI is built
 too. It isn't packaged by distributions yet: on Arch, use
 `packaging/arch/bigscreen-ui`; elsewhere, run `git submodule update --init` and
-configure with `-DUSE_SYSTEM_BIGSCREEN_UI=OFF` to build it along with Plasma TV
-(this needs ECM and the Kirigami and KI18n development files, and Qt 6.11 or later).
+configure with `-DUSE_SYSTEM_BIGSCREEN_UI=OFF` to build it along with
+Flimmer (this needs ECM and the Kirigami and KI18n development files, and
+Qt 6.11 or later).
 
 ## M3U + XMLTV
 

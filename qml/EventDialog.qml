@@ -5,7 +5,7 @@
 import QtQuick
 import QtQuick.Layouts
 import org.kde.bigscreen.ui as BigscreenUI
-import PlasmaTv
+import Flimmer
 
 // Programme details with Watch / Record actions.
 BigscreenUI.Dialog {

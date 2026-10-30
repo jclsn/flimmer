@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.bigscreen.ui as BigscreenUI
-import PlasmaTv
+import Flimmer
 
 // On-screen display while watching: info bar, zapping, channel list overlay.
 FocusScope {
@@ -236,7 +236,7 @@ FocusScope {
     // --- BACK: quit (BACK again keeps watching) --------------------------------
     BigscreenUI.Dialog {
         id: quitMenu
-        title: qsTr("Quit Plasma TV?")
+        title: qsTr("Quit Live TV?")
         openFocusItem: quitButton
         // Only as wide as the question; the default width is meant for longer content.
         width: Math.max(implicitHeaderWidth, implicitContentWidth + leftPadding + rightPadding)

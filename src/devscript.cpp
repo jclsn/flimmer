@@ -103,7 +103,7 @@ struct Runner {
 
 void DevScript::runFromEnvironment(QQmlApplicationEngine *engine)
 {
-    const QString path = qEnvironmentVariable("PLASMA_TV_SCRIPT");
+    const QString path = qEnvironmentVariable("FLIMMER_SCRIPT");
     if (path.isEmpty() || engine->rootObjects().isEmpty()) {
         return;
     }

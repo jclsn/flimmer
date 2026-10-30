@@ -3,15 +3,15 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 cmake_minimum_required(VERSION 3.21)
-project(plasma-tv VERSION 0.1.0 LANGUAGES CXX)
+project(flimmer VERSION 0.1.0 LANGUAGES CXX)
 
 option(
     USE_SYSTEM_BIGSCREEN_UI
-    "Use the installed Bigscreen UI instead of building it with Plasma TV"
+    "Use the installed Bigscreen UI instead of building it with Flimmer"
     ON
 )
 option(
-    PLASMA_TV_DEV_TOOLS
+    FLIMMER_DEV_TOOLS
     "Build the scripted UI driver used for screenshots/tests"
     OFF
 )
@@ -61,7 +61,7 @@ if(USE_SYSTEM_BIGSCREEN_UI)
         message(
             FATAL_ERROR
             "Bigscreen UI (org.kde.bigscreen.ui) is not installed. Install "
-            "it (Arch: packaging/arch/bigscreen-ui) or build it with Plasma TV "
+            "it (Arch: packaging/arch/bigscreen-ui) or build it with Flimmer "
             "using -DUSE_SYSTEM_BIGSCREEN_UI=OFF."
         )
     endif()
@@ -82,18 +82,18 @@ else()
         )
     endif()
 
-    set(PLASMA_TV_QML_DIR "${CMAKE_INSTALL_LIBDIR}/plasma-tv/qml")
+    set(FLIMMER_QML_DIR "${CMAKE_INSTALL_LIBDIR}/flimmer/qml")
     # Where main.cpp looks for the bundled QML module, relative to the
     # executable.
     file(
         RELATIVE_PATH
-        PLASMA_TV_QML_DIR_FROM_BIN
+        FLIMMER_QML_DIR_FROM_BIN
         "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
-        "${CMAKE_INSTALL_PREFIX}/${PLASMA_TV_QML_DIR}"
+        "${CMAKE_INSTALL_PREFIX}/${FLIMMER_QML_DIR}"
     )
 
     set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-    set(KDE_INSTALL_QMLDIR "${PLASMA_TV_QML_DIR}" CACHE PATH "" FORCE)
+    set(KDE_INSTALL_QMLDIR "${FLIMMER_QML_DIR}" CACHE PATH "" FORCE)
     # Keep our default install prefix; KDEInstallDirs would replace it with
     # ECM's.
     set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT FALSE)
@@ -125,12 +125,12 @@ endif()
 qt_standard_project_setup(REQUIRES 6.5)
 qt_policy(SET QTP0004 NEW)
 
-qt_add_executable(plasma-tv src/main.cpp)
+qt_add_executable(flimmer src/main.cpp)
 
 set_source_files_properties(qml/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
-qt_add_qml_module(plasma-tv
-    URI PlasmaTv
+qt_add_qml_module(flimmer
+    URI Flimmer
     VERSION 1.0
     # Shared Qt build: QML plugins (incl. Kirigami) are loaded at runtime.
     NO_IMPORT_SCAN
@@ -167,13 +167,13 @@ qt_add_qml_module(plasma-tv
         qml/ChannelLogo.qml
         qml/ThinProgress.qml
     RESOURCES
-        data/icons/hicolor/scalable/apps/plasmatv.svg
+        data/icons/hicolor/256x256/apps/flimmer.png
         data/icons/symbolic/behind-live.svg
 )
 
-target_include_directories(plasma-tv PRIVATE src)
+target_include_directories(flimmer PRIVATE src)
 target_link_libraries(
-    plasma-tv
+    flimmer
     PRIVATE
         Qt6::Widgets
         Qt6::Quick
@@ -187,19 +187,19 @@ target_link_libraries(
 
 if(NOT USE_SYSTEM_BIGSCREEN_UI)
     target_compile_definitions(
-        plasma-tv
-        PRIVATE PLASMA_TV_QML_DIR="${PLASMA_TV_QML_DIR_FROM_BIN}"
+        flimmer
+        PRIVATE FLIMMER_QML_DIR="${FLIMMER_QML_DIR_FROM_BIN}"
     )
-    add_dependencies(plasma-tv bigscreenuiplugin)
+    add_dependencies(flimmer bigscreenuiplugin)
 endif()
 
-if(PLASMA_TV_DEV_TOOLS)
+if(FLIMMER_DEV_TOOLS)
     # Simulating application focus changes needs QWindowSystemInterface.
     set(QT_NO_PRIVATE_MODULE_WARNING ON)
     find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
-    target_sources(plasma-tv PRIVATE src/devscript.h src/devscript.cpp)
-    target_compile_definitions(plasma-tv PRIVATE PLASMA_TV_DEV_TOOLS)
-    target_link_libraries(plasma-tv PRIVATE Qt6::GuiPrivate)
+    target_sources(flimmer PRIVATE src/devscript.h src/devscript.cpp)
+    target_compile_definitions(flimmer PRIVATE FLIMMER_DEV_TOOLS)
+    target_link_libraries(flimmer PRIVATE Qt6::GuiPrivate)
 endif()
 
 if(BUILD_TESTING)
@@ -207,13 +207,10 @@ if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
-install(TARGETS plasma-tv RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS flimmer RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(
-    FILES data/plasma-tv.desktop
+    FILES data/flimmer.desktop
     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
 )
 
-# The icon is called "plasmatv" on purpose: KIconLoader tries the shortened
-# "plasma" in the current theme before looking into hicolor, so "plasma-tv"
-# would show Breeze's Plasma logo.
 install(DIRECTORY data/icons/hicolor DESTINATION ${CMAKE_INSTALL_DATADIR}/icons)

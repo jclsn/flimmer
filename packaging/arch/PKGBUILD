@@ -4,10 +4,10 @@
 
 # Maintainer: Jan Claussen <jan.claussen at web dot de>
 
-pkgname=plasma-tv
+pkgname=flimmer
 pkgver=0.1.0
 pkgrel=1
-pkgdesc='Fullscreen, remote-controllable TVHeadend client for Plasma'
+pkgdesc='Remote-controllable live TV for Plasma Bigscreen, with TVHeadend and M3U + XMLTV sources'
 arch=('x86_64' 'aarch64')
 url='https://github.com/jclsn/plasma-tv'
 license=('GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL')

@@ -14,7 +14,7 @@
 #include <QQuickWindow>
 #include <QTimer>
 
-Q_LOGGING_CATEGORY(lcInput, "plasmatv.input", QtWarningMsg)
+Q_LOGGING_CATEGORY(lcInput, "flimmer.input", QtWarningMsg)
 
 namespace
 {

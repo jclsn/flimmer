@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 Jan Claußen <jan.claussen10@web.de>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+[Desktop Entry]
+Type=Application
+Name=Live TV
+GenericName=TV player
+Comment=Watch live TV and browse the program guide on Plasma Bigscreen, from TVHeadend or an M3U playlist
+Exec=flimmer
+Icon=flimmer
+Categories=AudioVideo;Video;TV;Player;Qt;KDE;
+Keywords=tv;live;epg;tvheadend;iptv;m3u;xmltv;dvb;bigscreen;
