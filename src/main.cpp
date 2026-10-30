@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
     // The bundled icon also works when the application isn't installed.
     QApplication::setWindowIcon(
-        QIcon(QStringLiteral(":/qt/qml/Flimmer/data/icons/hicolor/scalable/apps/flimmer.svg")));
+        QIcon(QStringLiteral(":/qt/qml/Flimmer/data/icons/hicolor/256x256/apps/flimmer.png")));
 
     if (qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE")) {
         QQuickStyle::setStyle(QStringLiteral("org.kde.desktop"));

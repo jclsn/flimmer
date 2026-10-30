@@ -167,7 +167,7 @@ qt_add_qml_module(flimmer
         qml/ChannelLogo.qml
         qml/ThinProgress.qml
     RESOURCES
-        data/icons/hicolor/scalable/apps/flimmer.svg
+        data/icons/hicolor/256x256/apps/flimmer.png
         data/icons/symbolic/behind-live.svg
 )
 

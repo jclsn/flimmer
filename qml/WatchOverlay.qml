@@ -236,7 +236,7 @@ FocusScope {
     // --- BACK: quit (BACK again keeps watching) --------------------------------
     BigscreenUI.Dialog {
         id: quitMenu
-        title: qsTr("Quit Flimmer?")
+        title: qsTr("Quit Live TV?")
         openFocusItem: quitButton
         // Only as wide as the question; the default width is meant for longer content.
         width: Math.max(implicitHeaderWidth, implicitContentWidth + leftPadding + rightPadding)

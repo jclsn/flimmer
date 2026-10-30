@@ -66,7 +66,7 @@ BigscreenUI.NavigationBar {
             anchors.verticalCenter: parent.verticalCenter
             width: 32
             height: 32
-            source: Qt.resolvedUrl("../data/icons/hicolor/scalable/apps/flimmer.svg")
+            source: Qt.resolvedUrl("../data/icons/hicolor/256x256/apps/flimmer.png")
             sourceSize: Qt.size(96, 96)
             smooth: true
         }
