@@ -23,7 +23,7 @@ BigscreenUI.NavigationBar {
 
     actions: [
         Kirigami.Action {
-            text: qsTr("Live TV")
+            text: qsTr("Channels")
             icon.name: "video-television"
         },
         Kirigami.Action {
@@ -62,14 +62,6 @@ BigscreenUI.NavigationBar {
     leading: Row {
         spacing: 11
 
-        Image {
-            anchors.verticalCenter: parent.verticalCenter
-            width: 32
-            height: 32
-            source: Qt.resolvedUrl("../data/icons/hicolor/256x256/apps/flimmer.png")
-            sourceSize: Qt.size(96, 96)
-            smooth: true
-        }
         BigscreenUI.Label {
             anchors.verticalCenter: parent.verticalCenter
             text: qsTr("Live TV")
