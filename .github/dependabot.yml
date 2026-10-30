@@ -14,3 +14,11 @@ updates:
     commit-message:
       prefix: "ci"
 
+  # Bigscreen UI. Bump _commit in packaging/arch/bigscreen-ui/PKGBUILD to match.
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+
