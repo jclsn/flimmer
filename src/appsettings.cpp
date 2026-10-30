@@ -14,7 +14,7 @@
 
 namespace
 {
-const QString s_keychainService = QStringLiteral("plasma-tv");
+const QString s_keychainService = QStringLiteral("flimmer");
 const QString s_keychainKey = QStringLiteral("server-password");
 }
 

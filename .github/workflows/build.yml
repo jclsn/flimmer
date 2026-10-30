@@ -119,6 +119,6 @@ jobs:
       - name: Upload package
         uses: actions/upload-artifact@v7
         with:
-          name: plasma-tv-arch-x86_64
+          name: flimmer-arch-x86_64
           path: packaging/arch/*.pkg.tar.zst
 

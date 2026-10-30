@@ -6,7 +6,7 @@
 #include "inputdebug.h"
 #include "logoimageprovider.h"
 #include "remotekeys.h"
-#ifdef PLASMA_TV_DEV_TOOLS
+#ifdef FLIMMER_DEV_TOOLS
 #include "devscript.h"
 #endif
 
@@ -29,11 +29,11 @@ int main(int argc, char *argv[])
     // QApplication (not QGuiApplication): the Plasma Qt Quick Controls style
     // (org.kde.desktop) paints through the widget style.
     QApplication app(argc, argv);
-    QGuiApplication::setOrganizationName(QStringLiteral("plasma-tv"));
-    QGuiApplication::setApplicationName(QStringLiteral("plasma-tv"));
-    QGuiApplication::setApplicationDisplayName(QStringLiteral("Plasma TV"));
+    QGuiApplication::setOrganizationName(QStringLiteral("flimmer"));
+    QGuiApplication::setApplicationName(QStringLiteral("flimmer"));
+    QGuiApplication::setApplicationDisplayName(QStringLiteral("Flimmer"));
     QGuiApplication::setApplicationVersion(QStringLiteral("0.1.0"));
-    QGuiApplication::setDesktopFileName(QStringLiteral("plasma-tv"));
+    QGuiApplication::setDesktopFileName(QStringLiteral("flimmer"));
 
     QCommandLineParser parser;
     parser.setApplicationDescription(
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
     // The bundled icon also works when the application isn't installed.
     QApplication::setWindowIcon(
-        QIcon(QStringLiteral(":/qt/qml/PlasmaTv/data/icons/hicolor/scalable/apps/plasmatv.svg")));
+        QIcon(QStringLiteral(":/qt/qml/Flimmer/data/icons/hicolor/scalable/apps/flimmer.svg")));
 
     if (qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE")) {
         QQuickStyle::setStyle(QStringLiteral("org.kde.desktop"));
@@ -71,12 +71,12 @@ int main(int argc, char *argv[])
     RemoteKeys::install(&app);
 
     QQmlApplicationEngine engine;
-#ifdef PLASMA_TV_QML_DIR
+#ifdef FLIMMER_QML_DIR
     // Bigscreen UI built along with the app: next to the executable in the build tree, in a
     // private directory once installed.
     const QDir binDir(QCoreApplication::applicationDirPath());
     engine.addImportPath(binDir.filePath(QStringLiteral("bin")));
-    engine.addImportPath(binDir.filePath(QStringLiteral(PLASMA_TV_QML_DIR)));
+    engine.addImportPath(binDir.filePath(QStringLiteral(FLIMMER_QML_DIR)));
 #endif
 
     engine.addImageProvider(QStringLiteral("logo"), new LogoImageProvider);
@@ -89,9 +89,9 @@ int main(int argc, char *argv[])
             QCoreApplication::exit(1);
         },
         Qt::QueuedConnection);
-    engine.loadFromModule("PlasmaTv", "Main");
+    engine.loadFromModule("Flimmer", "Main");
     InputDebug::install(&engine);
-#ifdef PLASMA_TV_DEV_TOOLS
+#ifdef FLIMMER_DEV_TOOLS
     DevScript::runFromEnvironment(&engine);
 #endif
 

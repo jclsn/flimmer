@@ -4,8 +4,8 @@
 
 # Maintainer: Jan Claussen <jan.claussen at web dot de>
 
-# Bigscreen UI isn't packaged by Arch yet. Plasma TV needs it at runtime, so
-# build and install this package once before Plasma TV.
+# Bigscreen UI isn't packaged by Arch yet. Flimmer needs it at runtime, so
+# build and install this package once before Flimmer.
 
 pkgname=bigscreen-ui
 pkgver=1.0.0.r56.gb5ad9c0
@@ -22,7 +22,7 @@ depends=(
   'qt6-declarative'
 )
 makedepends=('cmake' 'extra-cmake-modules' 'git' 'ki18n')
-# The version Plasma TV is tested with
+# The version Flimmer is tested with
 _commit=b5ad9c098a684b8bec23dd79a807532c4c49af2b
 source=("$pkgname::git+$url.git#commit=$_commit")
 sha256sums=('SKIP')

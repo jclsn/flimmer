@@ -6,7 +6,7 @@ find_package(Qt6 REQUIRED COMPONENTS Test Qml)
 
 # Each test builds the sources it needs, so it runs without the QML module and
 # without a server.
-function(plasma_tv_add_test name)
+function(flimmer_add_test name)
     cmake_parse_arguments(PARSE_ARGV 1 arg "" "" "SOURCES;LIBRARIES")
     qt_add_executable(${name} ${name}.cpp ${arg_SOURCES})
     target_include_directories(${name} PRIVATE ${PROJECT_SOURCE_DIR}/src)
@@ -19,13 +19,13 @@ function(plasma_tv_add_test name)
     )
 endfunction()
 
-plasma_tv_add_test(
+flimmer_add_test(
     test_serverconfig
     SOURCES ${PROJECT_SOURCE_DIR}/src/serverconfig.cpp
     LIBRARIES Qt6::Core
 )
 
-plasma_tv_add_test(
+flimmer_add_test(
     test_m3u
     SOURCES
         ${PROJECT_SOURCE_DIR}/src/m3u.cpp
@@ -33,7 +33,7 @@ plasma_tv_add_test(
     LIBRARIES Qt6::Core
 )
 
-plasma_tv_add_test(
+flimmer_add_test(
     test_xmltv
     SOURCES
         ${PROJECT_SOURCE_DIR}/src/xmltv.cpp
@@ -41,13 +41,13 @@ plasma_tv_add_test(
     LIBRARIES Qt6::Core
 )
 
-plasma_tv_add_test(
+flimmer_add_test(
     test_epgstore
     SOURCES ${PROJECT_SOURCE_DIR}/src/epgstore.cpp
     LIBRARIES Qt6::Core
 )
 
-plasma_tv_add_test(
+flimmer_add_test(
     test_channelmodel
     SOURCES
         ${PROJECT_SOURCE_DIR}/src/channelmodel.h
@@ -56,7 +56,7 @@ plasma_tv_add_test(
     LIBRARIES Qt6::Core Qt6::Qml
 )
 
-plasma_tv_add_test(
+flimmer_add_test(
     test_epgdatabase
     SOURCES
         ${PROJECT_SOURCE_DIR}/src/epgdatabase.cpp

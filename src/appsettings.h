@@ -17,7 +17,7 @@ class QQmlEngine;
 class QJSEngine;
 
 // Persistent application settings. Non-secret values go to the regular
-// config file (~/.config/plasma-tv/plasma-tv.conf), the
+// config file (~/.config/flimmer/flimmer.conf), the
 // password is stored in the system secret store (KWallet / Secret Service)
 // through QtKeychain and is never exposed to QML in plain text.
 class AppSettings : public QObject
@@ -137,7 +137,8 @@ public:
     }
 
     // Expected keys: backend, host, port, useHttps, playlistUrl, xmltvUrl, username, streamProfile,
-    // guideDays, stopInBackground, confirmQuit, colorScheme and, only when the password was edited, password.
+    // guideDays, stopInBackground, confirmQuit, colorScheme and, only when the password was edited,
+    // password.
     Q_INVOKABLE void save(const QVariantMap &values);
 
 Q_SIGNALS:

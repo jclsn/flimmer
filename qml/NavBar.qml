@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Templates as T
 import org.kde.kirigami as Kirigami
 import org.kde.bigscreen.ui as BigscreenUI
-import PlasmaTv
+import Flimmer
 
 // Top navigation. Moving left/right switches pages immediately; down/OK enters the page.
 BigscreenUI.NavigationBar {
@@ -66,13 +66,13 @@ BigscreenUI.NavigationBar {
             anchors.verticalCenter: parent.verticalCenter
             width: 32
             height: 32
-            source: Qt.resolvedUrl("../data/icons/hicolor/scalable/apps/plasmatv.svg")
+            source: Qt.resolvedUrl("../data/icons/hicolor/scalable/apps/flimmer.svg")
             sourceSize: Qt.size(96, 96)
             smooth: true
         }
         BigscreenUI.Label {
             anchors.verticalCenter: parent.verticalCenter
-            text: "Plasma TV"
+            text: qsTr("Live TV")
             type: BigscreenUI.Label.Heading
             font.weight: Font.DemiBold
         }

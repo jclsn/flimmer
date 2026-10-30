@@ -18,7 +18,7 @@ QNetworkRequest makeRequest(const QUrl &url)
 {
     QNetworkRequest request(url);
     request.setTransferTimeout(s_timeoutMs);
-    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("plasma-tv/0.1"));
+    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("flimmer/0.1"));
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                          QNetworkRequest::NoLessSafeRedirectPolicy);
     return request;

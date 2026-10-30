@@ -4,7 +4,7 @@
 
 import QtQuick
 import QtMultimedia
-import PlasmaTv
+import Flimmer
 
 // Video layer. Lives outside the scaled UI so it always renders at native resolution.
 Item {

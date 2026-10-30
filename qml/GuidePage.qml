@@ -5,7 +5,7 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 import org.kde.bigscreen.ui as BigscreenUI
-import PlasmaTv
+import Flimmer
 
 // Electronic programme guide: channels vertically, time horizontally.
 FocusScope {
