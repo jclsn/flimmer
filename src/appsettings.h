@@ -121,7 +121,7 @@ public:
 
     // Shows a color scheme without storing it; save() makes it permanent and
     // previewColorScheme(colorScheme) reverts to the stored one.
-    Q_INVOKABLE static void previewColorScheme(const QString &id);
+    Q_INVOKABLE static void previewColorScheme(const QString &colorScheme);
     void setLastChannel(const QString &uuid);
 
     [[nodiscard]] ServerConfig server() const

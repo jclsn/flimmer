@@ -75,9 +75,9 @@ void AppSettings::applyColorScheme()
     ColorSchemes::apply(m_colorScheme);
 }
 
-void AppSettings::previewColorScheme(const QString &id)
+void AppSettings::previewColorScheme(const QString &colorScheme)
 {
-    ColorSchemes::apply(id);
+    ColorSchemes::apply(colorScheme);
 }
 
 void AppSettings::loadPassword()
