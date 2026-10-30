@@ -16,11 +16,15 @@ namespace
 {
 const QString s_keychainService = QStringLiteral("plasma-tv");
 const QString s_keychainKey = QStringLiteral("server-password");
+
+constexpr uint16_t kDefaultGuideDays = 14;
+constexpr uint32_t kDefaultTvhPort = 9981;
+constexpr uint32_t kMaxPort = 65535;
 }
 
 AppSettings *AppSettings::instance()
 {
-    static AppSettings *s_instance = new AppSettings;
+    static auto *s_instance = new AppSettings;
     return s_instance;
 }
 
@@ -37,13 +41,13 @@ AppSettings::AppSettings(QObject *parent)
     QSettings settings;
     settings.beginGroup(QStringLiteral("server"));
     m_server.host = settings.value(QStringLiteral("host")).toString();
-    m_server.port = settings.value(QStringLiteral("port"), 9981).toInt();
+    m_server.port = settings.value(QStringLiteral("port"), kDefaultTvhPort).toInt();
     m_server.https = settings.value(QStringLiteral("https"), false).toBool();
     m_server.username = settings.value(QStringLiteral("username")).toString();
     settings.endGroup();
     m_streamProfile =
         settings.value(QStringLiteral("playback/profile"), QStringLiteral("pass")).toString();
-    m_guideDays = qBound(1, settings.value(QStringLiteral("guide/days"), 3).toInt(), 14);
+    m_guideDays = qBound(1, settings.value(QStringLiteral("guide/days"), 3).toInt(), kDefaultGuideDays);
     m_stopInBackground = settings.value(QStringLiteral("playback/stopInBackground"), true).toBool();
     m_lastChannel = settings.value(QStringLiteral("playback/lastChannel")).toString();
     m_colorScheme =
@@ -143,7 +147,7 @@ void AppSettings::save(const QVariantMap &values)
     const ServerConfig previous = m_server;
 
     m_server.host = values.value(QStringLiteral("host"), m_server.host).toString().trimmed();
-    m_server.port = qBound(1, values.value(QStringLiteral("port"), m_server.port).toInt(), 65535);
+    m_server.port = qBound(1, values.value(QStringLiteral("port"), m_server.port).toInt(), kMaxPort);
     m_server.https = values.value(QStringLiteral("useHttps"), m_server.https).toBool();
     m_server.username =
         values.value(QStringLiteral("username"), m_server.username).toString().trimmed();
@@ -163,7 +167,7 @@ void AppSettings::save(const QVariantMap &values)
         m_streamProfile = QStringLiteral("pass");
     }
 
-    m_guideDays = qBound(1, values.value(QStringLiteral("guideDays"), m_guideDays).toInt(), 14);
+    m_guideDays = qBound(1, values.value(QStringLiteral("guideDays"), m_guideDays).toInt(), kDefaultGuideDays);
     m_stopInBackground =
         values.value(QStringLiteral("stopInBackground"), m_stopInBackground).toBool();
     m_colorScheme = values.value(QStringLiteral("colorScheme"), m_colorScheme).toString();
