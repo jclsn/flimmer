@@ -24,6 +24,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Don't export template instances from the executable. Otherwise libraries that
 # carry their own copies (e.g. QtKeychain built against an older Qt) are bound
