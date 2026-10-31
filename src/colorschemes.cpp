@@ -25,10 +25,12 @@ QString schemePath(const QString &id)
 QColor readColor(const QSettings &scheme, const QString &group, const QString &key)
 {
     const QVariant value = scheme.value(QStringLiteral("Colors:%1/%2").arg(group, key));
+
     // QSettings splits "r,g,b" into a string list.
     const QStringList parts = value.typeId() == QMetaType::QStringList
         ? value.toStringList()
         : value.toString().split(QLatin1Char(','));
+
     if (parts.size() < 3) {
         return {};
     }
@@ -43,11 +45,12 @@ QPalette paletteFromScheme(const QString &path)
     const QSettings scheme(path, QSettings::IniFormat);
     QPalette palette;
 
-    auto set = [&palette](QPalette::ColorRole role, const QColor &color) {
+    auto const set = [&palette](QPalette::ColorRole role, const QColor &color) {
         if (color.isValid()) {
             palette.setColor(role, color);
         }
     };
+
     set(QPalette::Window,
         readColor(scheme, QStringLiteral("Window"), QStringLiteral("BackgroundNormal")));
     set(QPalette::WindowText,
@@ -88,8 +91,9 @@ QPalette paletteFromScheme(const QString &path)
 
     const QColor inactiveText =
         readColor(scheme, QStringLiteral("View"), QStringLiteral("ForegroundInactive"));
+
     if (inactiveText.isValid()) {
-        for (QPalette::ColorRole role :
+        for (QPalette::ColorRole const role :
              {QPalette::WindowText, QPalette::Text, QPalette::ButtonText}) {
             palette.setColor(QPalette::Disabled, role, inactiveText);
         }
@@ -102,10 +106,13 @@ QPalette paletteFromScheme(const QString &path)
 QVariantList ColorSchemes::available()
 {
     QVariantList result;
-    result.append(
-        QVariantMap{{QStringLiteral("id"), QString()},
-                    {QStringLiteral("name"),
-                     QCoreApplication::translate("ColorSchemes", "Plasma system colors")}});
+    result.append(QVariantMap{
+        {QStringLiteral("id"), QString()},
+        {
+            QStringLiteral("name"),
+            QCoreApplication::translate("ColorSchemes", "Plasma system colors"),
+        },
+    });
 
     QMap<QString, QString> schemes; // id -> display name, sorted by id
     const QStringList dirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation,
@@ -113,6 +120,7 @@ QVariantList ColorSchemes::available()
                                                        QStandardPaths::LocateDirectory);
     for (const QString &dir : dirs) {
         const QStringList files = QDir(dir).entryList({QStringLiteral("*.colors")}, QDir::Files);
+
         for (const QString &file : files) {
             const QString id = file.chopped(7);
             if (schemes.contains(id)) {
@@ -126,11 +134,12 @@ QVariantList ColorSchemes::available()
     }
 
     QList<QPair<QString, QString>> sorted;
+
     for (auto it = schemes.cbegin(); it != schemes.cend(); ++it) {
         sorted.append({it.key(), it.value()});
     }
 
-    std::sort(sorted.begin(), sorted.end(), [](const auto &a, const auto &b) {
+    std::ranges::sort(sorted, [](const auto &a, const auto &b) {
         return a.second.localeAwareCompare(b.second) < 0;
     });
 

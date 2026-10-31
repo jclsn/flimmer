@@ -14,18 +14,20 @@
 // XMLTV guide (e.g. Dispatcharr). The password only ever lives in memory;
 // persistence goes through the system secret store (AppSettings).
 struct ServerConfig {
-    enum class Backend {
+    enum class Backend : std::uint8_t {
         Tvheadend,
         M3u,
     };
 
     Backend backend = Backend::Tvheadend;
+
     // TVHeadend
     QString host;
     int port = 9981;
     bool https = false;
     QString username;
     QString password;
+
     // M3U + XMLTV; an empty guide URL means the one announced by the playlist.
     QString playlistUrl;
     QString xmltvUrl;
@@ -33,16 +35,19 @@ struct ServerConfig {
     static Backend backendFromString(const QString &name);
     static QString backendName(Backend backend);
 
-    bool isValid() const;
-    QUrl playlist() const;
-    QUrl xmltv() const;
+    [[nodiscard]] bool isValid() const;
+    [[nodiscard]] QUrl playlist() const;
+    [[nodiscard]] QUrl xmltv() const;
+
     // Base URL including an optional web root, always ending in '/'. For M3U
     // sources this is the root of the playlist's server.
-    QUrl baseUrl() const;
+    [[nodiscard]] QUrl baseUrl() const;
+
     // Resolves a server relative path (e.g. "api/serverinfo") against baseUrl().
-    QUrl url(const QString &path) const;
+    [[nodiscard]] QUrl url(const QString &path) const;
+
     // Identifies the server (not the user) so caches of another server can be discarded.
-    QString identity() const;
+    [[nodiscard]] QString identity() const;
 
     bool operator==(const ServerConfig &other) const = default;
 };

@@ -22,15 +22,15 @@ EpgEvent makeEvent(qint64 id, const QString &channel, qint64 start, qint64 stop)
     return result;
 }
 
-const QString s_one = QStringLiteral("one");
-const QString s_two = QStringLiteral("two");
-}
+const QString s_one = // NOLINT(bugprone-throwing-static-initialization)
+    QStringLiteral("one");
+const QString s_two = // NOLINT(bugprone-throwing-static-initialization)
+    QStringLiteral("two");
 
 class EpgStoreTest : public QObject
 {
     Q_OBJECT
 
-private:
     EpgStore m_store;
 
 private Q_SLOTS:
@@ -119,14 +119,16 @@ private Q_SLOTS:
 
     void dropsInvalidEvents()
     {
-        m_store.setEvents({makeEvent(1, QString(), 100, 200),
-                           makeEvent(2, s_one, 300, 300),
-                           makeEvent(3, s_one, 400, 300)});
+        m_store.setEvents({
+            makeEvent(1, QString(), 100, 200),
+            makeEvent(2, s_one, 300, 300),
+            makeEvent(3, s_one, 400, 300),
+        });
 
         QVERIFY(m_store.isEmpty());
     }
 
-    void fromJson()
+    static void fromJson()
     {
         const QJsonObject object{
             {QStringLiteral("eventId"), 42},
@@ -149,7 +151,7 @@ private Q_SLOTS:
         QCOMPARE(parsed.dvrState, QStringLiteral("recording"));
     }
 
-    void toVariant()
+    static void toVariant()
     {
         EpgEvent news = makeEvent(7, s_one, 1000, 2000);
         news.genre = 0x23;
@@ -164,6 +166,8 @@ private Q_SLOTS:
         QCOMPARE(map.value(QStringLiteral("genreName")).toString(), QStringLiteral("News"));
     }
 };
+
+}
 
 QTEST_GUILESS_MAIN(EpgStoreTest)
 

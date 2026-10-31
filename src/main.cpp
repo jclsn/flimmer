@@ -38,16 +38,19 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.setApplicationDescription(
         QStringLiteral("Fullscreen TVHeadend and M3U/XMLTV client for the living room"));
+
     parser.addHelpOption();
     parser.addVersionOption();
-    QCommandLineOption windowed({QStringLiteral("w"), QStringLiteral("windowed")},
-                                QStringLiteral("Start in a window instead of fullscreen"));
+    QCommandLineOption const windowed({QStringLiteral("w"), QStringLiteral("windowed")},
+                                      QStringLiteral("Start in a window instead of fullscreen"));
+
     parser.addOption(windowed);
     parser.process(app);
 
     // Follow Plasma's look; outside a Plasma session fall back to Breeze explicitly.
     const bool plasmaSession =
         qEnvironmentVariable("XDG_CURRENT_DESKTOP").contains(QLatin1String("KDE"));
+
     if (!plasmaSession
         && QStyleFactory::keys().contains(QStringLiteral("Breeze"), Qt::CaseInsensitive)) {
         QApplication::setStyle(QStringLiteral("Breeze"));
@@ -85,7 +88,7 @@ int main(int argc, char *argv[])
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,
         &app,
-        []() {
+        [] {
             QCoreApplication::exit(1);
         },
         Qt::QueuedConnection);
@@ -95,5 +98,5 @@ int main(int argc, char *argv[])
     DevScript::runFromEnvironment(&engine);
 #endif
 
-    return app.exec();
+    return QApplication::exec();
 }

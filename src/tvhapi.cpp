@@ -21,10 +21,11 @@ QNetworkRequest makeRequest(const QUrl &url)
     request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("flimmer/0.1"));
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                          QNetworkRequest::NoLessSafeRedirectPolicy);
+
     return request;
 }
 
-QString describeError(QNetworkReply *reply, int status)
+QString describeError(const QNetworkReply *reply, int status)
 {
     if (status == 401 || reply->error() == QNetworkReply::AuthenticationRequiredError) {
         return QObject::tr("Authentication failed – check username and password");
@@ -101,6 +102,7 @@ void TvhApi::post(const QString &path, const QUrlQuery &form, Callback callback)
     QNetworkRequest request = makeRequest(m_server.url(path));
     request.setHeader(QNetworkRequest::ContentTypeHeader,
                       QStringLiteral("application/x-www-form-urlencoded"));
+
     // QUrlQuery leaves '+' alone, which form decoding would turn into a space.
     const QByteArray body = form.toString(QUrl::FullyEncoded).toUtf8().replace('+', "%2B");
     QNetworkReply *reply = m_networkManager->post(request, body);
@@ -120,10 +122,11 @@ void TvhApi::probe(const ServerConfig &config, const QUrl &url, Callback callbac
     NetworkAuth::install(networkManager);
     QNetworkReply *reply = networkManager->get(makeRequest(url));
     setCredentials(reply, config);
+
     connect(reply,
             &QNetworkReply::finished,
             this,
-            [reply, networkManager, callback = std::move(callback)]() {
+            [reply, networkManager, callback = std::move(callback)] {
                 ApiResult result;
                 result.httpStatus =
                     reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -155,7 +158,7 @@ void TvhApi::abortAll()
 void TvhApi::track(QNetworkReply *reply, Callback callback)
 {
     m_pending.insert(reply);
-    connect(reply, &QNetworkReply::finished, this, [this, reply, callback = std::move(callback)]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, callback = std::move(callback)] {
         m_pending.remove(reply);
         ApiResult result;
         result.httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();

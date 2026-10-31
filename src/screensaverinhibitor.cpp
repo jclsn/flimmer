@@ -11,7 +11,9 @@
 
 namespace
 {
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 const QString s_service = QStringLiteral("org.freedesktop.ScreenSaver");
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 const QString s_path = QStringLiteral("/ScreenSaver");
 }
 
@@ -47,10 +49,11 @@ void ScreenSaverInhibitor::inhibit()
     QDBusMessage message =
         QDBusMessage::createMethodCall(s_service, s_path, s_service, QStringLiteral("Inhibit"));
     message << QStringLiteral("flimmer") << tr("Watching live TV");
+
     auto *watcher =
         new QDBusPendingCallWatcher(QDBusConnection::sessionBus().asyncCall(message), this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher]() {
-        QDBusPendingReply<uint> reply = *watcher;
+    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher] {
+        QDBusPendingReply<uint> const reply = *watcher;
         watcher->deleteLater();
 
         if (reply.isError()) {
@@ -74,6 +77,7 @@ void ScreenSaverInhibitor::uninhibit()
     QDBusMessage message =
         QDBusMessage::createMethodCall(s_service, s_path, s_service, QStringLiteral("UnInhibit"));
     message << m_cookie;
+
     QDBusConnection::sessionBus().call(message, QDBus::NoBlock);
     m_cookie = 0;
 }

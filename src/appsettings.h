@@ -50,88 +50,108 @@ public:
     static AppSettings *instance();
     static AppSettings *create(QQmlEngine *, QJSEngine *);
 
-    QString backend() const
+    [[nodiscard]] QString backend() const
     {
         return ServerConfig::backendName(m_server.backend);
     }
-    QString host() const
+
+    [[nodiscard]] QString host() const
     {
         return m_server.host;
     }
-    int port() const
+
+    [[nodiscard]] int port() const
     {
         return m_server.port;
     }
-    bool useHttps() const
+
+    [[nodiscard]] bool useHttps() const
     {
         return m_server.https;
     }
-    QString username() const
+
+    [[nodiscard]] QString username() const
     {
         return m_server.username;
     }
-    bool hasPassword() const
+
+    [[nodiscard]] bool hasPassword() const
     {
         return !m_server.password.isEmpty();
     }
-    QString playlistUrl() const
+
+    [[nodiscard]] QString playlistUrl() const
     {
         return m_server.playlistUrl;
     }
-    QString xmltvUrl() const
+
+    [[nodiscard]] QString xmltvUrl() const
     {
         return m_server.xmltvUrl;
     }
-    QString streamProfile() const
+
+    [[nodiscard]] QString streamProfile() const
     {
         return m_streamProfile;
     }
-    int guideDays() const
+
+    [[nodiscard]] int guideDays() const
     {
         return m_guideDays;
     }
+
     // Stop the stream while the window isn't focused (and resume afterwards).
-    bool stopInBackground() const
+    [[nodiscard]] bool stopInBackground() const
     {
         return m_stopInBackground;
     }
+
     // BACK while watching asks whether to quit instead of returning to the channel list.
-    bool confirmQuit() const
+    [[nodiscard]] bool confirmQuit() const
     {
         return m_confirmQuit;
     }
-    bool configured() const
+
+    [[nodiscard]] bool configured() const
     {
         return m_server.isValid();
     }
-    bool credentialsReady() const
+
+    [[nodiscard]] bool credentialsReady() const
     {
         return m_credentialsReady;
     }
-    QString secretStoreStatus() const
+
+    [[nodiscard]] QString secretStoreStatus() const
     {
         return m_secretStoreStatus;
     }
-    QString lastChannel() const
+
+    [[nodiscard]] QString lastChannel() const
     {
         return m_lastChannel;
     }
-    QString colorScheme() const
+
+    [[nodiscard]] QString colorScheme() const
     {
         return m_colorScheme;
     }
-    QVariantList colorSchemes() const
+
+    [[nodiscard]] QVariantList colorSchemes() const
     {
         return m_colorSchemes;
     }
+
     // Applies the configured color scheme to the running application.
-    void applyColorScheme();
+    void applyColorScheme() const;
+
     // Shows a color scheme without storing it; save() makes it permanent and
     // previewColorScheme(colorScheme) reverts to the stored one.
-    Q_INVOKABLE void previewColorScheme(const QString &id);
+    Q_INVOKABLE static void previewColorScheme(const QString &id);
+
     void setLastChannel(const QString &uuid);
 
-    ServerConfig server() const
+    [[nodiscard]] ServerConfig server() const
     {
         return m_server;
     }

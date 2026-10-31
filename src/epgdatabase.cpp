@@ -28,7 +28,7 @@ EpgDatabase::EpgDatabase()
 EpgDatabase::~EpgDatabase()
 {
     // Queued last, so pending writes are finished first.
-    run([this]() {
+    run([this] {
         {
             QSqlDatabase database = QSqlDatabase::database(m_connectionName, false);
 
@@ -58,7 +58,7 @@ bool EpgDatabase::open()
 {
     bool ok = false;
 
-    runAndWait([this, &ok]() {
+    runAndWait([this, &ok] {
         const QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
         QDir().mkpath(dir);
 
@@ -76,6 +76,7 @@ bool EpgDatabase::open()
         query.exec(QStringLiteral("PRAGMA journal_mode=WAL"));
         query.exec(QStringLiteral("PRAGMA synchronous=NORMAL"));
         query.exec(QStringLiteral("PRAGMA user_version"));
+
         const int version = query.next() ? query.value(0).toInt() : 0;
         if (version == 1) {
             // Version 2 added the stream URL of M3U channels.
@@ -143,7 +144,7 @@ void EpgDatabase::setServerIdentity(const QString &identity)
 {
     m_serverIdentity = identity;
 
-    run([this, identity]() {
+    run([this, identity] {
         setMeta(QStringLiteral("server"), identity);
     });
 }
@@ -152,7 +153,7 @@ qint64 EpgDatabase::lastUpdate() const
 {
     qint64 result = 0;
 
-    runAndWait([this, &result]() {
+    runAndWait([this, &result] {
         result = meta(QStringLiteral("lastUpdate")).toLongLong();
     });
 
@@ -163,7 +164,7 @@ void EpgDatabase::clear()
 {
     m_serverIdentity.clear();
 
-    run([this]() {
+    run([this] {
         QSqlDatabase database = QSqlDatabase::database(m_connectionName);
         QSqlQuery query(database);
         database.transaction();
@@ -174,9 +175,9 @@ void EpgDatabase::clear()
     });
 }
 
-void EpgDatabase::saveChannels(const QVector<Channel> &channels)
+void EpgDatabase::saveChannels(const QVector<Channel> &channels) const
 {
-    run([this, channels]() {
+    run([this, channels] {
         QSqlDatabase database = QSqlDatabase::database(m_connectionName);
         database.transaction();
         QSqlQuery query(database);
@@ -204,7 +205,7 @@ QVector<Channel> EpgDatabase::loadChannels() const
 {
     QVector<Channel> result;
 
-    runAndWait([this, &result]() {
+    runAndWait([this, &result] {
         QSqlQuery query(QSqlDatabase::database(m_connectionName));
 
         if (!query.exec(QStringLiteral(
@@ -213,20 +214,22 @@ QVector<Channel> EpgDatabase::loadChannels() const
         }
 
         while (query.next()) {
-            result.append({query.value(0).toString(),
-                           query.value(1).toInt(),
-                           query.value(2).toString(),
-                           query.value(3).toString(),
-                           query.value(4).toString()});
+            result.append({
+                .uuid = query.value(0).toString(),
+                .number = query.value(1).toInt(),
+                .name = query.value(2).toString(),
+                .icon = query.value(3).toString(),
+                .stream = query.value(4).toString(),
+            });
         }
     });
 
     return result;
 }
 
-void EpgDatabase::saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt)
+void EpgDatabase::saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt) const
 {
-    run([this, events, updatedAt]() {
+    run([this, events, updatedAt] {
         QSqlDatabase database = QSqlDatabase::database(m_connectionName);
         database.transaction();
         QSqlQuery query(database);
@@ -257,9 +260,9 @@ void EpgDatabase::saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt)
 
 void EpgDatabase::loadEvents(qint64 notEndedBefore,
                              QObject *context,
-                             std::function<void(QVector<EpgEvent>)> done) const
+                             std::function<void(QVector<EpgEvent>)> const &done) const
 {
-    run([this, notEndedBefore, context, done]() {
+    run([this, notEndedBefore, context, done] {
         QVector<EpgEvent> result;
         QSqlQuery query(QSqlDatabase::database(m_connectionName));
         query.setForwardOnly(true);
@@ -288,16 +291,18 @@ void EpgDatabase::loadEvents(qint64 notEndedBefore,
 
         QMetaObject::invokeMethod(
             context,
-            [done, result = std::move(result)]() {
+            [done, result = std::move(result)] {
                 done(result);
             },
             Qt::QueuedConnection);
     });
 }
 
-void EpgDatabase::updateRecording(qint64 eventId, const QString &dvrUuid, const QString &dvrState)
+void EpgDatabase::updateRecording(qint64 eventId,
+                                  const QString &dvrUuid,
+                                  const QString &dvrState) const
 {
-    run([this, eventId, dvrUuid, dvrState]() {
+    run([this, eventId, dvrUuid, dvrState] {
         QSqlQuery query(QSqlDatabase::database(m_connectionName));
         query.prepare(QStringLiteral("UPDATE events SET dvr_uuid = ?, dvr_state = ? WHERE id = ?"));
         query.addBindValue(dvrUuid);

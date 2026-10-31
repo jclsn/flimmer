@@ -25,7 +25,7 @@
 namespace
 {
 constexpr int s_timeoutMs = 15000;
-constexpr qint64 s_refreshAfterSecs = 7 * 24 * 3600;
+constexpr qint64 s_refreshAfterSecs = static_cast<const qint64>(7 * 24 * 3600);
 constexpr int s_maxAttempts = 3;
 constexpr int s_retryDelayMs = 1000;
 
@@ -33,9 +33,11 @@ QString cacheFilePath(const QUrl &url)
 {
     static const QString dir =
         QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QStringLiteral("/logos");
+
     QDir().mkpath(dir);
     const QByteArray hash =
         QCryptographicHash::hash(url.toEncoded(), QCryptographicHash::Sha1).toHex();
+
     return dir + QLatin1Char('/') + QString::fromLatin1(hash);
 }
 
@@ -75,13 +77,13 @@ public:
 
     QQuickTextureFactory *textureFactory() const override
     {
-        QMutexLocker lock(&m_mutex);
+        QMutexLocker const lock(&m_mutex);
         return QQuickTextureFactory::textureFactoryForImage(m_image);
     }
 
     QString errorString() const override
     {
-        QMutexLocker lock(&m_mutex);
+        QMutexLocker const lock(&m_mutex);
         return m_error;
     }
 
@@ -97,7 +99,7 @@ public:
 private:
     bool loadFromCache()
     {
-        QImage image(m_cacheFile);
+        QImage const image(m_cacheFile);
 
         if (image.isNull()) {
             return false;
@@ -120,8 +122,8 @@ private:
             image = image.scaledToWidth(w, Qt::SmoothTransformation);
         }
 
-        QMutexLocker lock(&m_mutex);
-        m_image = image;
+        QMutexLocker const lock(&m_mutex);
+        m_image = std::move(image);
     }
 
     void download(QNetworkAccessManager *networkManager, int attempt)
@@ -131,7 +133,7 @@ private:
         request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                              QNetworkRequest::NoLessSafeRedirectPolicy);
         m_reply = networkManager->get(request);
-        connect(m_reply, &QNetworkReply::finished, this, [this, networkManager, attempt]() {
+        connect(m_reply, &QNetworkReply::finished, this, [this, networkManager, attempt] {
             QNetworkReply *reply = m_reply;
             m_reply = nullptr;
             reply->deleteLater();
@@ -142,6 +144,7 @@ private:
 
             if (reply->error() == QNetworkReply::NoError) {
                 const QByteArray data = reply->readAll();
+
                 QImage image;
                 if (image.loadFromData(data)) {
                     QSaveFile file(m_cacheFile);
@@ -153,6 +156,7 @@ private:
 
                     setImage(image);
                     Q_EMIT finished();
+
                     return;
                 }
             }
@@ -160,15 +164,17 @@ private:
             // An outdated copy beats no logo at all.
             if (m_cancelled || loadFromCache()) {
                 Q_EMIT finished();
+
                 return;
             }
 
             const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
             const bool authProblem = status == 401 || status == 403
                 || reply->error() == QNetworkReply::AuthenticationRequiredError;
+
             if (authProblem && attempt < s_maxAttempts) {
                 // A fresh manager starts a new connection and a new digest handshake.
-                QTimer::singleShot(s_retryDelayMs * attempt, this, [this, attempt]() {
+                QTimer::singleShot(s_retryDelayMs * attempt, this, [this, attempt] {
                     if (m_cancelled) {
                         Q_EMIT finished();
                         return;
@@ -178,12 +184,14 @@ private:
                     NetworkAuth::install(fresh);
                     download(fresh, attempt + 1);
                 });
+
                 return;
             }
 
             QMutexLocker lock(&m_mutex);
             m_error = reply->errorString();
             lock.unlock();
+
             Q_EMIT finished();
         });
     }

@@ -33,17 +33,15 @@ makeEvent(qint64 id, const QString &channel, qint64 start, qint64 stop, const QS
 
     return result;
 }
-}
 
 class ChannelModelTest : public QObject
 {
     Q_OBJECT
 
-private:
     EpgStore m_store;
     qint64 m_now = 0;
 
-    QVariant data(const ChannelModel &model, int row, ChannelModel::Role role)
+    static QVariant data(const ChannelModel &model, int row, ChannelModel::Role role)
     {
         return model.data(model.index(row), role);
     }
@@ -72,8 +70,10 @@ private Q_SLOTS:
         ChannelModel model(&m_store);
         QSignalSpy countSpy(&model, &ChannelModel::countChanged);
 
-        model.setChannels({channel(QStringLiteral("a"), 1, QStringLiteral("Das Erste")),
-                           channel(QStringLiteral("b"), 2, QStringLiteral("ZDF"))});
+        model.setChannels({
+            channel(QStringLiteral("a"), 1, QStringLiteral("Das Erste")),
+            channel(QStringLiteral("b"), 2, QStringLiteral("ZDF")),
+        });
 
         QCOMPARE(model.rowCount(), 2);
         QCOMPARE(countSpy.count(), 1);
@@ -85,8 +85,11 @@ private Q_SLOTS:
         QVERIFY(model.uuidAt(5).isEmpty());
 
         // The same number of channels doesn't change the count.
-        model.setChannels({channel(QStringLiteral("c"), 3, QStringLiteral("3sat")),
-                           channel(QStringLiteral("d"), 4, QStringLiteral("ARTE"))});
+        model.setChannels({
+            channel(QStringLiteral("c"), 3, QStringLiteral("3sat")),
+            channel(QStringLiteral("d"), 4, QStringLiteral("ARTE")),
+        });
+
         QCOMPARE(countSpy.count(), 1);
         QCOMPARE(model.indexOfUuid(QStringLiteral("a")), -1);
         QCOMPARE(model.indexOfUuid(QStringLiteral("d")), 1);
@@ -95,8 +98,10 @@ private Q_SLOTS:
     void nowAndNext()
     {
         ChannelModel model(&m_store);
-        model.setChannels({channel(QStringLiteral("a"), 1, QStringLiteral("Das Erste")),
-                           channel(QStringLiteral("b"), 2, QStringLiteral("ZDF"))});
+        model.setChannels({
+            channel(QStringLiteral("a"), 1, QStringLiteral("Das Erste")),
+            channel(QStringLiteral("b"), 2, QStringLiteral("ZDF")),
+        });
 
         QCOMPARE(data(model, 0, ChannelModel::NowTitleRole).toString(), QStringLiteral("Now on A"));
         QCOMPARE(data(model, 0, ChannelModel::NextTitleRole).toString(),
@@ -129,13 +134,14 @@ private Q_SLOTS:
     void iconUrl()
     {
         ChannelModel model(&m_store);
-        model.setChannels(
-            {channel(QStringLiteral("a"), 1, QStringLiteral("A"), QStringLiteral("imagecache/12")),
-             channel(QStringLiteral("b"),
-                     2,
-                     QStringLiteral("B"),
-                     QStringLiteral("/var/lib/logo.png")),
-             channel(QStringLiteral("c"), 3, QStringLiteral("C"))});
+        model.setChannels({
+            channel(QStringLiteral("a"), 1, QStringLiteral("A"), QStringLiteral("imagecache/12")),
+            channel(QStringLiteral("b"),
+                    2,
+                    QStringLiteral("B"),
+                    QStringLiteral("/var/lib/logo.png")),
+            channel(QStringLiteral("c"), 3, QStringLiteral("C")),
+        });
 
         // Without a server there is nothing to resolve against.
         QVERIFY(model.iconUrl(0).isEmpty());
@@ -158,8 +164,11 @@ private Q_SLOTS:
     void tickOnlyUpdatesProgress()
     {
         ChannelModel model(&m_store);
-        model.setChannels({channel(QStringLiteral("a"), 1, QStringLiteral("A")),
-                           channel(QStringLiteral("b"), 2, QStringLiteral("B"))});
+        model.setChannels({
+            channel(QStringLiteral("a"), 1, QStringLiteral("A")),
+            channel(QStringLiteral("b"), 2, QStringLiteral("B")),
+        });
+
         QSignalSpy spy(&model, &ChannelModel::dataChanged);
 
         // Nothing started or ended since the last refresh.
@@ -187,6 +196,8 @@ private Q_SLOTS:
         QVERIFY(data(model, 0, ChannelModel::NextTitleRole).toString().isEmpty());
     }
 };
+
+}
 
 QTEST_GUILESS_MAIN(ChannelModelTest)
 

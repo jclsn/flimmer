@@ -45,7 +45,7 @@ class TvhBackend : public QObject
     Q_PROPERTY(double now READ now NOTIFY tick)
 
 public:
-    enum Status {
+    enum Status : uint8_t {
         Unconfigured,
         Connecting,
         Online,
@@ -56,63 +56,76 @@ public:
     static TvhBackend *instance();
     static TvhBackend *create(QQmlEngine *, QJSEngine *);
 
-    ChannelModel *channels() const
+    [[nodiscard]] ChannelModel *channels() const
     {
         return m_channels;
     }
-    Status status() const
+
+    [[nodiscard]] Status status() const
     {
         return m_status;
     }
-    QString statusText() const
+
+    [[nodiscard]] QString statusText() const
     {
         return m_statusText;
     }
-    bool busy() const
+
+    [[nodiscard]] bool busy() const
     {
         return m_busy;
     }
-    QString serverName() const
+
+    [[nodiscard]] QString serverName() const
     {
         return m_serverName;
     }
-    QString serverVersion() const
+
+    [[nodiscard]] QString serverVersion() const
     {
         return m_serverVersion;
     }
-    bool canRecord() const;
-    QDateTime lastUpdate() const
+
+    [[nodiscard]] bool canRecord() const;
+
+    [[nodiscard]] QDateTime lastUpdate() const
     {
         return m_lastUpdate;
     }
-    int epgRevision() const
+
+    [[nodiscard]] int epgRevision() const
     {
         return m_epgRevision;
     }
-    double epgEnd() const
+
+    [[nodiscard]] double epgEnd() const
     {
-        return double(m_store.lastStop()) * 1000.0;
+        return static_cast<double>(m_store.lastStop()) * 1000.0;
     }
-    double now() const
+
+    [[nodiscard]] static double now()
     {
-        return double(QDateTime::currentMSecsSinceEpoch());
+        return static_cast<double>(QDateTime::currentMSecsSinceEpoch());
     }
 
     Q_INVOKABLE void refresh();
+
     // values: same keys as Settings.save(); password may be omitted to use the stored one.
     Q_INVOKABLE void testConnection(const QVariantMap &values);
     Q_INVOKABLE void clearCache();
 
-    Q_INVOKABLE QVariantList eventsForChannel(const QString &uuid,
-                                              double fromMs,
-                                              double toMs) const;
-    Q_INVOKABLE QVariantMap eventAt(const QString &uuid, double timeMs) const;
-    Q_INVOKABLE QVariantMap nextEvent(const QString &uuid, double afterMs) const;
-    Q_INVOKABLE QVariantMap eventById(double id) const;
+    Q_INVOKABLE [[nodiscard]] QVariantList
+    eventsForChannel(const QString &uuid, double fromMs, double toMs) const;
+
+    Q_INVOKABLE [[nodiscard]] QVariantMap eventAt(const QString &uuid, double timeMs) const;
+    Q_INVOKABLE [[nodiscard]] QVariantMap nextEvent(const QString &uuid, double afterMs) const;
+    Q_INVOKABLE [[nodiscard]] QVariantMap eventById(double id) const;
 
     Q_INVOKABLE void requestStream(const QString &uuid);
+
     // The server's address of a channel's stream, without credentials. Empty if unknown.
-    QUrl streamUrl(const QString &uuid) const;
+    [[nodiscard]] QUrl streamUrl(const QString &uuid) const;
+
     Q_INVOKABLE void record(double eventId);
     Q_INVOKABLE void cancelRecording(double eventId);
 

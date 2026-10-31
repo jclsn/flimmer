@@ -32,12 +32,12 @@ struct EpgEvent {
     QString subtitle;
     QString summary;
     QString description;
-    int genre = 0; // ETSI EN 300 468 content nibble, e.g. 0x10 = movie
+    uint8_t genre = 0; // ETSI EN 300 468 content nibble, e.g. 0x10 = movie
     QString dvrUuid;
     QString dvrState;
 
     static EpgEvent fromJson(const QJsonObject &object);
-    QVariantMap toVariant() const;
+    [[nodiscard]] QVariantMap toVariant() const;
 };
 
 // In-memory index of EPG events per channel, sorted by start time.
@@ -46,22 +46,28 @@ class EpgStore
 public:
     void setEvents(QVector<EpgEvent> events);
     void clear();
-    bool isEmpty() const
+
+    [[nodiscard]] bool isEmpty() const
     {
         return m_byChannel.isEmpty();
     }
-    int size() const
+
+    [[nodiscard]] size_t size() const
     {
         return m_size;
     }
 
-    const EpgEvent *eventAt(const QString &channel, qint64 time) const;
-    const EpgEvent *nextAfter(const QString &channel, qint64 time) const;
-    const EpgEvent *byId(qint64 id) const;
+    [[nodiscard]] const EpgEvent *eventAt(const QString &channel, qint64 time) const;
+    [[nodiscard]] const EpgEvent *nextAfter(const QString &channel, qint64 time) const;
+    [[nodiscard]] const EpgEvent *byId(qint64 id) const;
+
     EpgEvent *byId(qint64 id);
-    QVector<const EpgEvent *> range(const QString &channel, qint64 from, qint64 to) const;
+
+    [[nodiscard]] QVector<const EpgEvent *>
+    range(const QString &channel, qint64 from, qint64 to) const;
+
     // Latest stop time of any event, used to bound guide navigation.
-    qint64 lastStop() const
+    [[nodiscard]] qint64 lastStop() const
     {
         return m_lastStop;
     }
@@ -70,9 +76,9 @@ private:
     QHash<QString, QVector<EpgEvent>> m_byChannel;
     QHash<qint64, QPair<QString, int>> m_index;
     qint64 m_lastStop = 0;
-    int m_size = 0;
+    size_t m_size = 0;
 };
 
-QString genreName(int genre);
+QString genreName(uint8_t genre);
 
 #endif // EPGSTORE_H

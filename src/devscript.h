@@ -16,7 +16,7 @@ namespace DevScript
 // "text <chars>", "shot <file.png>", "focusout"/"focusin" (move focus to another
 // window of this application and back), "appinactive"/"appactive" (as if
 // another application took the focus and gave it back), "quit".
-void runFromEnvironment(QQmlApplicationEngine *engine);
+void runFromEnvironment(const QQmlApplicationEngine *engine);
 }
 
 #endif // DEVSCRIPT_H

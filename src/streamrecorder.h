@@ -33,13 +33,14 @@ public:
     explicit StreamRecorder(QObject *parent = nullptr);
     ~StreamRecorder() override;
 
-    bool recording() const
+    [[nodiscard]] bool recording() const
     {
         return m_reply != nullptr;
     }
-    QUrl url() const;
+    [[nodiscard]] QUrl url() const;
 
     Q_INVOKABLE void start(const QString &channelUuid, const QString &channelName);
+
     // Stops recording and deletes the file.
     Q_INVOKABLE void stop();
 
@@ -49,6 +50,7 @@ Q_SIGNALS:
 
 private:
     static QString directory();
+
     // Files of pauses that weren't cleaned up, e.g. after a crash.
     static void removeLeftovers();
     void serve();

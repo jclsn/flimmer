@@ -8,15 +8,15 @@
 
 namespace
 {
-const QUrl s_source(QStringLiteral("http://iptv.local:9191/output/m3u"));
-}
+const QUrl s_source(QStringLiteral( // NOLINT(bugprone-throwing-static-initialization)
+    "http://iptv.local:9191/output/m3u"));
 
 class M3uTest : public QObject
 {
     Q_OBJECT
 
 private Q_SLOTS:
-    void looksLikePlaylist()
+    static void looksLikePlaylist()
     {
         QVERIFY(M3u::looksLikePlaylist("#EXTM3U\n"));
         QVERIFY(M3u::looksLikePlaylist("\xEF\xBB\xBF#EXTM3U\n"));
@@ -25,7 +25,7 @@ private Q_SLOTS:
         QVERIFY(!M3u::looksLikePlaylist(QByteArray()));
     }
 
-    void parsesAttributes()
+    static void parsesAttributes()
     {
         const QByteArray data =
             "#EXTM3U url-tvg=\"http://iptv.local:9191/output/epg\"\n"
@@ -47,7 +47,7 @@ private Q_SLOTS:
         QCOMPARE(channel.stream, QStringLiteral("http://iptv.local:9191/stream/1"));
     }
 
-    void resolvesRelativeStreams()
+    static void resolvesRelativeStreams()
     {
         const M3u::Playlist playlist =
             M3u::parse("#EXTM3U\n#EXTINF:-1,One\n../stream/1\n", s_source);
@@ -56,7 +56,7 @@ private Q_SLOTS:
                  QStringLiteral("http://iptv.local:9191/stream/1"));
     }
 
-    void numbersUnnumberedPlaylistsInOrder()
+    static void numbersUnnumberedPlaylistsInOrder()
     {
         const M3u::Playlist playlist =
             M3u::parse("#EXTM3U\n#EXTINF:-1,B\nhttp://a/b\n#EXTINF:-1,A\nhttp://a/a\n", s_source);
@@ -67,7 +67,7 @@ private Q_SLOTS:
         QCOMPARE(playlist.channels.at(1).number, 2);
     }
 
-    void sortsByNumberWithUnnumberedLast()
+    static void sortsByNumberWithUnnumberedLast()
     {
         const QByteArray data =
             "#EXTM3U\n"
@@ -86,7 +86,7 @@ private Q_SLOTS:
         QCOMPARE(playlist.channels.at(2).number, 0);
     }
 
-    void keepsUuidsUnique()
+    static void keepsUuidsUnique()
     {
         const QByteArray data =
             "#EXTM3U\n"
@@ -102,7 +102,7 @@ private Q_SLOTS:
                  QStringList({QStringLiteral("zdf"), QStringLiteral("zdf#2")}));
     }
 
-    void mapsNamesForTheGuide()
+    static void mapsNamesForTheGuide()
     {
         const QByteArray data =
             "#EXTM3U\n"
@@ -118,7 +118,7 @@ private Q_SLOTS:
         QVERIFY(playlist.guideMap.byId.isEmpty());
     }
 
-    void ignoresEntriesWithoutMetadata()
+    static void ignoresEntriesWithoutMetadata()
     {
         const QByteArray data =
             "#EXTM3U\r\n"
@@ -135,7 +135,7 @@ private Q_SLOTS:
         QCOMPARE(playlist.channels.first().stream, QStringLiteral("http://a/named"));
     }
 
-    void usesFirstOfSeveralGuides()
+    static void usesFirstOfSeveralGuides()
     {
         const M3u::Playlist playlist =
             M3u::parse("#EXTM3U x-tvg-url=\"http://a/one.xml, http://a/two.xml\"\n", s_source);
@@ -143,6 +143,8 @@ private Q_SLOTS:
         QCOMPARE(playlist.guideUrl.toString(), QStringLiteral("http://a/one.xml"));
     }
 };
+
+}
 
 QTEST_GUILESS_MAIN(M3uTest)
 

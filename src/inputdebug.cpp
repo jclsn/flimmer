@@ -14,10 +14,10 @@
 #include <QQuickWindow>
 #include <QTimer>
 
-Q_LOGGING_CATEGORY(lcInput, "flimmer.input", QtWarningMsg)
-
 namespace
 {
+Q_LOGGING_CATEGORY(lcInput, "flimmer.input", QtWarningMsg)
+
 constexpr int s_stallCheckMs = 100;
 constexpr qint64 s_stallReportMs = 500;
 
@@ -72,7 +72,7 @@ private:
 };
 }
 
-void InputDebug::install(QQmlApplicationEngine *engine)
+void InputDebug::install(const QQmlApplicationEngine *engine)
 {
     if (!lcInput().isDebugEnabled() || engine->rootObjects().isEmpty()) {
         return;
@@ -84,12 +84,14 @@ void InputDebug::install(QQmlApplicationEngine *engine)
     }
 
     window->installEventFilter(new KeyLogger(window));
-    QObject::connect(window, &QQuickWindow::activeFocusItemChanged, window, [window]() {
+    QObject::connect(window, &QQuickWindow::activeFocusItemChanged, window, [window] {
         qCDebug(lcInput).noquote() << "focus ->" << describe(window->activeFocusItem());
     });
-    QObject::connect(window, &QWindow::activeChanged, window, [window]() {
+
+    QObject::connect(window, &QWindow::activeChanged, window, [window] {
         qCDebug(lcInput) << "window active:" << window->isActive();
     });
+
     QObject::connect(qApp,
                      &QGuiApplication::applicationStateChanged,
                      window,
@@ -99,17 +101,16 @@ void InputDebug::install(QQmlApplicationEngine *engine)
 
     // A blocked event loop looks like ignored keys, so report it separately.
     auto *stallTimer = new QTimer(window);
-    auto *clock = new QElapsedTimer;
+    auto const clock = std::make_shared<QElapsedTimer>();
     clock->start();
-    QObject::connect(stallTimer, &QTimer::timeout, window, [clock]() {
+
+    QObject::connect(stallTimer, &QTimer::timeout, window, [clock] {
         const qint64 elapsed = clock->restart();
         if (elapsed > s_stallReportMs) {
             qCDebug(lcInput) << "event loop was blocked for" << elapsed << "ms";
         }
     });
-    QObject::connect(stallTimer, &QObject::destroyed, [clock]() {
-        delete clock;
-    });
+
     stallTimer->start(s_stallCheckMs);
     qCDebug(lcInput).noquote() << "input debugging enabled, focus:"
                                << describe(window->activeFocusItem());

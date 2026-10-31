@@ -38,13 +38,11 @@ EpgEvent makeEvent(qint64 id, const QString &channel, qint64 start, qint64 stop)
 
     return result;
 }
-}
 
 class EpgDatabaseTest : public QObject
 {
     Q_OBJECT
 
-private:
     QTemporaryDir m_dataDir;
 
     // Waits for the events loaded on the database thread.
@@ -72,18 +70,21 @@ private Q_SLOTS:
         qputenv("XDG_DATA_HOME", QFile::encodeName(m_dataDir.path()));
     }
 
-    void init()
+    static void init()
     {
         QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).removeRecursively();
     }
 
-    void channels()
+    static void channels()
     {
         EpgDatabase database;
         QVERIFY(database.open());
 
-        database.saveChannels({channel(QStringLiteral("b"), 2),
-                               channel(QStringLiteral("a"), 1, QStringLiteral("http://a/1"))});
+        database.saveChannels({
+            channel(QStringLiteral("b"), 2),
+            channel(QStringLiteral("a"), 1, QStringLiteral("http://a/1")),
+        });
+
         const QVector<Channel> loaded = database.loadChannels();
 
         // The order is kept as saved.
@@ -101,17 +102,22 @@ private Q_SLOTS:
         EpgDatabase database;
         QVERIFY(database.open());
 
-        database.saveEvents({makeEvent(1, QStringLiteral("a"), 100, 200),
-                             makeEvent(2, QStringLiteral("a"), 200, 300)},
-                            12345);
+        database.saveEvents(
+            {
+                makeEvent(1, QStringLiteral("a"), 100, 200),
+                makeEvent(2, QStringLiteral("a"), 200, 300),
+            },
+            12345);
+
         const QVector<EpgEvent> loaded = loadEvents(database, 0);
 
         QCOMPARE(loaded.size(), 2);
         QCOMPARE(database.lastUpdate(), 12345);
 
-        const auto first = std::find_if(loaded.cbegin(), loaded.cend(), [](const EpgEvent &e) {
+        const auto first = std::ranges::find_if(loaded, [](const EpgEvent &e) {
             return e.id == 1;
         });
+
         QVERIFY(first != loaded.cend());
         QCOMPARE(first->title, QStringLiteral("Event 1"));
         QCOMPARE(first->stop, 200);
@@ -173,6 +179,8 @@ private Q_SLOTS:
         QCOMPARE(loadEvents(database, 0).size(), 1);
     }
 };
+
+}
 
 QTEST_GUILESS_MAIN(EpgDatabaseTest)
 

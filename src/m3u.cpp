@@ -27,12 +27,14 @@ Entry parseExtinf(QStringView line)
 
     Entry entry;
     qsizetype comma = -1;
+
     bool quoted = false;
     for (qsizetype i = 0; i < line.size(); ++i) {
         if (line.at(i) == QLatin1Char('"')) {
             quoted = !quoted;
         } else if (line.at(i) == QLatin1Char(',') && !quoted) {
             comma = i;
+
             break;
         }
     }
@@ -127,10 +129,11 @@ M3u::Playlist M3u::parse(const QByteArray &data, const QUrl &source)
         const Entry entry = std::move(*pending);
         pending.reset();
 
+        const QString tvgName = attribute(entry, {"tvg-name"});
+
         Channel channel;
         channel.stream = resolve(source, line.toString()).toString();
         channel.name = entry.title;
-        const QString tvgName = attribute(entry, {"tvg-name"});
         if (channel.name.isEmpty()) {
             channel.name = tvgName;
         }
@@ -140,13 +143,15 @@ M3u::Playlist M3u::parse(const QByteArray &data, const QUrl &source)
         }
 
         channel.icon = resolve(source, attribute(entry, {"tvg-logo", "logo"})).toString();
+
         // Decimal numbers ("2.1") keep their major part.
-        channel.number =
-            int(attribute(entry, {"tvg-chno", "channel-number", "tvg-num"}).toDouble());
+        channel.number = static_cast<int>(
+            attribute(entry, {"tvg-chno", "channel-number", "tvg-num"}).toDouble());
 
         // Stable ids keep the last watched channel across playlist updates.
         const QString tvgId = attribute(entry, {"tvg-id", "channel-id"});
         const QString base = !tvgId.isEmpty() ? tvgId : channel.name;
+
         channel.uuid = base;
         for (int n = 2; usedUuids.contains(channel.uuid); ++n) {
             channel.uuid = base + QLatin1Char('#') + QString::number(n);
@@ -166,11 +171,10 @@ M3u::Playlist M3u::parse(const QByteArray &data, const QUrl &source)
         playlist.channels.append(std::move(channel));
     }
 
-    const bool numbered = std::any_of(playlist.channels.cbegin(),
-                                      playlist.channels.cend(),
-                                      [](const Channel &channel) {
-                                          return channel.number > 0;
-                                      });
+    const bool numbered = std::ranges::any_of(playlist.channels, [](const Channel &channel) {
+        return channel.number > 0;
+    });
+
     if (!numbered) {
         // Number by position so channels can still be picked with the number keys.
         for (int i = 0; i < playlist.channels.size(); ++i) {
@@ -178,15 +182,13 @@ M3u::Playlist M3u::parse(const QByteArray &data, const QUrl &source)
         }
     } else {
         // Unnumbered channels go to the end, otherwise the playlist order is kept.
-        std::stable_sort(playlist.channels.begin(),
-                         playlist.channels.end(),
-                         [](const Channel &a, const Channel &b) {
-                             if ((a.number == 0) != (b.number == 0)) {
-                                 return a.number != 0;
-                             }
+        std::ranges::stable_sort(playlist.channels, [](const Channel &a, const Channel &b) {
+            if ((a.number == 0) != (b.number == 0)) {
+                return a.number != 0;
+            }
 
-                             return a.number < b.number;
-                         });
+            return a.number < b.number;
+        });
     }
 
     return playlist;

@@ -28,36 +28,43 @@ public:
     ~EpgDatabase();
 
     bool open();
-    QString serverIdentity() const
+    void clear();
+
+    [[nodiscard]] QString serverIdentity() const
     {
         return m_serverIdentity;
     }
-    void setServerIdentity(const QString &identity);
-    qint64 lastUpdate() const;
 
-    void clear();
-    void saveChannels(const QVector<Channel> &channels);
-    QVector<Channel> loadChannels() const;
-    void saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt);
+    void setServerIdentity(const QString &identity);
+    [[nodiscard]] qint64 lastUpdate() const;
+
+    void saveChannels(const QVector<Channel> &channels) const;
+    [[nodiscard]] QVector<Channel> loadChannels() const;
+
+    void saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt) const;
+
     // Calls 'done' on the thread of 'context' once the events are loaded. 'context' must
     // outlive the database.
     void loadEvents(qint64 notEndedBefore,
                     QObject *context,
-                    std::function<void(QVector<EpgEvent>)> done) const;
-    void updateRecording(qint64 eventId, const QString &dvrUuid, const QString &dvrState);
+                    std::function<void(QVector<EpgEvent>)> const &done) const;
+
+    void updateRecording(qint64 eventId, const QString &dvrUuid, const QString &dvrState) const;
 
 private:
     // Runs 'job' on the database thread after everything queued before.
     void run(std::function<void()> job) const;
+
     // Like run(), but waits for 'job' to finish.
     void runAndWait(std::function<void()> job) const;
 
-    QString meta(const QString &key) const;
+    [[nodiscard]] QString meta(const QString &key) const;
     void setMeta(const QString &key, const QString &value) const;
 
     QString m_connectionName;
     QString m_serverIdentity;
     QThread m_thread;
+
     // Lives on m_thread; the jobs are queued to it.
     QObject *m_worker;
 };

@@ -14,7 +14,7 @@ ChannelModel::ChannelModel(const EpgStore *store, QObject *parent)
 
 int ChannelModel::rowCount(const QModelIndex &parent) const
 {
-    return parent.isValid() ? 0 : int(m_channels.size());
+    return parent.isValid() ? 0 : static_cast<int>(m_channels.size());
 }
 
 QHash<int, QByteArray> ChannelModel::roleNames() const
@@ -69,29 +69,30 @@ QVariant ChannelModel::data(const QModelIndex &index, int role) const
         }
         return nowNext.now->summary.isEmpty() ? nowNext.now->description : nowNext.now->summary;
     case NowStartRole:
-        return nowNext.now ? double(nowNext.now->start) * 1000.0 : 0.0;
+        return nowNext.now ? static_cast<double>(nowNext.now->start) * 1000.0 : 0.0;
     case NowStopRole:
-        return nowNext.now ? double(nowNext.now->stop) * 1000.0 : 0.0;
+        return nowNext.now ? static_cast<double>(nowNext.now->stop) * 1000.0 : 0.0;
     case NowProgressRole: {
         if (!nowNext.now) {
             return 0.0;
         }
-        const double now = QDateTime::currentSecsSinceEpoch();
+        const auto now = static_cast<double>(QDateTime::currentSecsSinceEpoch());
         return qBound(0.0,
-                      (now - nowNext.now->start) / double(nowNext.now->stop - nowNext.now->start),
+                      (now - static_cast<double>(nowNext.now->start))
+                          / static_cast<double>(nowNext.now->stop - nowNext.now->start),
                       1.0);
     }
     case NowGenreRole:
-        return nowNext.now ? nowNext.now->genre & 0xF0 : 0;
+        return nowNext.now ? (nowNext.now->genre & 0xF0U) : 0;
     case NowRecordingRole:
         return nowNext.now && nowNext.now->dvrState == QLatin1String("recording");
     case NextTitleRole:
         return nowNext.next ? nowNext.next->title : QString();
     case NextStartRole:
-        return nowNext.next ? double(nowNext.next->start) * 1000.0 : 0.0;
+        return nowNext.next ? static_cast<double>(nowNext.next->start) * 1000.0 : 0.0;
+    default:
+        return {};
     }
-
-    return {};
 }
 
 void ChannelModel::setChannels(const QVector<Channel> &channels)
@@ -99,7 +100,7 @@ void ChannelModel::setChannels(const QVector<Channel> &channels)
     const bool countChange = channels.size() != m_channels.size();
     beginResetModel();
     m_channels = channels;
-    m_nowNext.fill({}, m_channels.size());
+    m_nowNext = QList<NowNext>(m_channels.size());
     m_rowOfUuid.clear();
 
     for (int i = 0; i < m_channels.size(); ++i) {
@@ -138,8 +139,9 @@ void ChannelModel::refreshNow(bool storeChanged)
     for (int i = 0; i < m_channels.size(); ++i) {
         const EpgEvent *current = m_store->eventAt(m_channels.at(i).uuid, now);
         const NowNext nowNext = {
-            current,
-            m_store->nextAfter(m_channels.at(i).uuid, current ? current->start : now)};
+            .now = current,
+            .next = m_store->nextAfter(m_channels.at(i).uuid, current ? current->start : now),
+        };
 
         // The events stayed where they were, so the pointers tell whether the programme changed.
         const bool changed =

@@ -12,7 +12,6 @@
 #include <QQuickWindow>
 #include <QTimer>
 #include <QWindow>
-#include <qpa/qwindowsysteminterface.h>
 
 #include <memory>
 
@@ -24,7 +23,7 @@ struct Runner {
     QQuickWindow *window = nullptr;
     std::unique_ptr<QWindow> otherWindow; // takes focus away for "focusout"
 
-    void sendKey(int key, Qt::KeyboardModifiers mods, const QString &text)
+    void sendKey(int key, Qt::KeyboardModifiers mods, const QString &text) const
     {
         QKeyEvent press(QEvent::KeyPress, key, mods, text);
         QCoreApplication::sendEvent(window, &press);
@@ -35,18 +34,24 @@ struct Runner {
     void step(const std::shared_ptr<Runner> &self)
     {
         int delay = 50;
+
         while (position < lines.size()) {
             const QString line = lines.at(position++).trimmed();
+
             if (line.isEmpty() || line.startsWith(QLatin1Char('#'))) {
                 continue;
             }
 
             const QString command = line.section(QLatin1Char(' '), 0, 0);
             const QString arg = line.section(QLatin1Char(' '), 1);
+
             if (command == QLatin1String("wait")) {
                 delay = arg.toInt();
+
                 break;
-            } else if (command == QLatin1String("key")) {
+            }
+
+            if (command == QLatin1String("key")) {
                 const QKeyCombination combo = QKeySequence::fromString(arg)[0];
                 const int key = combo.key();
                 const QString text = key >= Qt::Key_Space && key <= Qt::Key_AsciiTilde
@@ -54,8 +59,11 @@ struct Runner {
                     : QString();
                 sendKey(key, combo.keyboardModifiers(), text);
                 delay = 150;
+
                 break;
-            } else if (command == QLatin1String("text")) {
+            }
+
+            if (command == QLatin1String("text")) {
                 for (const QChar character : arg) {
                     sendKey(QKeySequence(QString(character))[0].key(),
                             Qt::NoModifier,
@@ -78,14 +86,6 @@ struct Runner {
                 }
 
                 window->requestActivate();
-            } else if (command == QLatin1String("appinactive")
-
-                       || command == QLatin1String("appactive")) {
-                // As if another application got (or gave back) the focus.
-                QWindowSystemInterface::handleApplicationStateChanged(
-                    command == QLatin1String("appactive") ? Qt::ApplicationActive
-                                                          : Qt::ApplicationInactive,
-                    true);
             } else if (command == QLatin1String("quit")) {
                 QCoreApplication::quit();
                 return;
@@ -93,7 +93,7 @@ struct Runner {
         }
 
         if (position < lines.size()) {
-            QTimer::singleShot(delay, window, [self]() {
+            QTimer::singleShot(delay, window, [self] {
                 self->step(self);
             });
         }
@@ -101,7 +101,7 @@ struct Runner {
 };
 }
 
-void DevScript::runFromEnvironment(QQmlApplicationEngine *engine)
+void DevScript::runFromEnvironment(const QQmlApplicationEngine *engine)
 {
     const QString path = qEnvironmentVariable("FLIMMER_SCRIPT");
     if (path.isEmpty() || engine->rootObjects().isEmpty()) {
@@ -114,7 +114,7 @@ void DevScript::runFromEnvironment(QQmlApplicationEngine *engine)
         return;
     }
 
-    auto runner = std::make_shared<Runner>();
+    auto const runner = std::make_shared<Runner>();
     runner->lines = QString::fromUtf8(file.readAll()).split(QLatin1Char('\n'));
     runner->window = qobject_cast<QQuickWindow *>(engine->rootObjects().constFirst());
 
@@ -122,7 +122,7 @@ void DevScript::runFromEnvironment(QQmlApplicationEngine *engine)
         return;
     }
 
-    QTimer::singleShot(0, runner->window, [runner]() {
+    QTimer::singleShot(0, runner->window, [runner] {
         runner->step(runner);
     });
 }

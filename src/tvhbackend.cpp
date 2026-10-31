@@ -29,6 +29,7 @@ constexpr int s_retryMs = 60 * 1000;
 ServerConfig configFromValues(const QVariantMap &values, const ServerConfig &fallback)
 {
     ServerConfig config = fallback;
+
     config.backend = ServerConfig::backendFromString(
         values.value(QStringLiteral("backend"), ServerConfig::backendName(config.backend))
             .toString());
@@ -72,7 +73,8 @@ QString firstUuid(const QJsonDocument &document)
 
 TvhBackend *TvhBackend::instance()
 {
-    static TvhBackend *s_instance = new TvhBackend;
+    static auto s_instance = new TvhBackend;
+
     return s_instance;
 }
 
@@ -92,10 +94,11 @@ TvhBackend::TvhBackend(QObject *parent)
     m_database.open();
 
     m_tickTimer.setInterval(s_tickMs);
-    connect(&m_tickTimer, &QTimer::timeout, this, [this]() {
+    connect(&m_tickTimer, &QTimer::timeout, this, [this] {
         m_channels->refreshNow(false);
         Q_EMIT tick();
     });
+
     m_tickTimer.start();
 
     m_epgTimer.setInterval(s_epgRefreshMs);
@@ -105,9 +108,9 @@ TvhBackend::TvhBackend(QObject *parent)
     m_retryTimer.setSingleShot(true);
     connect(&m_retryTimer, &QTimer::timeout, this, &TvhBackend::refresh);
 
-    AppSettings *settings = AppSettings::instance();
+    const AppSettings *settings = AppSettings::instance();
     connect(settings, &AppSettings::saved, this, &TvhBackend::applySettings);
-    connect(settings, &AppSettings::credentialsReadyChanged, this, [this]() {
+    connect(settings, &AppSettings::credentialsReadyChanged, this, [this] {
         applySettings(true);
     });
 
@@ -187,7 +190,7 @@ void TvhBackend::clearCache()
 
 void TvhBackend::refresh()
 {
-    AppSettings *settings = AppSettings::instance();
+    const AppSettings *settings = AppSettings::instance();
     m_retryTimer.stop();
 
     if (!settings->configured()) {
@@ -256,7 +259,7 @@ void TvhBackend::fetchChannels(int generation)
                    }
 
                    QVector<Channel> channels;
-                   for (const QJsonValue &value : entriesOf(result.json())) {
+                   for (const auto &value : entriesOf(result.json())) {
                        const QJsonObject object = value.toObject();
                        if (!object.value(QLatin1String("enabled")).toBool(true)) {
                            continue;
@@ -265,20 +268,18 @@ void TvhBackend::fetchChannels(int generation)
                        channels.append(Channel::fromJson(object));
                    }
 
-                   std::stable_sort(channels.begin(),
-                                    channels.end(),
-                                    [](const Channel &a, const Channel &b) {
-                                        // Unnumbered channels (0) go to the end, alphabetically.
-                                        if ((a.number == 0) != (b.number == 0)) {
-                                            return a.number != 0;
-                                        }
+                   std::ranges::stable_sort(channels, [](const Channel &a, const Channel &b) {
+                       // Unnumbered channels (0) go to the end, alphabetically.
+                       if ((a.number == 0) != (b.number == 0)) {
+                           return a.number != 0;
+                       }
 
-                                        if (a.number != b.number) {
-                                            return a.number < b.number;
-                                        }
+                       if (a.number != b.number) {
+                           return a.number < b.number;
+                       }
 
-                                        return a.name.localeAwareCompare(b.name) < 0;
-                                    });
+                       return a.name.localeAwareCompare(b.name) < 0;
+                   });
 
                    m_database.setServerIdentity(AppSettings::instance()->server().identity());
                    m_database.saveChannels(channels);
@@ -306,7 +307,7 @@ void TvhBackend::fetchPlaylist(int generation)
             return;
         }
 
-        M3u::Playlist playlist = M3u::parse(result.body, server.playlist());
+        M3u::Playlist const playlist = M3u::parse(result.body, server.playlist());
         if (playlist.channels.isEmpty()) {
             setBusy(false);
             setStatus(Offline,
@@ -350,15 +351,16 @@ void TvhBackend::fetchGuide(int generation, const QUrl &url, const Xmltv::Channe
         }
 
         const qint64 now = QDateTime::currentSecsSinceEpoch();
-        const qint64 end = now + qint64(AppSettings::instance()->guideDays()) * 24 * 3600;
-        auto events = std::make_shared<QVector<EpgEvent>>();
-        auto error = std::make_shared<QString>();
+        const qint64 end =
+            now + (static_cast<qint64>(AppSettings::instance()->guideDays()) * 24 * 3600);
+        const auto events = std::make_shared<QVector<EpgEvent>>();
+        const auto error = std::make_shared<QString>();
 
         // Guides of large playlists are tens of megabytes; keep the UI responsive.
-        QThread *worker = QThread::create([data = result.body, map, now, end, events, error]() {
+        QThread *worker = QThread::create([data = result.body, map, now, end, events, error] {
             *events = Xmltv::parse(data, map, now, end, error.get());
         });
-        connect(worker, &QThread::finished, this, [this, worker, generation, events, error]() {
+        connect(worker, &QThread::finished, this, [this, worker, generation, events, error] {
             worker->deleteLater();
             if (generation != m_generation) {
                 return;
@@ -380,16 +382,22 @@ void TvhBackend::fetchGuide(int generation, const QUrl &url, const Xmltv::Channe
 void TvhBackend::fetchEpgPage(int generation, int offset)
 {
     const qint64 now = QDateTime::currentSecsSinceEpoch();
-    const qint64 end = now + qint64(AppSettings::instance()->guideDays()) * 24 * 3600;
+    const qint64 end =
+        now + (static_cast<qint64>(AppSettings::instance()->guideDays()) * 24 * 3600);
+
     const QJsonArray filter{
-        QJsonObject{{QStringLiteral("field"), QStringLiteral("stop")},
-                    {QStringLiteral("type"), QStringLiteral("numeric")},
-                    {QStringLiteral("comparison"), QStringLiteral("gt")},
-                    {QStringLiteral("value"), now}},
-        QJsonObject{{QStringLiteral("field"), QStringLiteral("start")},
-                    {QStringLiteral("type"), QStringLiteral("numeric")},
-                    {QStringLiteral("comparison"), QStringLiteral("lt")},
-                    {QStringLiteral("value"), end}},
+        QJsonObject{
+            {QStringLiteral("field"), QStringLiteral("stop")},
+            {QStringLiteral("type"), QStringLiteral("numeric")},
+            {QStringLiteral("comparison"), QStringLiteral("gt")},
+            {QStringLiteral("value"), now},
+        },
+        QJsonObject{
+            {QStringLiteral("field"), QStringLiteral("start")},
+            {QStringLiteral("type"), QStringLiteral("numeric")},
+            {QStringLiteral("comparison"), QStringLiteral("lt")},
+            {QStringLiteral("value"), end},
+        },
     };
 
     QUrlQuery form;
@@ -411,13 +419,15 @@ void TvhBackend::fetchEpgPage(int generation, int offset)
             if (!result.ok) {
                 setBusy(false);
                 Q_EMIT notification(tr("Loading the TV guide failed: %1").arg(result.error));
+
                 return;
             }
 
             const QJsonDocument document = result.json();
             const QJsonArray entries = entriesOf(document);
-            for (const QJsonValue &value : entries) {
+            for (const auto &value : entries) {
                 EpgEvent event = EpgEvent::fromJson(value.toObject());
+
                 // Filter client side as well in case the server ignored the filter.
                 if (event.stop > now && event.start < end) {
                     m_incoming.append(std::move(event));
@@ -425,9 +435,10 @@ void TvhBackend::fetchEpgPage(int generation, int offset)
             }
 
             const int total = document.object().value(QLatin1String("totalCount")).toInt(-1);
-            const int fetched = offset + int(entries.size());
+            const int fetched = offset + static_cast<int>(entries.size());
             const bool more = entries.size() == s_epgPageSize && (total < 0 || fetched < total)
                 && fetched < s_maxEpgEvents;
+
             if (more) {
                 fetchEpgPage(generation, fetched);
             } else {
@@ -459,17 +470,20 @@ void TvhBackend::testConnection(const QVariantMap &values)
     if (isM3u(config)) {
         if (!config.playlist().isValid()) {
             Q_EMIT connectionTestFinished(false, tr("Please enter a playlist address"));
+
             return;
         }
 
         if (!config.xmltvUrl.isEmpty() && !config.xmltv().isValid()) {
             Q_EMIT connectionTestFinished(false, tr("The guide address is not valid"));
+
             return;
         }
 
         m_api->probe(config, config.playlist(), [this, config](const ApiResult &result) {
             if (!result.ok) {
                 Q_EMIT connectionTestFinished(false, result.error);
+
                 return;
             }
 
@@ -477,30 +491,40 @@ void TvhBackend::testConnection(const QVariantMap &values)
                 Q_EMIT connectionTestFinished(
                     false,
                     tr("The server answered, but did not send an M3U playlist"));
+
                 return;
             }
 
             const M3u::Playlist playlist = M3u::parse(result.body, config.playlist());
             const bool guide = config.xmltv().isValid() || playlist.guideUrl.isValid();
-            Q_EMIT connectionTestFinished(
-                !playlist.channels.isEmpty(),
-                playlist.channels.isEmpty()
-                    ? tr("The playlist contains no channels")
-                    : (guide ? tr("Playlist found: %1 channels").arg(playlist.channels.size())
-                             : tr("Playlist found: %1 channels, but no guide address")
-                                   .arg(playlist.channels.size())));
+
+            QString message;
+
+            if (playlist.channels.isEmpty()) {
+                message = tr("The playlist contains no channels");
+            } else if (guide) {
+                message = tr("Playlist found: %1 channels").arg(playlist.channels.size());
+            } else {
+                message = tr("Playlist found: %1 channels, but no guide address")
+                              .arg(playlist.channels.size());
+            }
+
+            Q_EMIT connectionTestFinished(!playlist.channels.isEmpty(), message);
         });
+
         return;
     }
 
     if (!config.isValid()) {
         Q_EMIT connectionTestFinished(false, tr("Please enter a server address"));
+
         return;
     }
 
     m_api->probe(config, QStringLiteral("api/serverinfo"), [this](const ApiResult &result) {
         if (!result.ok) {
             Q_EMIT connectionTestFinished(false, result.error);
+
             return;
         }
 
@@ -509,6 +533,7 @@ void TvhBackend::testConnection(const QVariantMap &values)
             Q_EMIT connectionTestFinished(
                 false,
                 tr("The server answered, but does not look like TVHeadend"));
+
             return;
         }
 
@@ -523,7 +548,9 @@ void TvhBackend::testConnection(const QVariantMap &values)
 QVariantList TvhBackend::eventsForChannel(const QString &uuid, double fromMs, double toMs) const
 {
     QVariantList result;
-    const auto events = m_store.range(uuid, qint64(fromMs / 1000.0), qint64(toMs / 1000.0));
+    const auto events = m_store.range(uuid,
+                                      static_cast<qint64>(fromMs / 1000.0),
+                                      static_cast<qint64>(toMs / 1000.0));
     result.reserve(events.size());
 
     for (const EpgEvent *event : events) {
@@ -535,19 +562,22 @@ QVariantList TvhBackend::eventsForChannel(const QString &uuid, double fromMs, do
 
 QVariantMap TvhBackend::eventAt(const QString &uuid, double timeMs) const
 {
-    const EpgEvent *event = m_store.eventAt(uuid, qint64(timeMs / 1000.0));
+    const EpgEvent *event = m_store.eventAt(uuid, static_cast<qint64>(timeMs / 1000.0));
+
     return event ? event->toVariant() : QVariantMap();
 }
 
 QVariantMap TvhBackend::nextEvent(const QString &uuid, double afterMs) const
 {
-    const EpgEvent *event = m_store.nextAfter(uuid, qint64(afterMs / 1000.0));
+    const EpgEvent *event = m_store.nextAfter(uuid, static_cast<qint64>(afterMs / 1000.0));
+
     return event ? event->toVariant() : QVariantMap();
 }
 
 QVariantMap TvhBackend::eventById(double id) const
 {
-    const EpgEvent *event = m_store.byId(qint64(id));
+    const EpgEvent *event = m_store.byId(static_cast<qint64>(id));
+
     return event ? event->toVariant() : QVariantMap();
 }
 
@@ -584,13 +614,16 @@ void TvhBackend::requestStream(const QString &uuid)
         if (!server.username.isEmpty() && url.userName().isEmpty()
             && url.host() == server.baseUrl().host()) {
             url = m_streamProxy->relay(url, server);
+
             if (url.isEmpty()) {
                 Q_EMIT streamFailed(uuid, tr("The local stream relay could not be started"));
+
                 return;
             }
         }
 
         Q_EMIT streamReady(uuid, url);
+
         return;
     }
 
@@ -599,11 +632,13 @@ void TvhBackend::requestStream(const QString &uuid)
 
     if (server.username.isEmpty()) {
         Q_EMIT streamReady(uuid, direct);
+
         return;
     }
 
     // Prefer a short-lived ticket so the password never ends up in the media URL.
     m_api->get(
+
         QStringLiteral("playlist/ticket/channel/") + uuid,
         profileQuery,
         [this, uuid, server, direct, profileQuery](const ApiResult &result) {
@@ -630,10 +665,12 @@ void TvhBackend::requestStream(const QString &uuid)
 
                     url.setQuery(query);
                     Q_EMIT streamReady(uuid, url);
+
                     return;
                 }
             } else if (result.httpStatus == 401 || result.httpStatus == 403) {
                 Q_EMIT streamFailed(uuid, result.error);
+
                 return;
             }
 
@@ -641,6 +678,7 @@ void TvhBackend::requestStream(const QString &uuid)
             const QUrl url = m_streamProxy->relay(direct, server);
             if (url.isEmpty()) {
                 Q_EMIT streamFailed(uuid, tr("The local stream relay could not be started"));
+
                 return;
             }
 
@@ -650,22 +688,25 @@ void TvhBackend::requestStream(const QString &uuid)
 
 void TvhBackend::record(double eventId)
 {
-    const EpgEvent *event = m_store.byId(qint64(eventId));
+    const EpgEvent *event = m_store.byId(static_cast<qint64>(eventId));
     if (!event || !canRecord()) {
         return;
     }
 
     const QString title = event->title;
     const qint64 id = event->id;
+
     QUrlQuery form;
     form.addQueryItem(QStringLiteral("event_id"), QString::number(id));
     form.addQueryItem(QStringLiteral("config_uuid"), QString());
+
     m_api->post(
         QStringLiteral("api/dvr/entry/create_by_event"),
         form,
         [this, id, title](const ApiResult &result) {
             if (!result.ok) {
                 Q_EMIT notification(tr("Could not schedule recording: %1").arg(result.error));
+
                 return;
             }
 
@@ -680,7 +721,7 @@ void TvhBackend::record(double eventId)
 
 void TvhBackend::cancelRecording(double eventId)
 {
-    const EpgEvent *event = m_store.byId(qint64(eventId));
+    const EpgEvent *event = m_store.byId(static_cast<qint64>(eventId));
     if (!event || event->dvrUuid.isEmpty() || !canRecord()) {
         return;
     }
@@ -688,13 +729,16 @@ void TvhBackend::cancelRecording(double eventId)
     const qint64 id = event->id;
     const QString title = event->title;
     const bool running = event->dvrState == QLatin1String("recording");
+
     QUrlQuery form;
     form.addQueryItem(QStringLiteral("uuid"), event->dvrUuid);
+
     const QString path =
         running ? QStringLiteral("api/dvr/entry/stop") : QStringLiteral("api/dvr/entry/cancel");
     m_api->post(path, form, [this, id, title, running](const ApiResult &result) {
         if (!result.ok) {
             Q_EMIT notification(tr("Could not cancel recording: %1").arg(result.error));
+
             return;
         }
 
