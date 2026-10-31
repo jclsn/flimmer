@@ -31,7 +31,6 @@ class EpgStoreTest : public QObject
 {
     Q_OBJECT
 
-private:
     EpgStore m_store;
 
 private Q_SLOTS:

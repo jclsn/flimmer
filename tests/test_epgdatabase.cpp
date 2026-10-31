@@ -43,7 +43,6 @@ class EpgDatabaseTest : public QObject
 {
     Q_OBJECT
 
-private:
     QTemporaryDir m_dataDir;
 
     // Waits for the events loaded on the database thread.

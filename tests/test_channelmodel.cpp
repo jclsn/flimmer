@@ -38,7 +38,6 @@ class ChannelModelTest : public QObject
 {
     Q_OBJECT
 
-private:
     EpgStore m_store;
     qint64 m_now = 0;
 
