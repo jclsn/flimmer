@@ -101,7 +101,7 @@ void InputDebug::install(const QQmlApplicationEngine *engine)
 
     // A blocked event loop looks like ignored keys, so report it separately.
     auto *stallTimer = new QTimer(window);
-    auto *clock = new QElapsedTimer;
+    auto clock = std::make_shared<QElapsedTimer>();
     clock->start();
 
     QObject::connect(stallTimer, &QTimer::timeout, window, [clock] {
@@ -109,10 +109,6 @@ void InputDebug::install(const QQmlApplicationEngine *engine)
         if (elapsed > s_stallReportMs) {
             qCDebug(lcInput) << "event loop was blocked for" << elapsed << "ms";
         }
-    });
-
-    QObject::connect(stallTimer, &QObject::destroyed, [clock]() {
-        delete clock;
     });
 
     stallTimer->start(s_stallCheckMs);
