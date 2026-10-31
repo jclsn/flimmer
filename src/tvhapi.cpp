@@ -126,7 +126,7 @@ void TvhApi::probe(const ServerConfig &config, const QUrl &url, Callback callbac
     connect(reply,
             &QNetworkReply::finished,
             this,
-            [reply, networkManager, callback = std::move(callback)]() {
+            [reply, networkManager, callback = std::move(callback)] {
                 ApiResult result;
                 result.httpStatus =
                     reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -158,7 +158,7 @@ void TvhApi::abortAll()
 void TvhApi::track(QNetworkReply *reply, Callback callback)
 {
     m_pending.insert(reply);
-    connect(reply, &QNetworkReply::finished, this, [this, reply, callback = std::move(callback)]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, callback = std::move(callback)] {
         m_pending.remove(reply);
         ApiResult result;
         result.httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();

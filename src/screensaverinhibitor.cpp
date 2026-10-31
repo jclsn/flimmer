@@ -50,7 +50,7 @@ void ScreenSaverInhibitor::inhibit()
 
     auto *watcher =
         new QDBusPendingCallWatcher(QDBusConnection::sessionBus().asyncCall(message), this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher]() {
+    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher] {
         QDBusPendingReply<uint> reply = *watcher;
         watcher->deleteLater();
 

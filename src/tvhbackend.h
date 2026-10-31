@@ -45,7 +45,7 @@ class TvhBackend : public QObject
     Q_PROPERTY(double now READ now NOTIFY tick)
 
 public:
-    enum Status {
+    enum Status : uint8_t {
         Unconfigured,
         Connecting,
         Online,

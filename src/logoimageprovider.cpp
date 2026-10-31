@@ -133,7 +133,7 @@ private:
         request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                              QNetworkRequest::NoLessSafeRedirectPolicy);
         m_reply = networkManager->get(request);
-        connect(m_reply, &QNetworkReply::finished, this, [this, networkManager, attempt]() {
+        connect(m_reply, &QNetworkReply::finished, this, [this, networkManager, attempt] {
             QNetworkReply *reply = m_reply;
             m_reply = nullptr;
             reply->deleteLater();
@@ -174,7 +174,7 @@ private:
 
             if (authProblem && attempt < s_maxAttempts) {
                 // A fresh manager starts a new connection and a new digest handshake.
-                QTimer::singleShot(s_retryDelayMs * attempt, this, [this, attempt]() {
+                QTimer::singleShot(s_retryDelayMs * attempt, this, [this, attempt] {
                     if (m_cancelled) {
                         Q_EMIT finished();
                         return;

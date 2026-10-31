@@ -115,12 +115,12 @@ void StreamRecorder::start(const QString &channelUuid, const QString &channelNam
     }
 
     QNetworkReply *reply = m_reply;
-    connect(reply, &QNetworkReply::readyRead, this, [this, reply]() {
+    connect(reply, &QNetworkReply::readyRead, this, [this, reply] {
         m_file.write(reply->readAll());
         m_file.flush();
     });
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply] {
         // A live stream only ends when stopped or when the connection breaks.
         if (reply == m_reply && reply->error() != QNetworkReply::NoError) {
             Q_EMIT failed(tr("Recording stopped: %1").arg(reply->errorString()));
@@ -149,7 +149,7 @@ void StreamRecorder::serve()
         socket->write("HTTP/1.0 200 OK\r\nContent-Type: video/mp2t\r\n\r\n");
 
         auto *timer = new QTimer(socket);
-        connect(timer, &QTimer::timeout, socket, [this, socket, file]() {
+        connect(timer, &QTimer::timeout, socket, [this, socket, file] {
             // Stopped (or another recording): end the stream.
             if (!m_file.isOpen() || file->fileName() != m_file.fileName()) {
                 socket->disconnectFromHost();

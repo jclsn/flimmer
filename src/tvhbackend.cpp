@@ -93,7 +93,7 @@ TvhBackend::TvhBackend(QObject *parent)
     m_database.open();
 
     m_tickTimer.setInterval(s_tickMs);
-    connect(&m_tickTimer, &QTimer::timeout, this, [this]() {
+    connect(&m_tickTimer, &QTimer::timeout, this, [this] {
         m_channels->refreshNow(false);
         Q_EMIT tick();
     });
@@ -109,7 +109,7 @@ TvhBackend::TvhBackend(QObject *parent)
 
     const AppSettings *settings = AppSettings::instance();
     connect(settings, &AppSettings::saved, this, &TvhBackend::applySettings);
-    connect(settings, &AppSettings::credentialsReadyChanged, this, [this]() {
+    connect(settings, &AppSettings::credentialsReadyChanged, this, [this] {
         applySettings(true);
     });
 
@@ -356,10 +356,10 @@ void TvhBackend::fetchGuide(int generation, const QUrl &url, const Xmltv::Channe
         auto error = std::make_shared<QString>();
 
         // Guides of large playlists are tens of megabytes; keep the UI responsive.
-        QThread *worker = QThread::create([data = result.body, map, now, end, events, error]() {
+        QThread *worker = QThread::create([data = result.body, map, now, end, events, error] {
             *events = Xmltv::parse(data, map, now, end, error.get());
         });
-        connect(worker, &QThread::finished, this, [this, worker, generation, events, error]() {
+        connect(worker, &QThread::finished, this, [this, worker, generation, events, error] {
             worker->deleteLater();
             if (generation != m_generation) {
                 return;

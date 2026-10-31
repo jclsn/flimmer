@@ -21,7 +21,7 @@ class ChannelModel : public QAbstractListModel
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
 
 public:
-    enum Role {
+    enum Role : uint16_t {
         UuidRole = Qt::UserRole + 1,
         NumberRole,
         NameRole,

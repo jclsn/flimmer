@@ -38,7 +38,7 @@ StreamProxy::StreamProxy(QObject *parent)
     , m_networkManager(new QNetworkAccessManager(this))
 {
     NetworkAuth::install(m_networkManager);
-    connect(m_server, &QTcpServer::pendingConnectionAvailable, this, [this]() {
+    connect(m_server, &QTcpServer::pendingConnectionAvailable, this, [this] {
         while (QTcpSocket *socket = m_server->nextPendingConnection()) {
             handleConnection(socket);
         }
@@ -97,7 +97,7 @@ void StreamProxy::handleConnection(QTcpSocket *socket)
     auto connection = std::make_shared<QMetaObject::Connection>();
 
     *connection =
-        connect(socket, &QTcpSocket::readyRead, this, [this, socket, request, connection]() {
+        connect(socket, &QTcpSocket::readyRead, this, [this, socket, request, connection] {
             request->append(socket->readAll());
             const qsizetype end = request->indexOf("\r\n\r\n");
 
@@ -168,11 +168,11 @@ void StreamProxy::serve(QTcpSocket *socket, const QByteArray &request)
         socket->write(reply->readAll());
     };
 
-    connect(reply, &QNetworkReply::readyRead, socket, [forward]() {
+    connect(reply, &QNetworkReply::readyRead, socket, [forward] {
         forward(false);
     });
 
-    connect(socket, &QTcpSocket::bytesWritten, reply, [forward]() {
+    connect(socket, &QTcpSocket::bytesWritten, reply, [forward] {
         forward(false);
     });
 
@@ -192,7 +192,7 @@ void StreamProxy::serve(QTcpSocket *socket, const QByteArray &request)
     });
 
     // The player stopped (channel change): stop downloading as well.
-    connect(socket, &QTcpSocket::disconnected, reply, [reply]() {
+    connect(socket, &QTcpSocket::disconnected, reply, [reply] {
         reply->abort();
     });
 }

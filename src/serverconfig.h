@@ -14,7 +14,7 @@
 // XMLTV guide (e.g. Dispatcharr). The password only ever lives in memory;
 // persistence goes through the system secret store (AppSettings).
 struct ServerConfig {
-    enum class Backend {
+    enum class Backend : std::uint8_t {
         Tvheadend,
         M3u,
     };
