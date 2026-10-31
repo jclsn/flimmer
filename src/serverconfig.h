@@ -33,16 +33,16 @@ struct ServerConfig {
     static Backend backendFromString(const QString &name);
     static QString backendName(Backend backend);
 
-    bool isValid() const;
-    QUrl playlist() const;
-    QUrl xmltv() const;
+    [[nodiscard]] bool isValid() const;
+    [[nodiscard]] QUrl playlist() const;
+    [[nodiscard]] QUrl xmltv() const;
     // Base URL including an optional web root, always ending in '/'. For M3U
     // sources this is the root of the playlist's server.
-    QUrl baseUrl() const;
+    [[nodiscard]] QUrl baseUrl() const;
     // Resolves a server relative path (e.g. "api/serverinfo") against baseUrl().
-    QUrl url(const QString &path) const;
+    [[nodiscard]] QUrl url(const QString &path) const;
     // Identifies the server (not the user) so caches of another server can be discarded.
-    QString identity() const;
+    [[nodiscard]] QString identity() const;
 
     bool operator==(const ServerConfig &other) const = default;
 };

@@ -22,7 +22,7 @@ public:
     explicit ScreenSaverInhibitor(QObject *parent = nullptr);
     ~ScreenSaverInhibitor() override;
 
-    bool active() const
+    [[nodiscard]] bool active() const
     {
         return m_active;
     }

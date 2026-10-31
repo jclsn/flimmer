@@ -28,16 +28,16 @@ public:
     ~EpgDatabase();
 
     bool open();
-    QString serverIdentity() const
+    [[nodiscard]] QString serverIdentity() const
     {
         return m_serverIdentity;
     }
     void setServerIdentity(const QString &identity);
-    qint64 lastUpdate() const;
+    [[nodiscard]] qint64 lastUpdate() const;
 
     void clear();
     void saveChannels(const QVector<Channel> &channels);
-    QVector<Channel> loadChannels() const;
+    [[nodiscard]] QVector<Channel> loadChannels() const;
     void saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt);
     // Calls 'done' on the thread of 'context' once the events are loaded. 'context' must
     // outlive the database.
@@ -52,7 +52,7 @@ private:
     // Like run(), but waits for 'job' to finish.
     void runAndWait(std::function<void()> job) const;
 
-    QString meta(const QString &key) const;
+    [[nodiscard]] QString meta(const QString &key) const;
     void setMeta(const QString &key, const QString &value) const;
 
     QString m_connectionName;

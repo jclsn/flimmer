@@ -42,12 +42,12 @@ public:
 
     explicit ChannelModel(const EpgStore *store, QObject *parent = nullptr);
 
-    int rowCount(const QModelIndex &parent = {}) const override;
-    QVariant data(const QModelIndex &index, int role) const override;
-    QHash<int, QByteArray> roleNames() const override;
+    [[nodiscard]] int rowCount(const QModelIndex &parent = {}) const override;
+    [[nodiscard]] QVariant data(const QModelIndex &index, int role) const override;
+    [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
 
     void setChannels(const QVector<Channel> &channels);
-    const QVector<Channel> &channels() const
+    [[nodiscard]] const QVector<Channel> &channels() const
     {
         return m_channels;
     }
@@ -56,12 +56,12 @@ public:
     // 'storeChanged' only rows whose programme changed are updated in full.
     void refreshNow(bool storeChanged = true);
 
-    Q_INVOKABLE int indexOfUuid(const QString &uuid) const;
-    Q_INVOKABLE int indexOfNumber(int number) const;
-    Q_INVOKABLE QVariantMap get(int row) const;
+    Q_INVOKABLE [[nodiscard]] int indexOfUuid(const QString &uuid) const;
+    Q_INVOKABLE [[nodiscard]] int indexOfNumber(int number) const;
+    Q_INVOKABLE [[nodiscard]] QVariantMap get(int row) const;
     // Cheaper than get(row).uuid, which converts every role.
-    Q_INVOKABLE QString uuidAt(int row) const;
-    Q_INVOKABLE QUrl iconUrl(int row) const;
+    Q_INVOKABLE [[nodiscard]] QString uuidAt(int row) const;
+    Q_INVOKABLE [[nodiscard]] QUrl iconUrl(int row) const;
 
 Q_SIGNALS:
     void countChanged();

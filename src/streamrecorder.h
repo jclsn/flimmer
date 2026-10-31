@@ -33,11 +33,11 @@ public:
     explicit StreamRecorder(QObject *parent = nullptr);
     ~StreamRecorder() override;
 
-    bool recording() const
+    [[nodiscard]] bool recording() const
     {
         return m_reply != nullptr;
     }
-    QUrl url() const;
+    [[nodiscard]] QUrl url() const;
 
     Q_INVOKABLE void start(const QString &channelUuid, const QString &channelName);
     // Stops recording and deletes the file.
