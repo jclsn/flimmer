@@ -82,8 +82,11 @@ private Q_SLOTS:
         EpgDatabase database;
         QVERIFY(database.open());
 
-        database.saveChannels({channel(QStringLiteral("b"), 2),
-                               channel(QStringLiteral("a"), 1, QStringLiteral("http://a/1"))});
+        database.saveChannels({
+            channel(QStringLiteral("b"), 2),
+            channel(QStringLiteral("a"), 1, QStringLiteral("http://a/1")),
+        });
+
         const QVector<Channel> loaded = database.loadChannels();
 
         // The order is kept as saved.
@@ -101,9 +104,13 @@ private Q_SLOTS:
         EpgDatabase database;
         QVERIFY(database.open());
 
-        database.saveEvents({makeEvent(1, QStringLiteral("a"), 100, 200),
-                             makeEvent(2, QStringLiteral("a"), 200, 300)},
-                            12345);
+        database.saveEvents(
+            {
+                makeEvent(1, QStringLiteral("a"), 100, 200),
+                makeEvent(2, QStringLiteral("a"), 200, 300),
+            },
+            12345);
+
         const QVector<EpgEvent> loaded = loadEvents(database, 0);
 
         QCOMPARE(loaded.size(), 2);

@@ -72,7 +72,8 @@ QUrl StreamProxy::relay(const QUrl &upstream, const ServerConfig &server)
     const QString token = QString::fromLatin1(
         QByteArray(reinterpret_cast<const char *>(random), sizeof(random)).toHex());
 
-    m_targets.insert(token, {upstream, server.username, server.password});
+    m_targets.insert(token,
+                     {.url = upstream, .username = server.username, .password = server.password});
 
     m_order.append(token);
     while (m_order.size() > s_maxTargets) {

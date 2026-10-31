@@ -119,9 +119,11 @@ private Q_SLOTS:
 
     void dropsInvalidEvents()
     {
-        m_store.setEvents({makeEvent(1, QString(), 100, 200),
-                           makeEvent(2, s_one, 300, 300),
-                           makeEvent(3, s_one, 400, 300)});
+        m_store.setEvents({
+            makeEvent(1, QString(), 100, 200),
+            makeEvent(2, s_one, 300, 300),
+            makeEvent(3, s_one, 400, 300),
+        });
 
         QVERIFY(m_store.isEmpty());
     }

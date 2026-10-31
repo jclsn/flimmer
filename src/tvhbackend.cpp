@@ -385,14 +385,18 @@ void TvhBackend::fetchEpgPage(int generation, int offset)
     const qint64 now = QDateTime::currentSecsSinceEpoch();
     const qint64 end = now + static_cast<qint64>(AppSettings::instance()->guideDays()) * 24 * 3600;
     const QJsonArray filter{
-        QJsonObject{{QStringLiteral("field"), QStringLiteral("stop")},
-                    {QStringLiteral("type"), QStringLiteral("numeric")},
-                    {QStringLiteral("comparison"), QStringLiteral("gt")},
-                    {QStringLiteral("value"), now}},
-        QJsonObject{{QStringLiteral("field"), QStringLiteral("start")},
-                    {QStringLiteral("type"), QStringLiteral("numeric")},
-                    {QStringLiteral("comparison"), QStringLiteral("lt")},
-                    {QStringLiteral("value"), end}},
+        QJsonObject{
+            {QStringLiteral("field"), QStringLiteral("stop")},
+            {QStringLiteral("type"), QStringLiteral("numeric")},
+            {QStringLiteral("comparison"), QStringLiteral("gt")},
+            {QStringLiteral("value"), now},
+        },
+        QJsonObject{
+            {QStringLiteral("field"), QStringLiteral("start")},
+            {QStringLiteral("type"), QStringLiteral("numeric")},
+            {QStringLiteral("comparison"), QStringLiteral("lt")},
+            {QStringLiteral("value"), end},
+        },
     };
 
     QUrlQuery form;

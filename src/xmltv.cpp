@@ -176,16 +176,18 @@ int Xmltv::genreFromCategory(const QString &category)
         return 0x20;
     }
 
-    if (any({"docu",
-             "doku",
-             "education",
-             "bildung",
-             "science",
-             "wissen",
-             "nature",
-             "natur",
-             "history",
-             "geschichte"})) {
+    if (any({
+            "docu",
+            "doku",
+            "education",
+            "bildung",
+            "science",
+            "wissen",
+            "nature",
+            "natur",
+            "history",
+            "geschichte",
+        })) {
         return 0x90;
     }
 
@@ -193,20 +195,22 @@ int Xmltv::genreFromCategory(const QString &category)
         return 0x60;
     }
 
-    if (any({"movie",
-             "film",
-             "drama",
-             "series",
-             "serie",
-             "crime",
-             "krimi",
-             "thriller",
-             "comedy",
-             "komödie",
-             "western",
-             "sci-fi",
-             "horror",
-             "romance"})) {
+    if (any({
+            "movie",
+            "film",
+            "drama",
+            "series",
+            "serie",
+            "crime",
+            "krimi",
+            "thriller",
+            "comedy",
+            "komödie",
+            "western",
+            "sci-fi",
+            "horror",
+            "romance",
+        })) {
         return 0x10;
     }
 
@@ -222,15 +226,17 @@ int Xmltv::genreFromCategory(const QString &category)
         return 0x80;
     }
 
-    if (any({"leisure",
-             "freizeit",
-             "hobby",
-             "travel",
-             "reise",
-             "cooking",
-             "kochen",
-             "lifestyle",
-             "shopping"})) {
+    if (any({
+            "leisure",
+            "freizeit",
+            "hobby",
+            "travel",
+            "reise",
+            "cooking",
+            "kochen",
+            "lifestyle",
+            "shopping",
+        })) {
         return 0xA0;
     }
 

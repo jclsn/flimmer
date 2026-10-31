@@ -123,7 +123,7 @@ private:
         }
 
         QMutexLocker lock(&m_mutex);
-        m_image = image;
+        m_image = std::move(image);
     }
 
     void download(QNetworkAccessManager *networkManager, int attempt)

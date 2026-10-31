@@ -214,11 +214,13 @@ QVector<Channel> EpgDatabase::loadChannels() const
         }
 
         while (query.next()) {
-            result.append({query.value(0).toString(),
-                           query.value(1).toInt(),
-                           query.value(2).toString(),
-                           query.value(3).toString(),
-                           query.value(4).toString()});
+            result.append({
+                .uuid = query.value(0).toString(),
+                .number = query.value(1).toInt(),
+                .name = query.value(2).toString(),
+                .icon = query.value(3).toString(),
+                .stream = query.value(4).toString(),
+            });
         }
     });
 

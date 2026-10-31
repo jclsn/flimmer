@@ -106,10 +106,13 @@ QPalette paletteFromScheme(const QString &path)
 QVariantList ColorSchemes::available()
 {
     QVariantList result;
-    result.append(
-        QVariantMap{{QStringLiteral("id"), QString()},
-                    {QStringLiteral("name"),
-                     QCoreApplication::translate("ColorSchemes", "Plasma system colors")}});
+    result.append(QVariantMap{
+        {QStringLiteral("id"), QString()},
+        {
+            QStringLiteral("name"),
+            QCoreApplication::translate("ColorSchemes", "Plasma system colors"),
+        },
+    });
 
     QMap<QString, QString> schemes; // id -> display name, sorted by id
     const QStringList dirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation,

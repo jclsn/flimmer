@@ -139,8 +139,9 @@ void ChannelModel::refreshNow(bool storeChanged)
     for (int i = 0; i < m_channels.size(); ++i) {
         const EpgEvent *current = m_store->eventAt(m_channels.at(i).uuid, now);
         const NowNext nowNext = {
-            current,
-            m_store->nextAfter(m_channels.at(i).uuid, current ? current->start : now)};
+            .now = current,
+            .next = m_store->nextAfter(m_channels.at(i).uuid, current ? current->start : now),
+        };
 
         // The events stayed where they were, so the pointers tell whether the programme changed.
         const bool changed =
