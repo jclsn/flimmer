@@ -12,7 +12,6 @@
 #include <QQuickWindow>
 #include <QTimer>
 #include <QWindow>
-#include <qpa/qwindowsysteminterface.h>
 
 #include <memory>
 
@@ -87,14 +86,6 @@ struct Runner {
                 }
 
                 window->requestActivate();
-            } else if (command == QLatin1String("appinactive")
-
-                       || command == QLatin1String("appactive")) {
-                // As if another application got (or gave back) the focus.
-                QWindowSystemInterface::handleApplicationStateChanged(
-                    command == QLatin1String("appactive") ? Qt::ApplicationActive
-                                                          : Qt::ApplicationInactive,
-                    true);
             } else if (command == QLatin1String("quit")) {
                 QCoreApplication::quit();
                 return;
