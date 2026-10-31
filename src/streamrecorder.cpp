@@ -136,7 +136,9 @@ void StreamRecorder::serve()
         connect(socket, &QTcpSocket::disconnected, socket, &QObject::deleteLater);
 
         // Only the current recording is served; the request itself doesn't matter.
-        const auto *file = new QFile(m_file.fileName(), socket);
+        // No QObject parent: the shared_ptr is the sole owner, so the socket's
+        // destruction cannot delete the file a second time (double delete).
+        const auto file = std::make_shared<QFile>(m_file.fileName());
 
         if (!m_file.isOpen() || !file->open(QIODevice::ReadOnly)) {
             socket->write("HTTP/1.0 404 Not Found\r\n\r\n");
@@ -148,6 +150,10 @@ void StreamRecorder::serve()
         // No length: the player treats it like a live stream and waits for more data.
         socket->write("HTTP/1.0 200 OK\r\nContent-Type: video/mp2t\r\n\r\n");
 
+        // The timer must outlive serve(): parent it to the socket so it is deleted
+        // together with the connection. A local std::unique_ptr here is destroyed
+        // when this function returns, before the timer can ever fire, so no data
+        // would ever be written to the socket and playback stalls.
         auto *timer = new QTimer(socket);
         connect(timer, &QTimer::timeout, socket, [this, socket, file] {
             // Stopped (or another recording): end the stream.
