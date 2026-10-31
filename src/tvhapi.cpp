@@ -21,6 +21,7 @@ QNetworkRequest makeRequest(const QUrl &url)
     request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("flimmer/0.1"));
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                          QNetworkRequest::NoLessSafeRedirectPolicy);
+
     return request;
 }
 
@@ -101,6 +102,7 @@ void TvhApi::post(const QString &path, const QUrlQuery &form, Callback callback)
     QNetworkRequest request = makeRequest(m_server.url(path));
     request.setHeader(QNetworkRequest::ContentTypeHeader,
                       QStringLiteral("application/x-www-form-urlencoded"));
+
     // QUrlQuery leaves '+' alone, which form decoding would turn into a space.
     const QByteArray body = form.toString(QUrl::FullyEncoded).toUtf8().replace('+', "%2B");
     QNetworkReply *reply = m_networkManager->post(request, body);
@@ -120,6 +122,7 @@ void TvhApi::probe(const ServerConfig &config, const QUrl &url, Callback callbac
     NetworkAuth::install(networkManager);
     QNetworkReply *reply = networkManager->get(makeRequest(url));
     setCredentials(reply, config);
+
     connect(reply,
             &QNetworkReply::finished,
             this,

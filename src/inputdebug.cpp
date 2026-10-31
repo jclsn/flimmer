@@ -87,9 +87,11 @@ void InputDebug::install(QQmlApplicationEngine *engine)
     QObject::connect(window, &QQuickWindow::activeFocusItemChanged, window, [window]() {
         qCDebug(lcInput).noquote() << "focus ->" << describe(window->activeFocusItem());
     });
+
     QObject::connect(window, &QWindow::activeChanged, window, [window]() {
         qCDebug(lcInput) << "window active:" << window->isActive();
     });
+
     QObject::connect(qApp,
                      &QGuiApplication::applicationStateChanged,
                      window,
@@ -101,15 +103,18 @@ void InputDebug::install(QQmlApplicationEngine *engine)
     auto *stallTimer = new QTimer(window);
     auto *clock = new QElapsedTimer;
     clock->start();
+
     QObject::connect(stallTimer, &QTimer::timeout, window, [clock]() {
         const qint64 elapsed = clock->restart();
         if (elapsed > s_stallReportMs) {
             qCDebug(lcInput) << "event loop was blocked for" << elapsed << "ms";
         }
     });
+
     QObject::connect(stallTimer, &QObject::destroyed, [clock]() {
         delete clock;
     });
+
     stallTimer->start(s_stallCheckMs);
     qCDebug(lcInput).noquote() << "input debugging enabled, focus:"
                                << describe(window->activeFocusItem());

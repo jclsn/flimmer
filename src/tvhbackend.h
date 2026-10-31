@@ -60,58 +60,72 @@ public:
     {
         return m_channels;
     }
+
     [[nodiscard]] Status status() const
     {
         return m_status;
     }
+
     [[nodiscard]] QString statusText() const
     {
         return m_statusText;
     }
+
     [[nodiscard]] bool busy() const
     {
         return m_busy;
     }
+
     [[nodiscard]] QString serverName() const
     {
         return m_serverName;
     }
+
     [[nodiscard]] QString serverVersion() const
     {
         return m_serverVersion;
     }
+
     [[nodiscard]] bool canRecord() const;
+
     [[nodiscard]] QDateTime lastUpdate() const
     {
         return m_lastUpdate;
     }
+
     [[nodiscard]] int epgRevision() const
     {
         return m_epgRevision;
     }
+
     [[nodiscard]] double epgEnd() const
     {
         return double(m_store.lastStop()) * 1000.0;
     }
+
     [[nodiscard]] double now() const
     {
         return double(QDateTime::currentMSecsSinceEpoch());
     }
 
     Q_INVOKABLE void refresh();
+
     // values: same keys as Settings.save(); password may be omitted to use the stored one.
     Q_INVOKABLE void testConnection(const QVariantMap &values);
     Q_INVOKABLE void clearCache();
 
     Q_INVOKABLE [[nodiscard]] QVariantList
     eventsForChannel(const QString &uuid, double fromMs, double toMs) const;
+
     Q_INVOKABLE [[nodiscard]] QVariantMap eventAt(const QString &uuid, double timeMs) const;
     Q_INVOKABLE [[nodiscard]] QVariantMap nextEvent(const QString &uuid, double afterMs) const;
     Q_INVOKABLE [[nodiscard]] QVariantMap eventById(double id) const;
 
     Q_INVOKABLE void requestStream(const QString &uuid);
+
     // The server's address of a channel's stream, without credentials. Empty if unknown.
     [[nodiscard]] QUrl streamUrl(const QString &uuid) const;
+
     Q_INVOKABLE void record(double eventId);
     Q_INVOKABLE void cancelRecording(double eventId);
 

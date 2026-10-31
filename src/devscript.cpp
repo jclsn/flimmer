@@ -35,16 +35,20 @@ struct Runner {
     void step(const std::shared_ptr<Runner> &self)
     {
         int delay = 50;
+
         while (position < lines.size()) {
             const QString line = lines.at(position++).trimmed();
+
             if (line.isEmpty() || line.startsWith(QLatin1Char('#'))) {
                 continue;
             }
 
             const QString command = line.section(QLatin1Char(' '), 0, 0);
             const QString arg = line.section(QLatin1Char(' '), 1);
+
             if (command == QLatin1String("wait")) {
                 delay = arg.toInt();
+
                 break;
             } else if (command == QLatin1String("key")) {
                 const QKeyCombination combo = QKeySequence::fromString(arg)[0];
@@ -54,6 +58,7 @@ struct Runner {
                     : QString();
                 sendKey(key, combo.keyboardModifiers(), text);
                 delay = 150;
+
                 break;
             } else if (command == QLatin1String("text")) {
                 for (const QChar character : arg) {

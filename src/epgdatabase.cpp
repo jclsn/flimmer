@@ -76,6 +76,7 @@ bool EpgDatabase::open()
         query.exec(QStringLiteral("PRAGMA journal_mode=WAL"));
         query.exec(QStringLiteral("PRAGMA synchronous=NORMAL"));
         query.exec(QStringLiteral("PRAGMA user_version"));
+
         const int version = query.next() ? query.value(0).toInt() : 0;
         if (version == 1) {
             // Version 2 added the stream URL of M3U channels.

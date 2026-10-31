@@ -75,6 +75,7 @@ QUrl StreamProxy::relay(const QUrl &upstream, const ServerConfig &server)
         QByteArray(reinterpret_cast<const char *>(random), sizeof(random)).toHex());
 
     m_targets.insert(token, {upstream, server.username, server.password});
+
     m_order.append(token);
     while (m_order.size() > s_maxTargets) {
         m_targets.remove(m_order.takeFirst());
@@ -85,6 +86,7 @@ QUrl StreamProxy::relay(const QUrl &upstream, const ServerConfig &server)
     url.setHost(QStringLiteral("127.0.0.1"));
     url.setPort(m_server->serverPort());
     url.setPath(QLatin1Char('/') + token);
+
     return url;
 }
 
@@ -94,10 +96,12 @@ void StreamProxy::handleConnection(QTcpSocket *socket)
 
     auto request = std::make_shared<QByteArray>();
     auto connection = std::make_shared<QMetaObject::Connection>();
+
     *connection =
         connect(socket, &QTcpSocket::readyRead, this, [this, socket, request, connection]() {
             request->append(socket->readAll());
             const qsizetype end = request->indexOf("\r\n\r\n");
+
             if (end < 0) {
                 if (request->size() > s_maxRequestSize) {
                     disconnect(*connection);
@@ -118,12 +122,14 @@ void StreamProxy::serve(QTcpSocket *socket, const QByteArray &request)
     const QList<QByteArray> requestLine = request.left(request.indexOf("\r\n")).split(' ');
     if (requestLine.size() < 2 || requestLine.at(0) != "GET") {
         respond(socket, "405 Method Not Allowed");
+
         return;
     }
 
     const auto target = m_targets.constFind(QString::fromLatin1(requestLine.at(1).mid(1)));
     if (target == m_targets.cend()) {
         respond(socket, "404 Not Found");
+
         return;
     }
 
@@ -132,11 +138,13 @@ void StreamProxy::serve(QTcpSocket *socket, const QByteArray &request)
     upstreamRequest.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("flimmer/0.1"));
     upstreamRequest.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                                  QNetworkRequest::NoLessSafeRedirectPolicy);
+
     QNetworkReply *reply = m_networkManager->get(upstreamRequest);
     NetworkAuth::setReplyCredentials(reply, target->username, target->password);
     reply->setReadBufferSize(s_bufferSize);
 
     auto headerSent = std::make_shared<bool>(false);
+
     const auto forward = [socket, reply, headerSent](bool all) {
         if (socket->state() != QAbstractSocket::ConnectedState) {
             return;
@@ -148,6 +156,7 @@ void StreamProxy::serve(QTcpSocket *socket, const QByteArray &request)
 
         if (!*headerSent) {
             *headerSent = true;
+
             QByteArray type = reply->header(QNetworkRequest::ContentTypeHeader).toByteArray();
             if (type.isEmpty()) {
                 type = "application/octet-stream";
@@ -163,11 +172,14 @@ void StreamProxy::serve(QTcpSocket *socket, const QByteArray &request)
     connect(reply, &QNetworkReply::readyRead, socket, [forward]() {
         forward(false);
     });
+
     connect(socket, &QTcpSocket::bytesWritten, reply, [forward]() {
         forward(false);
     });
+
     connect(reply, &QNetworkReply::finished, socket, [socket, reply, headerSent, forward]() {
         reply->deleteLater();
+
         if (reply->error() != QNetworkReply::NoError && !*headerSent) {
             const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
             respond(socket,
@@ -179,6 +191,7 @@ void StreamProxy::serve(QTcpSocket *socket, const QByteArray &request)
         forward(true);
         socket->disconnectFromHost();
     });
+
     // The player stopped (channel change): stop downloading as well.
     connect(socket, &QTcpSocket::disconnected, reply, [reply]() {
         reply->abort();

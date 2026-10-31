@@ -24,6 +24,7 @@ int digits(QStringView text, qsizetype from, qsizetype count, bool *ok)
     for (qsizetype i = from; i < from + count; ++i) {
         if (i >= text.size() || !text.at(i).isDigit()) {
             *ok = false;
+
             return 0;
         }
 
@@ -72,6 +73,7 @@ Programme readProgramme(QXmlStreamReader &xml)
         } else if (name == QLatin1String("category")) {
             const int genre = Xmltv::genreFromCategory(
                 xml.readElementText(QXmlStreamReader::IncludeChildElements));
+
             if (programme.genre == 0) {
                 programme.genre = genre;
             }
@@ -101,20 +103,24 @@ QStringList readChannelNames(QXmlStreamReader &xml)
 qint64 Xmltv::parseTime(QStringView text)
 {
     text = text.trimmed();
+
     bool ok = true;
     const int year = digits(text, 0, 4, &ok);
     const int month = digits(text, 4, 2, &ok);
     const int day = digits(text, 6, 2, &ok);
+
     if (!ok) {
         return 0;
     }
 
     // Hours, minutes and seconds may be left out.
     qsizetype position = 8;
+
     int time[3] = {0, 0, 0};
     for (int &part : time) {
         bool partOk = true;
         const int value = digits(text, position, 2, &partOk);
+
         if (!partOk) {
             break;
         }
@@ -137,6 +143,7 @@ qint64 Xmltv::parseTime(QStringView text)
         bool zoneOk = true;
         const int hours = digits(zone, 1, 2, &zoneOk);
         const int minutes = digits(zone, 3, 2, &zoneOk);
+
         if (zoneOk) {
             offset = (hours * 3600 + minutes * 60) * (zone.at(0) == QLatin1Char('-') ? -1 : 1);
         }
@@ -159,12 +166,15 @@ int Xmltv::genreFromCategory(const QString &category)
     if (any({"kid", "child", "kinder", "animation", "cartoon", "zeichentrick"})) {
         return 0x50;
     }
+
     if (any({"sport", "football", "fußball", "soccer"})) {
         return 0x40;
     }
+
     if (any({"news", "nachrichten", "weather", "wetter"})) {
         return 0x20;
     }
+
     if (any({"docu",
              "doku",
              "education",
@@ -177,9 +187,11 @@ int Xmltv::genreFromCategory(const QString &category)
              "geschichte"})) {
         return 0x90;
     }
+
     if (any({"music", "musik", "concert", "konzert"})) {
         return 0x60;
     }
+
     if (any({"movie",
              "film",
              "drama",
@@ -196,15 +208,19 @@ int Xmltv::genreFromCategory(const QString &category)
              "romance"})) {
         return 0x10;
     }
+
     if (any({"show", "entertainment", "unterhaltung", "game", "quiz", "reality", "talk"})) {
         return 0x30;
     }
+
     if (any({"arts", "culture", "kultur", "kunst"})) {
         return 0x70;
     }
+
     if (any({"politic", "politik", "society", "gesellschaft", "magazin", "religion"})) {
         return 0x80;
     }
+
     if (any({"leisure",
              "freizeit",
              "hobby",
@@ -261,6 +277,7 @@ Xmltv::parse(const QByteArray &data, const ChannelMap &map, qint64 from, qint64 
             const QString id = xml.attributes().value(QLatin1String("id")).toString();
             const QStringList names = readChannelNames(xml);
             QStringList uuids = map.byId.value(key(id));
+
             for (const QString &name : names) {
                 if (!uuids.isEmpty()) {
                     break;

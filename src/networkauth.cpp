@@ -59,6 +59,7 @@ void NetworkAuth::install(QNetworkAccessManager *networkManager)
                              password = reply->property(s_password).toString();
                          } else {
                              const ServerConfig active = activeServer();
+
                              // Never leak credentials to a host other than the configured server.
                              if (reply->url().host() != active.baseUrl().host()) {
                                  return;

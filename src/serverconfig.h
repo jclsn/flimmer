@@ -20,12 +20,14 @@ struct ServerConfig {
     };
 
     Backend backend = Backend::Tvheadend;
+
     // TVHeadend
     QString host;
     int port = 9981;
     bool https = false;
     QString username;
     QString password;
+
     // M3U + XMLTV; an empty guide URL means the one announced by the playlist.
     QString playlistUrl;
     QString xmltvUrl;
@@ -36,11 +38,14 @@ struct ServerConfig {
     [[nodiscard]] bool isValid() const;
     [[nodiscard]] QUrl playlist() const;
     [[nodiscard]] QUrl xmltv() const;
+
     // Base URL including an optional web root, always ending in '/'. For M3U
     // sources this is the root of the playlist's server.
     [[nodiscard]] QUrl baseUrl() const;
+
     // Resolves a server relative path (e.g. "api/serverinfo") against baseUrl().
     [[nodiscard]] QUrl url(const QString &path) const;
+
     // Identifies the server (not the user) so caches of another server can be discarded.
     [[nodiscard]] QString identity() const;
 

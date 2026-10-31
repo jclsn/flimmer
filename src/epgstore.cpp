@@ -30,6 +30,7 @@ EpgEvent EpgEvent::fromJson(const QJsonObject &object)
     event.subtitle = object.value(QLatin1String("subtitle")).toString();
     event.summary = object.value(QLatin1String("summary")).toString();
     event.description = object.value(QLatin1String("description")).toString();
+
     const QJsonArray genres = object.value(QLatin1String("genre")).toArray();
     if (!genres.isEmpty()) {
         event.genre = genres.first().toInt();
@@ -109,6 +110,7 @@ void EpgStore::setEvents(QVector<EpgEvent> events)
 
         m_lastStop = std::max(m_lastStop, event.stop);
         auto &list = m_byChannel[event.channel];
+
         // Drop overlapping duplicates that some EPG grabbers produce.
         if (!list.isEmpty() && list.last().stop > event.start) {
             if (list.last().start == event.start) {

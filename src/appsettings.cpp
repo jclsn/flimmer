@@ -39,9 +39,12 @@ AppSettings::AppSettings(QObject *parent)
     : QObject(parent)
 {
     QSettings settings;
+
     settings.beginGroup(QStringLiteral("server"));
+
     m_server.backend =
         ServerConfig::backendFromString(settings.value(QStringLiteral("backend")).toString());
+
     m_server.host = settings.value(QStringLiteral("host")).toString();
     m_server.port = settings.value(QStringLiteral("port"), kDefaultTvhPort).toInt();
     m_server.https = settings.value(QStringLiteral("https"), false).toBool();
@@ -49,13 +52,17 @@ AppSettings::AppSettings(QObject *parent)
     m_server.playlistUrl = settings.value(QStringLiteral("playlistUrl")).toString();
     m_server.xmltvUrl = settings.value(QStringLiteral("xmltvUrl")).toString();
     settings.endGroup();
+
     m_streamProfile =
         settings.value(QStringLiteral("playback/profile"), QStringLiteral("pass")).toString();
+
     m_guideDays =
         qBound(1, settings.value(QStringLiteral("guide/days"), 3).toInt(), kDefaultGuideDays);
+
     m_stopInBackground = settings.value(QStringLiteral("playback/stopInBackground"), true).toBool();
     m_confirmQuit = settings.value(QStringLiteral("playback/confirmQuit"), true).toBool();
     m_lastChannel = settings.value(QStringLiteral("playback/lastChannel")).toString();
+
     m_colorScheme =
         settings.value(QStringLiteral("appearance/colorScheme"), ColorSchemes::s_default)
             .toString();

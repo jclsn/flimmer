@@ -28,27 +28,33 @@ public:
     ~EpgDatabase();
 
     bool open();
+    void clear();
+
     [[nodiscard]] QString serverIdentity() const
     {
         return m_serverIdentity;
     }
+
     void setServerIdentity(const QString &identity);
     [[nodiscard]] qint64 lastUpdate() const;
 
-    void clear();
     void saveChannels(const QVector<Channel> &channels);
     [[nodiscard]] QVector<Channel> loadChannels() const;
+
     void saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt);
+
     // Calls 'done' on the thread of 'context' once the events are loaded. 'context' must
     // outlive the database.
     void loadEvents(qint64 notEndedBefore,
                     QObject *context,
                     std::function<void(QVector<EpgEvent>)> done) const;
+
     void updateRecording(qint64 eventId, const QString &dvrUuid, const QString &dvrState);
 
 private:
     // Runs 'job' on the database thread after everything queued before.
     void run(std::function<void()> job) const;
+
     // Like run(), but waits for 'job' to finish.
     void runAndWait(std::function<void()> job) const;
 
@@ -58,6 +64,7 @@ private:
     QString m_connectionName;
     QString m_serverIdentity;
     QThread m_thread;
+
     // Lives on m_thread; the jobs are queued to it.
     QObject *m_worker;
 };

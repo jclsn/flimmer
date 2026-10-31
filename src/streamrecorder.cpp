@@ -84,6 +84,7 @@ void StreamRecorder::start(const QString &channelUuid, const QString &channelNam
     // Keep the channel name readable but safe as a file name.
     QString name = channelName;
     name.replace(QRegularExpression(QStringLiteral("[/\\\\:*?\"<>|]")), QStringLiteral("_"));
+
     const QString time =
         QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd hh.mm.ss"));
     m_file.setFileName(directory() + QLatin1Char('/') + s_prefix + name + QStringLiteral(" ") + time
@@ -118,6 +119,7 @@ void StreamRecorder::start(const QString &channelUuid, const QString &channelNam
         m_file.write(reply->readAll());
         m_file.flush();
     });
+
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         // A live stream only ends when stopped or when the connection breaks.
         if (reply == m_reply && reply->error() != QNetworkReply::NoError) {
@@ -159,6 +161,7 @@ void StreamRecorder::serve()
                 socket->write(file->read(s_maxPending));
             }
         });
+
         timer->start(s_serveIntervalMs);
     }
 }

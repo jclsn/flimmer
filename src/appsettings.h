@@ -54,78 +54,97 @@ public:
     {
         return ServerConfig::backendName(m_server.backend);
     }
+
     [[nodiscard]] QString host() const
     {
         return m_server.host;
     }
+
     [[nodiscard]] int port() const
     {
         return m_server.port;
     }
+
     [[nodiscard]] bool useHttps() const
     {
         return m_server.https;
     }
+
     [[nodiscard]] QString username() const
     {
         return m_server.username;
     }
+
     [[nodiscard]] bool hasPassword() const
     {
         return !m_server.password.isEmpty();
     }
+
     [[nodiscard]] QString playlistUrl() const
     {
         return m_server.playlistUrl;
     }
+
     [[nodiscard]] QString xmltvUrl() const
     {
         return m_server.xmltvUrl;
     }
+
     [[nodiscard]] QString streamProfile() const
     {
         return m_streamProfile;
     }
+
     [[nodiscard]] int guideDays() const
     {
         return m_guideDays;
     }
+
     // Stop the stream while the window isn't focused (and resume afterwards).
     [[nodiscard]] bool stopInBackground() const
     {
         return m_stopInBackground;
     }
+
     // BACK while watching asks whether to quit instead of returning to the channel list.
     [[nodiscard]] bool confirmQuit() const
     {
         return m_confirmQuit;
     }
+
     [[nodiscard]] bool configured() const
     {
         return m_server.isValid();
     }
+
     [[nodiscard]] bool credentialsReady() const
     {
         return m_credentialsReady;
     }
+
     [[nodiscard]] QString secretStoreStatus() const
     {
         return m_secretStoreStatus;
     }
+
     [[nodiscard]] QString lastChannel() const
     {
         return m_lastChannel;
     }
+
     [[nodiscard]] QString colorScheme() const
     {
         return m_colorScheme;
     }
+
     [[nodiscard]] QVariantList colorSchemes() const
     {
         return m_colorSchemes;
     }
+
     // Applies the configured color scheme to the running application.
     void applyColorScheme();
+
     // Shows a color scheme without storing it; save() makes it permanent and
     // previewColorScheme(colorScheme) reverts to the stored one.
     Q_INVOKABLE void previewColorScheme(const QString &id);

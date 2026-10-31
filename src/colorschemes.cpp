@@ -25,10 +25,12 @@ QString schemePath(const QString &id)
 QColor readColor(const QSettings &scheme, const QString &group, const QString &key)
 {
     const QVariant value = scheme.value(QStringLiteral("Colors:%1/%2").arg(group, key));
+
     // QSettings splits "r,g,b" into a string list.
     const QStringList parts = value.typeId() == QMetaType::QStringList
         ? value.toStringList()
         : value.toString().split(QLatin1Char(','));
+
     if (parts.size() < 3) {
         return {};
     }
@@ -48,6 +50,7 @@ QPalette paletteFromScheme(const QString &path)
             palette.setColor(role, color);
         }
     };
+
     set(QPalette::Window,
         readColor(scheme, QStringLiteral("Window"), QStringLiteral("BackgroundNormal")));
     set(QPalette::WindowText,
@@ -88,6 +91,7 @@ QPalette paletteFromScheme(const QString &path)
 
     const QColor inactiveText =
         readColor(scheme, QStringLiteral("View"), QStringLiteral("ForegroundInactive"));
+
     if (inactiveText.isValid()) {
         for (QPalette::ColorRole role :
              {QPalette::WindowText, QPalette::Text, QPalette::ButtonText}) {
@@ -113,6 +117,7 @@ QVariantList ColorSchemes::available()
                                                        QStandardPaths::LocateDirectory);
     for (const QString &dir : dirs) {
         const QStringList files = QDir(dir).entryList({QStringLiteral("*.colors")}, QDir::Files);
+
         for (const QString &file : files) {
             const QString id = file.chopped(7);
             if (schemes.contains(id)) {
@@ -126,6 +131,7 @@ QVariantList ColorSchemes::available()
     }
 
     QList<QPair<QString, QString>> sorted;
+
     for (auto it = schemes.cbegin(); it != schemes.cend(); ++it) {
         sorted.append({it.key(), it.value()});
     }

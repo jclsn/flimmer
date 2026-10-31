@@ -29,6 +29,7 @@ constexpr int s_retryMs = 60 * 1000;
 ServerConfig configFromValues(const QVariantMap &values, const ServerConfig &fallback)
 {
     ServerConfig config = fallback;
+
     config.backend = ServerConfig::backendFromString(
         values.value(QStringLiteral("backend"), ServerConfig::backendName(config.backend))
             .toString());
@@ -96,6 +97,7 @@ TvhBackend::TvhBackend(QObject *parent)
         m_channels->refreshNow(false);
         Q_EMIT tick();
     });
+
     m_tickTimer.start();
 
     m_epgTimer.setInterval(s_epgRefreshMs);
@@ -411,6 +413,7 @@ void TvhBackend::fetchEpgPage(int generation, int offset)
             if (!result.ok) {
                 setBusy(false);
                 Q_EMIT notification(tr("Loading the TV guide failed: %1").arg(result.error));
+
                 return;
             }
 
@@ -418,6 +421,7 @@ void TvhBackend::fetchEpgPage(int generation, int offset)
             const QJsonArray entries = entriesOf(document);
             for (const QJsonValue &value : entries) {
                 EpgEvent event = EpgEvent::fromJson(value.toObject());
+
                 // Filter client side as well in case the server ignored the filter.
                 if (event.stop > now && event.start < end) {
                     m_incoming.append(std::move(event));
@@ -428,6 +432,7 @@ void TvhBackend::fetchEpgPage(int generation, int offset)
             const int fetched = offset + int(entries.size());
             const bool more = entries.size() == s_epgPageSize && (total < 0 || fetched < total)
                 && fetched < s_maxEpgEvents;
+
             if (more) {
                 fetchEpgPage(generation, fetched);
             } else {
@@ -459,17 +464,20 @@ void TvhBackend::testConnection(const QVariantMap &values)
     if (isM3u(config)) {
         if (!config.playlist().isValid()) {
             Q_EMIT connectionTestFinished(false, tr("Please enter a playlist address"));
+
             return;
         }
 
         if (!config.xmltvUrl.isEmpty() && !config.xmltv().isValid()) {
             Q_EMIT connectionTestFinished(false, tr("The guide address is not valid"));
+
             return;
         }
 
         m_api->probe(config, config.playlist(), [this, config](const ApiResult &result) {
             if (!result.ok) {
                 Q_EMIT connectionTestFinished(false, result.error);
+
                 return;
             }
 
@@ -477,6 +485,7 @@ void TvhBackend::testConnection(const QVariantMap &values)
                 Q_EMIT connectionTestFinished(
                     false,
                     tr("The server answered, but did not send an M3U playlist"));
+
                 return;
             }
 
@@ -490,17 +499,20 @@ void TvhBackend::testConnection(const QVariantMap &values)
                              : tr("Playlist found: %1 channels, but no guide address")
                                    .arg(playlist.channels.size())));
         });
+
         return;
     }
 
     if (!config.isValid()) {
         Q_EMIT connectionTestFinished(false, tr("Please enter a server address"));
+
         return;
     }
 
     m_api->probe(config, QStringLiteral("api/serverinfo"), [this](const ApiResult &result) {
         if (!result.ok) {
             Q_EMIT connectionTestFinished(false, result.error);
+
             return;
         }
 
@@ -509,6 +521,7 @@ void TvhBackend::testConnection(const QVariantMap &values)
             Q_EMIT connectionTestFinished(
                 false,
                 tr("The server answered, but does not look like TVHeadend"));
+
             return;
         }
 
@@ -536,18 +549,21 @@ QVariantList TvhBackend::eventsForChannel(const QString &uuid, double fromMs, do
 QVariantMap TvhBackend::eventAt(const QString &uuid, double timeMs) const
 {
     const EpgEvent *event = m_store.eventAt(uuid, qint64(timeMs / 1000.0));
+
     return event ? event->toVariant() : QVariantMap();
 }
 
 QVariantMap TvhBackend::nextEvent(const QString &uuid, double afterMs) const
 {
     const EpgEvent *event = m_store.nextAfter(uuid, qint64(afterMs / 1000.0));
+
     return event ? event->toVariant() : QVariantMap();
 }
 
 QVariantMap TvhBackend::eventById(double id) const
 {
     const EpgEvent *event = m_store.byId(qint64(id));
+
     return event ? event->toVariant() : QVariantMap();
 }
 
@@ -584,13 +600,16 @@ void TvhBackend::requestStream(const QString &uuid)
         if (!server.username.isEmpty() && url.userName().isEmpty()
             && url.host() == server.baseUrl().host()) {
             url = m_streamProxy->relay(url, server);
+
             if (url.isEmpty()) {
                 Q_EMIT streamFailed(uuid, tr("The local stream relay could not be started"));
+
                 return;
             }
         }
 
         Q_EMIT streamReady(uuid, url);
+
         return;
     }
 
@@ -599,11 +618,13 @@ void TvhBackend::requestStream(const QString &uuid)
 
     if (server.username.isEmpty()) {
         Q_EMIT streamReady(uuid, direct);
+
         return;
     }
 
     // Prefer a short-lived ticket so the password never ends up in the media URL.
     m_api->get(
+
         QStringLiteral("playlist/ticket/channel/") + uuid,
         profileQuery,
         [this, uuid, server, direct, profileQuery](const ApiResult &result) {
@@ -630,10 +651,12 @@ void TvhBackend::requestStream(const QString &uuid)
 
                     url.setQuery(query);
                     Q_EMIT streamReady(uuid, url);
+
                     return;
                 }
             } else if (result.httpStatus == 401 || result.httpStatus == 403) {
                 Q_EMIT streamFailed(uuid, result.error);
+
                 return;
             }
 
@@ -641,6 +664,7 @@ void TvhBackend::requestStream(const QString &uuid)
             const QUrl url = m_streamProxy->relay(direct, server);
             if (url.isEmpty()) {
                 Q_EMIT streamFailed(uuid, tr("The local stream relay could not be started"));
+
                 return;
             }
 
@@ -657,15 +681,18 @@ void TvhBackend::record(double eventId)
 
     const QString title = event->title;
     const qint64 id = event->id;
+
     QUrlQuery form;
     form.addQueryItem(QStringLiteral("event_id"), QString::number(id));
     form.addQueryItem(QStringLiteral("config_uuid"), QString());
+
     m_api->post(
         QStringLiteral("api/dvr/entry/create_by_event"),
         form,
         [this, id, title](const ApiResult &result) {
             if (!result.ok) {
                 Q_EMIT notification(tr("Could not schedule recording: %1").arg(result.error));
+
                 return;
             }
 
@@ -688,13 +715,16 @@ void TvhBackend::cancelRecording(double eventId)
     const qint64 id = event->id;
     const QString title = event->title;
     const bool running = event->dvrState == QLatin1String("recording");
+
     QUrlQuery form;
     form.addQueryItem(QStringLiteral("uuid"), event->dvrUuid);
+
     const QString path =
         running ? QStringLiteral("api/dvr/entry/stop") : QStringLiteral("api/dvr/entry/cancel");
     m_api->post(path, form, [this, id, title, running](const ApiResult &result) {
         if (!result.ok) {
             Q_EMIT notification(tr("Could not cancel recording: %1").arg(result.error));
+
             return;
         }
 

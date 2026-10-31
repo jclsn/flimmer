@@ -27,12 +27,14 @@ Entry parseExtinf(QStringView line)
 
     Entry entry;
     qsizetype comma = -1;
+
     bool quoted = false;
     for (qsizetype i = 0; i < line.size(); ++i) {
         if (line.at(i) == QLatin1Char('"')) {
             quoted = !quoted;
         } else if (line.at(i) == QLatin1Char(',') && !quoted) {
             comma = i;
+
             break;
         }
     }
@@ -127,10 +129,11 @@ M3u::Playlist M3u::parse(const QByteArray &data, const QUrl &source)
         const Entry entry = std::move(*pending);
         pending.reset();
 
+        const QString tvgName = attribute(entry, {"tvg-name"});
+
         Channel channel;
         channel.stream = resolve(source, line.toString()).toString();
         channel.name = entry.title;
-        const QString tvgName = attribute(entry, {"tvg-name"});
         if (channel.name.isEmpty()) {
             channel.name = tvgName;
         }
@@ -140,6 +143,7 @@ M3u::Playlist M3u::parse(const QByteArray &data, const QUrl &source)
         }
 
         channel.icon = resolve(source, attribute(entry, {"tvg-logo", "logo"})).toString();
+
         // Decimal numbers ("2.1") keep their major part.
         channel.number =
             int(attribute(entry, {"tvg-chno", "channel-number", "tvg-num"}).toDouble());
@@ -147,6 +151,7 @@ M3u::Playlist M3u::parse(const QByteArray &data, const QUrl &source)
         // Stable ids keep the last watched channel across playlist updates.
         const QString tvgId = attribute(entry, {"tvg-id", "channel-id"});
         const QString base = !tvgId.isEmpty() ? tvgId : channel.name;
+
         channel.uuid = base;
         for (int n = 2; usedUuids.contains(channel.uuid); ++n) {
             channel.uuid = base + QLatin1Char('#') + QString::number(n);

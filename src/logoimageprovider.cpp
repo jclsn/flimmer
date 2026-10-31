@@ -33,9 +33,11 @@ QString cacheFilePath(const QUrl &url)
 {
     static const QString dir =
         QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QStringLiteral("/logos");
+
     QDir().mkpath(dir);
     const QByteArray hash =
         QCryptographicHash::hash(url.toEncoded(), QCryptographicHash::Sha1).toHex();
+
     return dir + QLatin1Char('/') + QString::fromLatin1(hash);
 }
 
@@ -142,6 +144,7 @@ private:
 
             if (reply->error() == QNetworkReply::NoError) {
                 const QByteArray data = reply->readAll();
+
                 QImage image;
                 if (image.loadFromData(data)) {
                     QSaveFile file(m_cacheFile);
@@ -153,6 +156,7 @@ private:
 
                     setImage(image);
                     Q_EMIT finished();
+
                     return;
                 }
             }
@@ -160,12 +164,14 @@ private:
             // An outdated copy beats no logo at all.
             if (m_cancelled || loadFromCache()) {
                 Q_EMIT finished();
+
                 return;
             }
 
             const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
             const bool authProblem = status == 401 || status == 403
                 || reply->error() == QNetworkReply::AuthenticationRequiredError;
+
             if (authProblem && attempt < s_maxAttempts) {
                 // A fresh manager starts a new connection and a new digest handshake.
                 QTimer::singleShot(s_retryDelayMs * attempt, this, [this, attempt]() {
@@ -178,12 +184,14 @@ private:
                     NetworkAuth::install(fresh);
                     download(fresh, attempt + 1);
                 });
+
                 return;
             }
 
             QMutexLocker lock(&m_mutex);
             m_error = reply->errorString();
             lock.unlock();
+
             Q_EMIT finished();
         });
     }

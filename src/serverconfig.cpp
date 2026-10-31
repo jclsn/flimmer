@@ -16,6 +16,7 @@ QUrl sourceUrl(const QString &text)
 
     const QUrl url = QUrl::fromUserInput(trimmed);
     const QString scheme = url.scheme();
+
     if (!url.isValid()
         || (scheme != QLatin1String("http") && scheme != QLatin1String("https")
             && scheme != QLatin1String("file"))) {
@@ -68,6 +69,7 @@ QUrl ServerConfig::baseUrl() const
         url.setHost(source.host());
         url.setPort(source.port());
         url.setPath(QStringLiteral("/"));
+
         return url;
     }
 
@@ -84,6 +86,7 @@ QUrl ServerConfig::baseUrl() const
     }
 
     QString path;
+
     const int slash = hostPart.indexOf(QLatin1Char('/'));
     if (slash >= 0) {
         path = hostPart.mid(slash);
@@ -97,10 +100,12 @@ QUrl ServerConfig::baseUrl() const
     if (hostPart.startsWith(QLatin1Char('['))) {
         // IPv6 literal, optionally followed by ":port"
         const int close = hostPart.indexOf(QLatin1Char(']'));
+
         if (close > 0 && hostPart.size() > close + 2
             && hostPart.at(close + 1) == QLatin1Char(':')) {
             bool ok = false;
             const int explicitPort = hostPart.mid(close + 2).toInt(&ok);
+
             if (ok) {
                 effectivePort = explicitPort;
             }
@@ -110,6 +115,7 @@ QUrl ServerConfig::baseUrl() const
     } else if (hostPart.count(QLatin1Char(':')) == 1) {
         bool ok = false;
         const int explicitPort = hostPart.section(QLatin1Char(':'), 1).toInt(&ok);
+
         if (ok) {
             effectivePort = explicitPort;
         }
@@ -130,12 +136,14 @@ QUrl ServerConfig::baseUrl() const
     }
 
     url.setPath(path + QLatin1Char('/'));
+
     return url;
 }
 
 QUrl ServerConfig::url(const QString &path) const
 {
     QString relative = path;
+
     while (relative.startsWith(QLatin1Char('/'))) {
         relative.remove(0, 1);
     }

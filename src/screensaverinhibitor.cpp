@@ -47,6 +47,7 @@ void ScreenSaverInhibitor::inhibit()
     QDBusMessage message =
         QDBusMessage::createMethodCall(s_service, s_path, s_service, QStringLiteral("Inhibit"));
     message << QStringLiteral("flimmer") << tr("Watching live TV");
+
     auto *watcher =
         new QDBusPendingCallWatcher(QDBusConnection::sessionBus().asyncCall(message), this);
     connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher]() {
@@ -74,6 +75,7 @@ void ScreenSaverInhibitor::uninhibit()
     QDBusMessage message =
         QDBusMessage::createMethodCall(s_service, s_path, s_service, QStringLiteral("UnInhibit"));
     message << m_cookie;
+
     QDBusConnection::sessionBus().call(message, QDBus::NoBlock);
     m_cookie = 0;
 }
