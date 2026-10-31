@@ -26,7 +26,7 @@ struct ApiResult {
     QByteArray body;
     QString error;
 
-    QJsonDocument json() const
+    [[nodiscard]] QJsonDocument json() const
     {
         return QJsonDocument::fromJson(body);
     }
@@ -43,7 +43,7 @@ public:
     explicit TvhApi(QObject *parent = nullptr);
 
     void setServer(const ServerConfig &config);
-    const ServerConfig &server() const
+    [[nodiscard]] const ServerConfig &server() const
     {
         return m_server;
     }

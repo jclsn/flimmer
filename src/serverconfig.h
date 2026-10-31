@@ -19,13 +19,13 @@ struct ServerConfig {
     QString username;
     QString password;
 
-    bool isValid() const;
+    [[nodiscard]] bool isValid() const;
     // Base URL including an optional web root, always ending in '/'.
-    QUrl baseUrl() const;
+    [[nodiscard]] QUrl baseUrl() const;
     // Resolves a server relative path (e.g. "api/serverinfo") against baseUrl().
-    QUrl url(const QString &path) const;
+    [[nodiscard]] QUrl url(const QString &path) const;
     // Identifies the server (not the user) so caches of another server can be discarded.
-    QString identity() const;
+    [[nodiscard]] QString identity() const;
 
     bool operator==(const ServerConfig &other) const = default;
 };

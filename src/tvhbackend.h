@@ -52,43 +52,43 @@ public:
     static TvhBackend *instance();
     static TvhBackend *create(QQmlEngine *, QJSEngine *);
 
-    ChannelModel *channels() const
+    [[nodiscard]] ChannelModel *channels() const
     {
         return m_channels;
     }
-    Status status() const
+    [[nodiscard]] Status status() const
     {
         return m_status;
     }
-    QString statusText() const
+    [[nodiscard]] QString statusText() const
     {
         return m_statusText;
     }
-    bool busy() const
+    [[nodiscard]] bool busy() const
     {
         return m_busy;
     }
-    QString serverName() const
+    [[nodiscard]] QString serverName() const
     {
         return m_serverName;
     }
-    QString serverVersion() const
+    [[nodiscard]] QString serverVersion() const
     {
         return m_serverVersion;
     }
-    QDateTime lastUpdate() const
+    [[nodiscard]] QDateTime lastUpdate() const
     {
         return m_lastUpdate;
     }
-    int epgRevision() const
+    [[nodiscard]] int epgRevision() const
     {
         return m_epgRevision;
     }
-    double epgEnd() const
+    [[nodiscard]] double epgEnd() const
     {
         return double(m_store.lastStop()) * 1000.0;
     }
-    double now() const
+    [[nodiscard]] double now() const
     {
         return double(QDateTime::currentMSecsSinceEpoch());
     }
@@ -98,12 +98,12 @@ public:
     Q_INVOKABLE void testConnection(const QVariantMap &values);
     Q_INVOKABLE void clearCache();
 
-    Q_INVOKABLE QVariantList eventsForChannel(const QString &uuid,
+    Q_INVOKABLE [[nodiscard]] QVariantList eventsForChannel(const QString &uuid,
                                               double fromMs,
                                               double toMs) const;
-    Q_INVOKABLE QVariantMap eventAt(const QString &uuid, double timeMs) const;
-    Q_INVOKABLE QVariantMap nextEvent(const QString &uuid, double afterMs) const;
-    Q_INVOKABLE QVariantMap eventById(double id) const;
+    Q_INVOKABLE [[nodiscard]] QVariantMap eventAt(const QString &uuid, double timeMs) const;
+    Q_INVOKABLE [[nodiscard]] QVariantMap nextEvent(const QString &uuid, double afterMs) const;
+    Q_INVOKABLE [[nodiscard]] QVariantMap eventById(double id) const;
 
     Q_INVOKABLE void requestStream(const QString &uuid);
     Q_INVOKABLE void record(double eventId);

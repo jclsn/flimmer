@@ -36,7 +36,7 @@ struct EpgEvent {
     QString dvrState;
 
     static EpgEvent fromJson(const QJsonObject &object);
-    QVariantMap toVariant() const;
+    [[nodiscard]] QVariantMap toVariant() const;
 };
 
 // In-memory index of EPG events per channel, sorted by start time.
@@ -45,22 +45,22 @@ class EpgStore
 public:
     void setEvents(QVector<EpgEvent> events);
     void clear();
-    bool isEmpty() const
+    [[nodiscard]] bool isEmpty() const
     {
         return m_byChannel.isEmpty();
     }
-    int size() const
+    [[nodiscard]] int size() const
     {
         return m_size;
     }
 
-    const EpgEvent *eventAt(const QString &channel, qint64 time) const;
-    const EpgEvent *nextAfter(const QString &channel, qint64 time) const;
-    const EpgEvent *byId(qint64 id) const;
+    [[nodiscard]] const EpgEvent *eventAt(const QString &channel, qint64 time) const;
+    [[nodiscard]] const EpgEvent *nextAfter(const QString &channel, qint64 time) const;
+    [[nodiscard]] const EpgEvent *byId(qint64 id) const;
     EpgEvent *byId(qint64 id);
-    QVector<const EpgEvent *> range(const QString &channel, qint64 from, qint64 to) const;
+    [[nodiscard]] QVector<const EpgEvent *> range(const QString &channel, qint64 from, qint64 to) const;
     // Latest stop time of any event, used to bound guide navigation.
-    qint64 lastStop() const
+    [[nodiscard]] qint64 lastStop() const
     {
         return m_lastStop;
     }
