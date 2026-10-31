@@ -50,7 +50,9 @@ struct Runner {
                 delay = arg.toInt();
 
                 break;
-            } else if (command == QLatin1String("key")) {
+            }
+
+            if (command == QLatin1String("key")) {
                 const QKeyCombination combo = QKeySequence::fromString(arg)[0];
                 const int key = combo.key();
                 const QString text = key >= Qt::Key_Space && key <= Qt::Key_AsciiTilde
@@ -60,7 +62,9 @@ struct Runner {
                 delay = 150;
 
                 break;
-            } else if (command == QLatin1String("text")) {
+            }
+
+            if (command == QLatin1String("text")) {
                 for (const QChar character : arg) {
                     sendKey(QKeySequence(QString(character))[0].key(),
                             Qt::NoModifier,
