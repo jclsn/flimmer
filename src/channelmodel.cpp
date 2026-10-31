@@ -76,9 +76,9 @@ QVariant ChannelModel::data(const QModelIndex &index, int role) const
         if (!nowNext.now) {
             return 0.0;
         }
-        const double now = QDateTime::currentSecsSinceEpoch();
+        const auto now = static_cast<double>(QDateTime::currentSecsSinceEpoch());
         return qBound(0.0,
-                      (now - nowNext.now->start)
+                      (now - static_cast<double>(nowNext.now->start))
                           / static_cast<double>(nowNext.now->stop - nowNext.now->start),
                       1.0);
     }

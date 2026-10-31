@@ -87,7 +87,7 @@ QUrl ServerConfig::baseUrl() const
 
     QString path;
 
-    const int slash = hostPart.indexOf(QLatin1Char('/'));
+    const ssize_t slash = hostPart.indexOf(QLatin1Char('/'));
     if (slash >= 0) {
         path = hostPart.mid(slash);
         hostPart = hostPart.left(slash);
@@ -99,7 +99,7 @@ QUrl ServerConfig::baseUrl() const
 
     if (hostPart.startsWith(QLatin1Char('['))) {
         // IPv6 literal, optionally followed by ":port"
-        const int close = hostPart.indexOf(QLatin1Char(']'));
+        const int64_t close = hostPart.indexOf(QLatin1Char(']'));
 
         if (close > 0 && hostPart.size() > close + 2
             && hostPart.at(close + 1) == QLatin1Char(':')) {

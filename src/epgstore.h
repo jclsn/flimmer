@@ -52,7 +52,7 @@ public:
         return m_byChannel.isEmpty();
     }
 
-    [[nodiscard]] int size() const
+    [[nodiscard]] size_t size() const
     {
         return m_size;
     }
@@ -76,7 +76,7 @@ private:
     QHash<QString, QVector<EpgEvent>> m_byChannel;
     QHash<qint64, QPair<QString, int>> m_index;
     qint64 m_lastStop = 0;
-    int m_size = 0;
+    size_t m_size = 0;
 };
 
 QString genreName(int genre);
