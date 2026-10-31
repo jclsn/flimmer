@@ -22,15 +22,18 @@ public:
     ~EpgDatabase();
 
     bool open();
+    void clear();
+
     [[nodiscard]] QString serverIdentity() const;
     void setServerIdentity(const QString &identity);
     [[nodiscard]] qint64 lastUpdate() const;
 
-    void clear();
     void saveChannels(const QVector<Channel> &channels);
     [[nodiscard]] QVector<Channel> loadChannels() const;
+
     void saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt);
     [[nodiscard]] QVector<EpgEvent> loadEvents(qint64 notEndedBefore) const;
+
     void updateRecording(qint64 eventId, const QString &dvrUuid, const QString &dvrState);
 
 private:

@@ -56,38 +56,47 @@ public:
     {
         return m_channels;
     }
+
     [[nodiscard]] Status status() const
     {
         return m_status;
     }
+
     [[nodiscard]] QString statusText() const
     {
         return m_statusText;
     }
+
     [[nodiscard]] bool busy() const
     {
         return m_busy;
     }
+
     [[nodiscard]] QString serverName() const
     {
         return m_serverName;
     }
+
     [[nodiscard]] QString serverVersion() const
     {
         return m_serverVersion;
     }
+
     [[nodiscard]] QDateTime lastUpdate() const
     {
         return m_lastUpdate;
     }
+
     [[nodiscard]] int epgRevision() const
     {
         return m_epgRevision;
     }
+
     [[nodiscard]] double epgEnd() const
     {
         return double(m_store.lastStop()) * 1000.0;
     }
+
     [[nodiscard]] double now() const
     {
         return double(QDateTime::currentMSecsSinceEpoch());

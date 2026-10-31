@@ -45,10 +45,12 @@ class EpgStore
 public:
     void setEvents(QVector<EpgEvent> events);
     void clear();
+
     [[nodiscard]] bool isEmpty() const
     {
         return m_byChannel.isEmpty();
     }
+
     [[nodiscard]] int size() const
     {
         return m_size;
@@ -58,7 +60,9 @@ public:
     [[nodiscard]] const EpgEvent *nextAfter(const QString &channel, qint64 time) const;
     [[nodiscard]] const EpgEvent *byId(qint64 id) const;
     EpgEvent *byId(qint64 id);
+
     [[nodiscard]] QVector<const EpgEvent *> range(const QString &channel, qint64 from, qint64 to) const;
+
     // Latest stop time of any event, used to bound guide navigation.
     [[nodiscard]] qint64 lastStop() const
     {

@@ -14,16 +14,20 @@
 // in memory; persistence goes through the system secret store (AppSettings).
 struct ServerConfig {
     QString host;
-    int port = 9981;
-    bool https = false;
     QString username;
     QString password;
 
+    int port = 9981;
+    bool https = false;
+
     [[nodiscard]] bool isValid() const;
+
     // Base URL including an optional web root, always ending in '/'.
     [[nodiscard]] QUrl baseUrl() const;
+
     // Resolves a server relative path (e.g. "api/serverinfo") against baseUrl().
     [[nodiscard]] QUrl url(const QString &path) const;
+
     // Identifies the server (not the user) so caches of another server can be discarded.
     [[nodiscard]] QString identity() const;
 
