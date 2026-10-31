@@ -32,7 +32,7 @@ struct EpgEvent {
     QString subtitle;
     QString summary;
     QString description;
-    int genre = 0; // ETSI EN 300 468 content nibble, e.g. 0x10 = movie
+    uint8_t genre = 0; // ETSI EN 300 468 content nibble, e.g. 0x10 = movie
     QString dvrUuid;
     QString dvrState;
 
@@ -79,6 +79,6 @@ private:
     size_t m_size = 0;
 };
 
-QString genreName(int genre);
+QString genreName(uint8_t genre);
 
 #endif // EPGSTORE_H

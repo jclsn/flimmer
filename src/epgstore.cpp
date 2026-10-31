@@ -53,16 +53,16 @@ QVariantMap EpgEvent::toVariant() const
         {QStringLiteral("subtitle"), subtitle},
         {QStringLiteral("summary"), summary},
         {QStringLiteral("description"), description},
-        {QStringLiteral("genre"), genre & 0xF0},
+        {QStringLiteral("genre"), genre & 0xF0U},
         {QStringLiteral("genreName"), genreName(genre)},
         {QStringLiteral("dvrUuid"), dvrUuid},
         {QStringLiteral("dvrState"), dvrState},
     };
 }
 
-QString genreName(int genre)
+QString genreName(uint8_t genre)
 {
-    switch (genre & 0xF0) {
+    switch (genre & 0xF0U) {
     case 0x10:
         return QCoreApplication::translate("Genre", "Movie");
     case 0x20:

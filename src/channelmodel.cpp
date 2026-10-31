@@ -83,7 +83,7 @@ QVariant ChannelModel::data(const QModelIndex &index, int role) const
                       1.0);
     }
     case NowGenreRole:
-        return nowNext.now ? nowNext.now->genre & 0xF0 : 0;
+        return nowNext.now ? (nowNext.now->genre & 0xF0U) : 0;
     case NowRecordingRole:
         return nowNext.now && nowNext.now->dvrState == QLatin1String("recording");
     case NextTitleRole:
