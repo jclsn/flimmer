@@ -98,5 +98,5 @@ int main(int argc, char *argv[])
     DevScript::runFromEnvironment(&engine);
 #endif
 
-    return app.exec();
+    return QApplication::exec();
 }
