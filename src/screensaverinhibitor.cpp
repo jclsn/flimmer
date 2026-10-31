@@ -11,7 +11,9 @@
 
 namespace
 {
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 const QString s_service = QStringLiteral("org.freedesktop.ScreenSaver");
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 const QString s_path = QStringLiteral("/ScreenSaver");
 }
 

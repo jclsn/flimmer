@@ -14,8 +14,10 @@
 
 namespace
 {
-const QString s_keychainService = QStringLiteral("flimmer");
-const QString s_keychainKey = QStringLiteral("server-password");
+const QString s_keychainService = // NOLINT(bugprone-throwing-static-initialization)
+    QStringLiteral("flimmer");
+const QString s_keychainKey = // NOLINT(bugprone-throwing-static-initialization)
+    QStringLiteral("server-password");
 
 constexpr int32_t kDefaultGuideDays = 14;
 constexpr int32_t kDefaultTvhPort = 9981;

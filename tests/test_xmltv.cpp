@@ -25,8 +25,10 @@ Xmltv::ChannelMap channelMap()
     return map;
 }
 
-const qint64 s_from = utc(2026, 10, 15, 0, 0);
-const qint64 s_to = utc(2026, 10, 16, 0, 0);
+const qint64 s_from = // NOLINT(bugprone-throwing-static-initialization)
+    utc(2026, 10, 15, 0, 0);
+const qint64 s_to = // NOLINT(bugprone-throwing-static-initialization)
+    utc(2026, 10, 16, 0, 0);
 }
 
 class XmltvTest : public QObject

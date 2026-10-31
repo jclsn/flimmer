@@ -17,7 +17,9 @@
 namespace ColorSchemes
 {
 // Default scheme: Breeze Dark suits a TV in a dim living room.
-inline const QString s_default = QStringLiteral("BreezeDark");
+// QStringLiteral avoids heap allocation; construction is effectively non-throwing here
+inline const QString s_default = // NOLINT -cppcoreguidelines-avoid-non-const-global-variables
+    QStringLiteral("BreezeDark");
 
 // [{ id: "", name: "Plasma system colors" }, { id: "BreezeDark", name: "Breeze Dark" }, ...]
 QVariantList available();

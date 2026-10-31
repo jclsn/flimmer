@@ -22,8 +22,10 @@ EpgEvent makeEvent(qint64 id, const QString &channel, qint64 start, qint64 stop)
     return result;
 }
 
-const QString s_one = QStringLiteral("one");
-const QString s_two = QStringLiteral("two");
+const QString s_one = // NOLINT(bugprone-throwing-static-initialization)
+    QStringLiteral("one");
+const QString s_two = // NOLINT(bugprone-throwing-static-initialization)
+    QStringLiteral("two");
 }
 
 class EpgStoreTest : public QObject

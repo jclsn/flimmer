@@ -8,7 +8,8 @@
 
 namespace
 {
-const QUrl s_source(QStringLiteral("http://iptv.local:9191/output/m3u"));
+const QUrl s_source(QStringLiteral( // NOLINT(bugprone-throwing-static-initialization)
+    "http://iptv.local:9191/output/m3u"));
 }
 
 class M3uTest : public QObject
