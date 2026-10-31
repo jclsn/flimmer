@@ -23,7 +23,7 @@ ServerConfig activeServer();
 // overridden per reply with setReplyCredentials(); otherwise the active
 // server credentials are used. Each reply gets exactly one attempt so wrong
 // credentials fail fast instead of looping.
-void install(QNetworkAccessManager *networkManager);
+void install(const QNetworkAccessManager *networkManager);
 void setReplyCredentials(QNetworkReply *reply, const QString &user, const QString &password);
 }
 

@@ -38,18 +38,18 @@ public:
     void setServerIdentity(const QString &identity);
     [[nodiscard]] qint64 lastUpdate() const;
 
-    void saveChannels(const QVector<Channel> &channels);
+    void saveChannels(const QVector<Channel> &channels) const;
     [[nodiscard]] QVector<Channel> loadChannels() const;
 
-    void saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt);
+    void saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt) const;
 
     // Calls 'done' on the thread of 'context' once the events are loaded. 'context' must
     // outlive the database.
     void loadEvents(qint64 notEndedBefore,
                     QObject *context,
-                    std::function<void(QVector<EpgEvent>)> done) const;
+                    std::function<void(QVector<EpgEvent>)> const &done) const;
 
-    void updateRecording(qint64 eventId, const QString &dvrUuid, const QString &dvrState);
+    void updateRecording(qint64 eventId, const QString &dvrUuid, const QString &dvrState) const;
 
 private:
     // Runs 'job' on the database thread after everything queued before.

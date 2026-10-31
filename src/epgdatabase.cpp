@@ -175,7 +175,7 @@ void EpgDatabase::clear()
     });
 }
 
-void EpgDatabase::saveChannels(const QVector<Channel> &channels)
+void EpgDatabase::saveChannels(const QVector<Channel> &channels) const
 {
     run([this, channels]() {
         QSqlDatabase database = QSqlDatabase::database(m_connectionName);
@@ -227,7 +227,7 @@ QVector<Channel> EpgDatabase::loadChannels() const
     return result;
 }
 
-void EpgDatabase::saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt)
+void EpgDatabase::saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt) const
 {
     run([this, events, updatedAt]() {
         QSqlDatabase database = QSqlDatabase::database(m_connectionName);
@@ -260,7 +260,7 @@ void EpgDatabase::saveEvents(const QVector<EpgEvent> &events, qint64 updatedAt)
 
 void EpgDatabase::loadEvents(qint64 notEndedBefore,
                              QObject *context,
-                             std::function<void(QVector<EpgEvent>)> done) const
+                             std::function<void(QVector<EpgEvent>)> const &done) const
 {
     run([this, notEndedBefore, context, done]() {
         QVector<EpgEvent> result;
@@ -298,7 +298,9 @@ void EpgDatabase::loadEvents(qint64 notEndedBefore,
     });
 }
 
-void EpgDatabase::updateRecording(qint64 eventId, const QString &dvrUuid, const QString &dvrState)
+void EpgDatabase::updateRecording(qint64 eventId,
+                                  const QString &dvrUuid,
+                                  const QString &dvrState) const
 {
     run([this, eventId, dvrUuid, dvrState]() {
         QSqlQuery query(QSqlDatabase::database(m_connectionName));

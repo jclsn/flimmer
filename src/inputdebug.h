@@ -14,7 +14,7 @@ namespace InputDebug
 // Logs key presses, keyboard focus changes, application state changes and
 // stalls of the event loop to help with "the remote stops working" reports.
 // Enabled with QT_LOGGING_RULES="flimmer.input.debug=true".
-void install(QQmlApplicationEngine *engine);
+void install(const QQmlApplicationEngine *engine);
 }
 
 #endif // INPUTDEBUG_H

@@ -25,7 +25,7 @@ QNetworkRequest makeRequest(const QUrl &url)
     return request;
 }
 
-QString describeError(QNetworkReply *reply, int status)
+QString describeError(const QNetworkReply *reply, int status)
 {
     if (status == 401 || reply->error() == QNetworkReply::AuthenticationRequiredError) {
         return QObject::tr("Authentication failed – check username and password");

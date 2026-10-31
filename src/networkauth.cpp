@@ -39,7 +39,7 @@ void NetworkAuth::setReplyCredentials(QNetworkReply *reply,
     reply->setProperty(s_password, password);
 }
 
-void NetworkAuth::install(QNetworkAccessManager *networkManager)
+void NetworkAuth::install(const QNetworkAccessManager *networkManager)
 {
     QObject::connect(networkManager,
                      &QNetworkAccessManager::authenticationRequired,

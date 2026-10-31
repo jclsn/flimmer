@@ -143,7 +143,7 @@ public:
     }
 
     // Applies the configured color scheme to the running application.
-    void applyColorScheme();
+    void applyColorScheme() const;
 
     // Shows a color scheme without storing it; save() makes it permanent and
     // previewColorScheme(colorScheme) reverts to the stored one.

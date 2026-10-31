@@ -24,7 +24,7 @@ struct Runner {
     QQuickWindow *window = nullptr;
     std::unique_ptr<QWindow> otherWindow; // takes focus away for "focusout"
 
-    void sendKey(int key, Qt::KeyboardModifiers mods, const QString &text)
+    void sendKey(int key, Qt::KeyboardModifiers mods, const QString &text) const
     {
         QKeyEvent press(QEvent::KeyPress, key, mods, text);
         QCoreApplication::sendEvent(window, &press);

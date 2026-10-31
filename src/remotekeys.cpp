@@ -27,7 +27,7 @@ protected:
             return false;
         }
 
-        auto *key = static_cast<QKeyEvent *>(event);
+        const auto *key = static_cast<QKeyEvent *>(event);
 
         if (key->key() != Qt::Key_Select && key->key() != Qt::Key_Enter) {
             return false;

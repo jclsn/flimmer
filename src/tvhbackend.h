@@ -103,7 +103,7 @@ public:
         return static_cast<double>(m_store.lastStop()) * 1000.0;
     }
 
-    [[nodiscard]] double now() const
+    [[nodiscard]] static double now()
     {
         return static_cast<double>(QDateTime::currentMSecsSinceEpoch());
     }

@@ -136,7 +136,7 @@ void StreamRecorder::serve()
         connect(socket, &QTcpSocket::disconnected, socket, &QObject::deleteLater);
 
         // Only the current recording is served; the request itself doesn't matter.
-        auto *file = new QFile(m_file.fileName(), socket);
+        const auto *file = new QFile(m_file.fileName(), socket);
 
         if (!m_file.isOpen() || !file->open(QIODevice::ReadOnly)) {
             socket->write("HTTP/1.0 404 Not Found\r\n\r\n");

@@ -72,7 +72,7 @@ private:
 };
 }
 
-void InputDebug::install(QQmlApplicationEngine *engine)
+void InputDebug::install(const QQmlApplicationEngine *engine)
 {
     if (!lcInput().isDebugEnabled() || engine->rootObjects().isEmpty()) {
         return;

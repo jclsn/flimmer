@@ -83,7 +83,7 @@ void AppSettings::setLastChannel(const QString &uuid)
     Q_EMIT lastChannelChanged();
 }
 
-void AppSettings::applyColorScheme()
+void AppSettings::applyColorScheme() const
 {
     ColorSchemes::apply(m_colorScheme);
 }

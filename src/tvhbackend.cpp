@@ -107,7 +107,7 @@ TvhBackend::TvhBackend(QObject *parent)
     m_retryTimer.setSingleShot(true);
     connect(&m_retryTimer, &QTimer::timeout, this, &TvhBackend::refresh);
 
-    AppSettings *settings = AppSettings::instance();
+    const AppSettings *settings = AppSettings::instance();
     connect(settings, &AppSettings::saved, this, &TvhBackend::applySettings);
     connect(settings, &AppSettings::credentialsReadyChanged, this, [this]() {
         applySettings(true);
@@ -189,7 +189,7 @@ void TvhBackend::clearCache()
 
 void TvhBackend::refresh()
 {
-    AppSettings *settings = AppSettings::instance();
+    const AppSettings *settings = AppSettings::instance();
     m_retryTimer.stop();
 
     if (!settings->configured()) {
