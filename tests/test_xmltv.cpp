@@ -10,6 +10,7 @@
 
 namespace
 {
+
 qint64 utc(int year, int month, int day, int hour, int minute)
 {
     return QDateTime(QDate(year, month, day), QTime(hour, minute), QTimeZone::UTC)
@@ -29,7 +30,6 @@ const qint64 s_from = // NOLINT(bugprone-throwing-static-initialization)
     utc(2026, 10, 15, 0, 0);
 const qint64 s_to = // NOLINT(bugprone-throwing-static-initialization)
     utc(2026, 10, 16, 0, 0);
-}
 
 class XmltvTest : public QObject
 {
@@ -209,6 +209,8 @@ private Q_SLOTS:
         QVERIFY(!error.isEmpty());
     }
 };
+
+}
 
 QTEST_GUILESS_MAIN(XmltvTest)
 

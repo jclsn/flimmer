@@ -14,10 +14,10 @@
 #include <QQuickWindow>
 #include <QTimer>
 
-Q_LOGGING_CATEGORY(lcInput, "flimmer.input", QtWarningMsg)
-
 namespace
 {
+Q_LOGGING_CATEGORY(lcInput, "flimmer.input", QtWarningMsg)
+
 constexpr int s_stallCheckMs = 100;
 constexpr qint64 s_stallReportMs = 500;
 

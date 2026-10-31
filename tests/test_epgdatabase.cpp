@@ -38,7 +38,6 @@ EpgEvent makeEvent(qint64 id, const QString &channel, qint64 start, qint64 stop)
 
     return result;
 }
-}
 
 class EpgDatabaseTest : public QObject
 {
@@ -181,6 +180,8 @@ private Q_SLOTS:
         QCOMPARE(loadEvents(database, 0).size(), 1);
     }
 };
+
+}
 
 QTEST_GUILESS_MAIN(EpgDatabaseTest)
 

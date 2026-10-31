@@ -10,7 +10,6 @@ namespace
 {
 const QUrl s_source(QStringLiteral( // NOLINT(bugprone-throwing-static-initialization)
     "http://iptv.local:9191/output/m3u"));
-}
 
 class M3uTest : public QObject
 {
@@ -144,6 +143,8 @@ private Q_SLOTS:
         QCOMPARE(playlist.guideUrl.toString(), QStringLiteral("http://a/one.xml"));
     }
 };
+
+}
 
 QTEST_GUILESS_MAIN(M3uTest)
 

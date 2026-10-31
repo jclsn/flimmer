@@ -6,6 +6,9 @@
 
 #include <QTest>
 
+namespace
+{
+
 class ServerConfigTest : public QObject
 {
     Q_OBJECT
@@ -108,6 +111,8 @@ private Q_SLOTS:
         QVERIFY(config.playlist().isLocalFile());
     }
 };
+
+}
 
 QTEST_GUILESS_MAIN(ServerConfigTest)
 

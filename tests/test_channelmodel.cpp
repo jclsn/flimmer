@@ -33,7 +33,6 @@ makeEvent(qint64 id, const QString &channel, qint64 start, qint64 stop, const QS
 
     return result;
 }
-}
 
 class ChannelModelTest : public QObject
 {
@@ -198,6 +197,8 @@ private Q_SLOTS:
         QVERIFY(data(model, 0, ChannelModel::NextTitleRole).toString().isEmpty());
     }
 };
+
+}
 
 QTEST_GUILESS_MAIN(ChannelModelTest)
 

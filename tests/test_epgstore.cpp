@@ -26,7 +26,6 @@ const QString s_one = // NOLINT(bugprone-throwing-static-initialization)
     QStringLiteral("one");
 const QString s_two = // NOLINT(bugprone-throwing-static-initialization)
     QStringLiteral("two");
-}
 
 class EpgStoreTest : public QObject
 {
@@ -168,6 +167,8 @@ private Q_SLOTS:
         QCOMPARE(map.value(QStringLiteral("genreName")).toString(), QStringLiteral("News"));
     }
 };
+
+}
 
 QTEST_GUILESS_MAIN(EpgStoreTest)
 
