@@ -352,7 +352,7 @@ void TvhBackend::fetchGuide(int generation, const QUrl &url, const Xmltv::Channe
 
         const qint64 now = QDateTime::currentSecsSinceEpoch();
         const qint64 end =
-            now + static_cast<qint64>(AppSettings::instance()->guideDays()) * 24 * 3600;
+            now + (static_cast<qint64>(AppSettings::instance()->guideDays()) * 24 * 3600);
         auto events = std::make_shared<QVector<EpgEvent>>();
         auto error = std::make_shared<QString>();
 
@@ -382,7 +382,9 @@ void TvhBackend::fetchGuide(int generation, const QUrl &url, const Xmltv::Channe
 void TvhBackend::fetchEpgPage(int generation, int offset)
 {
     const qint64 now = QDateTime::currentSecsSinceEpoch();
-    const qint64 end = now + static_cast<qint64>(AppSettings::instance()->guideDays()) * 24 * 3600;
+    const qint64 end =
+        now + (static_cast<qint64>(AppSettings::instance()->guideDays()) * 24 * 3600);
+
     const QJsonArray filter{
         QJsonObject{
             {QStringLiteral("field"), QStringLiteral("stop")},

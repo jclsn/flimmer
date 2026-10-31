@@ -28,7 +28,7 @@ int digits(QStringView text, qsizetype from, qsizetype count, bool *ok)
             return 0;
         }
 
-        value = value * 10 + text.at(i).digitValue();
+        value = (value * 10) + text.at(i).digitValue();
     }
 
     return value;
@@ -145,7 +145,7 @@ qint64 Xmltv::parseTime(QStringView text)
         const qint64 minutes = digits(zone, 3, 2, &zoneOk);
 
         if (zoneOk) {
-            offset = (hours * 3600 + minutes * 60) * (zone.at(0) == QLatin1Char('-') ? -1 : 1);
+            offset = ((hours * 3600) + (minutes * 60)) * (zone.at(0) == QLatin1Char('-') ? -1 : 1);
         }
     }
 
