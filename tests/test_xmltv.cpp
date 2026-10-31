@@ -36,7 +36,7 @@ class XmltvTest : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
-    void parseTime_data()
+    static void parseTime_data()
     {
         QTest::addColumn<QString>("text");
         QTest::addColumn<qint64>("expected");
@@ -52,7 +52,7 @@ private Q_SLOTS:
         QTest::newRow("empty") << "" << static_cast<qint64>(0);
     }
 
-    void parseTime()
+    static void parseTime()
     {
         QFETCH(QString, text);
         QFETCH(qint64, expected);
@@ -60,7 +60,7 @@ private Q_SLOTS:
         QCOMPARE(Xmltv::parseTime(text), expected);
     }
 
-    void genreFromCategory_data()
+    static void genreFromCategory_data()
     {
         QTest::addColumn<QString>("category");
         QTest::addColumn<int>("genre");
@@ -76,7 +76,7 @@ private Q_SLOTS:
         QTest::newRow("unknown") << "Sonstiges" << 0;
     }
 
-    void genreFromCategory()
+    static void genreFromCategory()
     {
         QFETCH(QString, category);
         QFETCH(int, genre);
@@ -84,7 +84,7 @@ private Q_SLOTS:
         QCOMPARE(Xmltv::genreFromCategory(category), genre);
     }
 
-    void parsesMappedProgrammes()
+    static void parsesMappedProgrammes()
     {
         const QByteArray data = R"(<?xml version="1.0" encoding="UTF-8"?>
 <tv>
@@ -127,7 +127,7 @@ private Q_SLOTS:
         QVERIFY(events.at(0).id != events.at(1).id);
     }
 
-    void fillsMissingStopTimes()
+    static void fillsMissingStopTimes()
     {
         const QByteArray data = R"(<tv>
   <programme start="20261015200000 +0000" channel="das.erste.de"><title>One</title></programme>
@@ -145,7 +145,7 @@ private Q_SLOTS:
         QCOMPARE(events.at(1).title, QStringLiteral("Two"));
     }
 
-    void keepsOnlyTheRequestedWindow()
+    static void keepsOnlyTheRequestedWindow()
     {
         const QByteArray data = R"(<tv>
   <programme start="20261014220000 +0000" stop="20261014230000 +0000" channel="das.erste.de"><title>Over</title></programme>
@@ -160,7 +160,7 @@ private Q_SLOTS:
         QCOMPARE(events.first().title, QStringLiteral("Running"));
     }
 
-    void matchesProgrammesWithoutChannelElement()
+    static void matchesProgrammesWithoutChannelElement()
     {
         const QByteArray data = R"(<tv>
   <programme start="20261015200000 +0000" stop="20261015210000 +0000" channel="ZDF HD"><title>By name</title></programme>
@@ -173,7 +173,7 @@ private Q_SLOTS:
         QCOMPARE(events.first().channel, QStringLiteral("zdf"));
     }
 
-    void sharesGuideChannels()
+    static void sharesGuideChannels()
     {
         Xmltv::ChannelMap map;
         map.byId.insert(QStringLiteral("zdf.de"), {QStringLiteral("zdf"), QStringLiteral("zdf#2")});
@@ -189,7 +189,7 @@ private Q_SLOTS:
         QCOMPARE(events.at(1).channel, QStringLiteral("zdf#2"));
     }
 
-    void reportsErrors_data()
+    static void reportsErrors_data()
     {
         QTest::addColumn<QByteArray>("data");
 
@@ -198,7 +198,7 @@ private Q_SLOTS:
         QTest::newRow("broken xml") << QByteArray("<tv><programme start=");
     }
 
-    void reportsErrors()
+    static void reportsErrors()
     {
         QFETCH(QByteArray, data);
 

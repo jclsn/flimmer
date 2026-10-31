@@ -14,7 +14,7 @@ class ServerConfigTest : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
-    void baseUrl_data()
+    static void baseUrl_data()
     {
         QTest::addColumn<QString>("host");
         QTest::addColumn<int>("port");
@@ -35,7 +35,7 @@ private Q_SLOTS:
         QTest::newRow("empty") << "" << 9981 << false << "";
     }
 
-    void baseUrl()
+    static void baseUrl()
     {
         QFETCH(QString, host);
         QFETCH(int, port);
@@ -51,7 +51,7 @@ private Q_SLOTS:
         QCOMPARE(config.isValid(), !expected.isEmpty());
     }
 
-    void urlResolvesAgainstWebRoot()
+    static void urlResolvesAgainstWebRoot()
     {
         ServerConfig config;
         config.host = QStringLiteral("tvh/tvheadend");
@@ -62,7 +62,7 @@ private Q_SLOTS:
                  QStringLiteral("/tvheadend/stream/channel/abc"));
     }
 
-    void identityLeavesOutCredentials()
+    static void identityLeavesOutCredentials()
     {
         ServerConfig config;
         config.host = QStringLiteral("tvh");
@@ -73,7 +73,7 @@ private Q_SLOTS:
         QVERIFY(!config.identity().contains(QLatin1String("user")));
     }
 
-    void backendNames()
+    static void backendNames()
     {
         QCOMPARE(ServerConfig::backendFromString(QStringLiteral("m3u")),
                  ServerConfig::Backend::M3u);
@@ -84,7 +84,7 @@ private Q_SLOTS:
         QCOMPARE(ServerConfig::backendName(ServerConfig::Backend::M3u), QStringLiteral("m3u"));
     }
 
-    void m3uSource()
+    static void m3uSource()
     {
         ServerConfig config;
         config.backend = ServerConfig::Backend::M3u;
@@ -98,7 +98,7 @@ private Q_SLOTS:
         QVERIFY(config.identity().startsWith(QLatin1String("m3u:")));
     }
 
-    void m3uRejectsOtherSchemes()
+    static void m3uRejectsOtherSchemes()
     {
         ServerConfig config;
         config.backend = ServerConfig::Backend::M3u;

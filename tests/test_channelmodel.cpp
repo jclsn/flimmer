@@ -42,7 +42,7 @@ private:
     EpgStore m_store;
     qint64 m_now = 0;
 
-    QVariant data(const ChannelModel &model, int row, ChannelModel::Role role)
+    static QVariant data(const ChannelModel &model, int row, ChannelModel::Role role)
     {
         return model.data(model.index(row), role);
     }

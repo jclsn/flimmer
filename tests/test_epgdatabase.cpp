@@ -71,12 +71,12 @@ private Q_SLOTS:
         qputenv("XDG_DATA_HOME", QFile::encodeName(m_dataDir.path()));
     }
 
-    void init()
+    static void init()
     {
         QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).removeRecursively();
     }
 
-    void channels()
+    static void channels()
     {
         EpgDatabase database;
         QVERIFY(database.open());

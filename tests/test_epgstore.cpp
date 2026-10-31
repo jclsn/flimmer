@@ -129,7 +129,7 @@ private Q_SLOTS:
         QVERIFY(m_store.isEmpty());
     }
 
-    void fromJson()
+    static void fromJson()
     {
         const QJsonObject object{
             {QStringLiteral("eventId"), 42},
@@ -152,7 +152,7 @@ private Q_SLOTS:
         QCOMPARE(parsed.dvrState, QStringLiteral("recording"));
     }
 
-    void toVariant()
+    static void toVariant()
     {
         EpgEvent news = makeEvent(7, s_one, 1000, 2000);
         news.genre = 0x23;
