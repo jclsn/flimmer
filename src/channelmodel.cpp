@@ -14,7 +14,7 @@ ChannelModel::ChannelModel(const EpgStore *store, QObject *parent)
 
 int ChannelModel::rowCount(const QModelIndex &parent) const
 {
-    return parent.isValid() ? 0 : int(m_channels.size());
+    return parent.isValid() ? 0 : static_cast<int>(m_channels.size());
 }
 
 QHash<int, QByteArray> ChannelModel::roleNames() const
@@ -69,16 +69,17 @@ QVariant ChannelModel::data(const QModelIndex &index, int role) const
         }
         return nowNext.now->summary.isEmpty() ? nowNext.now->description : nowNext.now->summary;
     case NowStartRole:
-        return nowNext.now ? double(nowNext.now->start) * 1000.0 : 0.0;
+        return nowNext.now ? static_cast<double>(nowNext.now->start) * 1000.0 : 0.0;
     case NowStopRole:
-        return nowNext.now ? double(nowNext.now->stop) * 1000.0 : 0.0;
+        return nowNext.now ? static_cast<double>(nowNext.now->stop) * 1000.0 : 0.0;
     case NowProgressRole: {
         if (!nowNext.now) {
             return 0.0;
         }
         const double now = QDateTime::currentSecsSinceEpoch();
         return qBound(0.0,
-                      (now - nowNext.now->start) / double(nowNext.now->stop - nowNext.now->start),
+                      (now - nowNext.now->start)
+                          / static_cast<double>(nowNext.now->stop - nowNext.now->start),
                       1.0);
     }
     case NowGenreRole:
@@ -88,7 +89,7 @@ QVariant ChannelModel::data(const QModelIndex &index, int role) const
     case NextTitleRole:
         return nowNext.next ? nowNext.next->title : QString();
     case NextStartRole:
-        return nowNext.next ? double(nowNext.next->start) * 1000.0 : 0.0;
+        return nowNext.next ? static_cast<double>(nowNext.next->start) * 1000.0 : 0.0;
     }
 
     return {};

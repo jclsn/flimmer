@@ -47,8 +47,8 @@ QVariantMap EpgEvent::toVariant() const
     return {
         {QStringLiteral("id"), id},
         {QStringLiteral("channel"), channel},
-        {QStringLiteral("start"), double(start) * 1000.0},
-        {QStringLiteral("stop"), double(stop) * 1000.0},
+        {QStringLiteral("start"), static_cast<double>(start) * 1000.0},
+        {QStringLiteral("stop"), static_cast<double>(stop) * 1000.0},
         {QStringLiteral("title"), title},
         {QStringLiteral("subtitle"), subtitle},
         {QStringLiteral("summary"), summary},

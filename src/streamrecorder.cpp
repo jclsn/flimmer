@@ -25,7 +25,7 @@ const QLatin1String s_prefix("Paused - ");
 // How often a connection is sent what was recorded meanwhile.
 constexpr int s_serveIntervalMs = 100;
 // Data handed to a connection but not sent yet; more waits until the player reads it.
-constexpr qint64 s_maxPending = 2 * 1024 * 1024;
+constexpr qint64 s_maxPending = static_cast<const qint64>(2 * 1024 * 1024);
 }
 
 StreamRecorder::StreamRecorder(QObject *parent)

@@ -352,7 +352,8 @@ void TvhBackend::fetchGuide(int generation, const QUrl &url, const Xmltv::Channe
         }
 
         const qint64 now = QDateTime::currentSecsSinceEpoch();
-        const qint64 end = now + qint64(AppSettings::instance()->guideDays()) * 24 * 3600;
+        const qint64 end =
+            now + static_cast<qint64>(AppSettings::instance()->guideDays()) * 24 * 3600;
         auto events = std::make_shared<QVector<EpgEvent>>();
         auto error = std::make_shared<QString>();
 
@@ -382,7 +383,7 @@ void TvhBackend::fetchGuide(int generation, const QUrl &url, const Xmltv::Channe
 void TvhBackend::fetchEpgPage(int generation, int offset)
 {
     const qint64 now = QDateTime::currentSecsSinceEpoch();
-    const qint64 end = now + qint64(AppSettings::instance()->guideDays()) * 24 * 3600;
+    const qint64 end = now + static_cast<qint64>(AppSettings::instance()->guideDays()) * 24 * 3600;
     const QJsonArray filter{
         QJsonObject{{QStringLiteral("field"), QStringLiteral("stop")},
                     {QStringLiteral("type"), QStringLiteral("numeric")},
@@ -429,7 +430,7 @@ void TvhBackend::fetchEpgPage(int generation, int offset)
             }
 
             const int total = document.object().value(QLatin1String("totalCount")).toInt(-1);
-            const int fetched = offset + int(entries.size());
+            const int fetched = offset + static_cast<int>(entries.size());
             const bool more = entries.size() == s_epgPageSize && (total < 0 || fetched < total)
                 && fetched < s_maxEpgEvents;
 
@@ -536,7 +537,9 @@ void TvhBackend::testConnection(const QVariantMap &values)
 QVariantList TvhBackend::eventsForChannel(const QString &uuid, double fromMs, double toMs) const
 {
     QVariantList result;
-    const auto events = m_store.range(uuid, qint64(fromMs / 1000.0), qint64(toMs / 1000.0));
+    const auto events = m_store.range(uuid,
+                                      static_cast<qint64>(fromMs / 1000.0),
+                                      static_cast<qint64>(toMs / 1000.0));
     result.reserve(events.size());
 
     for (const EpgEvent *event : events) {
@@ -548,21 +551,21 @@ QVariantList TvhBackend::eventsForChannel(const QString &uuid, double fromMs, do
 
 QVariantMap TvhBackend::eventAt(const QString &uuid, double timeMs) const
 {
-    const EpgEvent *event = m_store.eventAt(uuid, qint64(timeMs / 1000.0));
+    const EpgEvent *event = m_store.eventAt(uuid, static_cast<qint64>(timeMs / 1000.0));
 
     return event ? event->toVariant() : QVariantMap();
 }
 
 QVariantMap TvhBackend::nextEvent(const QString &uuid, double afterMs) const
 {
-    const EpgEvent *event = m_store.nextAfter(uuid, qint64(afterMs / 1000.0));
+    const EpgEvent *event = m_store.nextAfter(uuid, static_cast<qint64>(afterMs / 1000.0));
 
     return event ? event->toVariant() : QVariantMap();
 }
 
 QVariantMap TvhBackend::eventById(double id) const
 {
-    const EpgEvent *event = m_store.byId(qint64(id));
+    const EpgEvent *event = m_store.byId(static_cast<qint64>(id));
 
     return event ? event->toVariant() : QVariantMap();
 }
@@ -674,7 +677,7 @@ void TvhBackend::requestStream(const QString &uuid)
 
 void TvhBackend::record(double eventId)
 {
-    const EpgEvent *event = m_store.byId(qint64(eventId));
+    const EpgEvent *event = m_store.byId(static_cast<qint64>(eventId));
     if (!event || !canRecord()) {
         return;
     }
@@ -707,7 +710,7 @@ void TvhBackend::record(double eventId)
 
 void TvhBackend::cancelRecording(double eventId)
 {
-    const EpgEvent *event = m_store.byId(qint64(eventId));
+    const EpgEvent *event = m_store.byId(static_cast<qint64>(eventId));
     if (!event || event->dvrUuid.isEmpty() || !canRecord()) {
         return;
     }

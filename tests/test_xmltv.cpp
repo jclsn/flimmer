@@ -45,9 +45,9 @@ private Q_SLOTS:
         QTest::newRow("no zone is utc") << "20261015203000" << utc(2026, 10, 15, 20, 30);
         QTest::newRow("no seconds") << "202610152030 +0000" << utc(2026, 10, 15, 20, 30);
         QTest::newRow("date only") << "20261015" << utc(2026, 10, 15, 0, 0);
-        QTest::newRow("invalid date") << "20261345000000 +0000" << qint64(0);
-        QTest::newRow("garbage") << "tomorrow" << qint64(0);
-        QTest::newRow("empty") << "" << qint64(0);
+        QTest::newRow("invalid date") << "20261345000000 +0000" << static_cast<qint64>(0);
+        QTest::newRow("garbage") << "tomorrow" << static_cast<qint64>(0);
+        QTest::newRow("empty") << "" << static_cast<qint64>(0);
     }
 
     void parseTime()

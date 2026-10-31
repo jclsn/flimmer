@@ -145,7 +145,8 @@ qint64 Xmltv::parseTime(QStringView text)
         const int minutes = digits(zone, 3, 2, &zoneOk);
 
         if (zoneOk) {
-            offset = (hours * 3600 + minutes * 60) * (zone.at(0) == QLatin1Char('-') ? -1 : 1);
+            offset = static_cast<qint64>((hours * 3600 + minutes * 60)
+                                         * (zone.at(0) == QLatin1Char('-') ? -1 : 1));
         }
     }
 

@@ -100,12 +100,12 @@ public:
 
     [[nodiscard]] double epgEnd() const
     {
-        return double(m_store.lastStop()) * 1000.0;
+        return static_cast<double>(m_store.lastStop()) * 1000.0;
     }
 
     [[nodiscard]] double now() const
     {
-        return double(QDateTime::currentMSecsSinceEpoch());
+        return static_cast<double>(QDateTime::currentMSecsSinceEpoch());
     }
 
     Q_INVOKABLE void refresh();

@@ -13,14 +13,12 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 
-#include <memory>
-
 namespace
 {
 constexpr int s_maxTargets = 8;
-constexpr qsizetype s_maxRequestSize = 16 * 1024;
+constexpr qsizetype s_maxRequestSize = static_cast<const qsizetype>(16 * 1024);
 // Upstream data is only read while the player keeps up, so memory stays bounded.
-constexpr qint64 s_bufferSize = 2 * 1024 * 1024;
+constexpr qint64 s_bufferSize = static_cast<const qint64>(2 * 1024 * 1024);
 constexpr int s_timeoutMs = 30000;
 
 void respond(QTcpSocket *socket, const QByteArray &status)

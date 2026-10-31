@@ -25,7 +25,7 @@
 namespace
 {
 constexpr int s_timeoutMs = 15000;
-constexpr qint64 s_refreshAfterSecs = 7 * 24 * 3600;
+constexpr qint64 s_refreshAfterSecs = static_cast<const qint64>(7 * 24 * 3600);
 constexpr int s_maxAttempts = 3;
 constexpr int s_retryDelayMs = 1000;
 

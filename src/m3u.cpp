@@ -145,8 +145,8 @@ M3u::Playlist M3u::parse(const QByteArray &data, const QUrl &source)
         channel.icon = resolve(source, attribute(entry, {"tvg-logo", "logo"})).toString();
 
         // Decimal numbers ("2.1") keep their major part.
-        channel.number =
-            int(attribute(entry, {"tvg-chno", "channel-number", "tvg-num"}).toDouble());
+        channel.number = static_cast<int>(
+            attribute(entry, {"tvg-chno", "channel-number", "tvg-num"}).toDouble());
 
         // Stable ids keep the last watched channel across playlist updates.
         const QString tvgId = attribute(entry, {"tvg-id", "channel-id"});
