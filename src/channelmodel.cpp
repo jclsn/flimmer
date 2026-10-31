@@ -100,7 +100,7 @@ void ChannelModel::setChannels(const QVector<Channel> &channels)
     const bool countChange = channels.size() != m_channels.size();
     beginResetModel();
     m_channels = channels;
-    m_nowNext.fill({}, m_channels.size());
+    m_nowNext = QList<NowNext>(m_channels.size());
     m_rowOfUuid.clear();
 
     for (int i = 0; i < m_channels.size(); ++i) {
