@@ -102,7 +102,7 @@ struct Runner {
         }
 
         if (position < lines.size()) {
-            QTimer::singleShot(delay, window, [self]() {
+            QTimer::singleShot(delay, window, [self] {
                 self->step(self);
             });
         }
@@ -131,7 +131,7 @@ void DevScript::runFromEnvironment(QQmlApplicationEngine *engine)
         return;
     }
 
-    QTimer::singleShot(0, runner->window, [runner]() {
+    QTimer::singleShot(0, runner->window, [runner] {
         runner->step(runner);
     });
 }

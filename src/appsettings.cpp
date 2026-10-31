@@ -104,7 +104,7 @@ void AppSettings::loadPassword()
 
     auto *job = new QKeychain::ReadPasswordJob(s_keychainService, this);
     job->setKey(s_keychainKey);
-    connect(job, &QKeychain::Job::finished, this, [this, job]() {
+    connect(job, &QKeychain::Job::finished, this, [this, job] {
         if (job->error() == QKeychain::NoError) {
             m_server.password = job->textData();
             setSecretStoreStatus({});
@@ -133,7 +133,7 @@ void AppSettings::storePassword(const QString &password)
     }
 
     job->setKey(s_keychainKey);
-    connect(job, &QKeychain::Job::finished, this, [this, job, password]() {
+    connect(job, &QKeychain::Job::finished, this, [this, job, password] {
         if (job->error() == QKeychain::NoError
             || (password.isEmpty() && job->error() == QKeychain::EntryNotFound)) {
             setSecretStoreStatus({});

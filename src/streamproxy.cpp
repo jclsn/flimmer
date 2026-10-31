@@ -176,7 +176,7 @@ void StreamProxy::serve(QTcpSocket *socket, const QByteArray &request)
         forward(false);
     });
 
-    connect(reply, &QNetworkReply::finished, socket, [socket, reply, headerSent, forward]() {
+    connect(reply, &QNetworkReply::finished, socket, [socket, reply, headerSent, forward] {
         reply->deleteLater();
 
         if (reply->error() != QNetworkReply::NoError && !*headerSent) {
