@@ -497,13 +497,19 @@ void TvhBackend::testConnection(const QVariantMap &values)
 
             const M3u::Playlist playlist = M3u::parse(result.body, config.playlist());
             const bool guide = config.xmltv().isValid() || playlist.guideUrl.isValid();
-            Q_EMIT connectionTestFinished(
-                !playlist.channels.isEmpty(),
-                playlist.channels.isEmpty()
-                    ? tr("The playlist contains no channels")
-                    : (guide ? tr("Playlist found: %1 channels").arg(playlist.channels.size())
-                             : tr("Playlist found: %1 channels, but no guide address")
-                                   .arg(playlist.channels.size())));
+
+            QString message;
+
+            if (playlist.channels.isEmpty()) {
+                message = tr("The playlist contains no channels");
+            } else if (guide) {
+                message = tr("Playlist found: %1 channels").arg(playlist.channels.size());
+            } else {
+                message = tr("Playlist found: %1 channels, but no guide address")
+                              .arg(playlist.channels.size());
+            }
+
+            Q_EMIT connectionTestFinished(!playlist.channels.isEmpty(), message);
         });
 
         return;
