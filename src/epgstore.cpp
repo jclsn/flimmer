@@ -99,7 +99,7 @@ void EpgStore::clear()
 void EpgStore::setEvents(QVector<EpgEvent> events)
 {
     clear();
-    std::sort(events.begin(), events.end(), [](const EpgEvent &a, const EpgEvent &b) {
+    std::ranges::sort(events, [](const EpgEvent &a, const EpgEvent &b) {
         return a.start < b.start;
     });
 
@@ -139,13 +139,8 @@ const EpgEvent *EpgStore::eventAt(const QString &channel, qint64 time) const
         return nullptr;
     }
 
-    const auto &list = it.value();
-    auto position = std::upper_bound(list.cbegin(),
-                                     list.cend(),
-                                     time,
-                                     [](qint64 timestamp, const EpgEvent &event) {
-                                         return timestamp < event.start;
-                                     });
+    const QList<EpgEvent> &list = it.value();
+    auto position = std::ranges::upper_bound(list, time, std::ranges::less{}, &EpgEvent::start);
 
     if (position == list.cbegin()) {
         return nullptr;
@@ -163,12 +158,8 @@ const EpgEvent *EpgStore::nextAfter(const QString &channel, qint64 time) const
     }
 
     const auto &list = it.value();
-    auto position = std::upper_bound(list.cbegin(),
-                                     list.cend(),
-                                     time,
-                                     [](qint64 timestamp, const EpgEvent &event) {
-                                         return timestamp < event.start;
-                                     });
+    auto position = std::ranges::upper_bound(list, time, std::ranges::less{}, &EpgEvent::start);
+
     return position == list.cend() ? nullptr : &*position;
 }
 
@@ -202,12 +193,7 @@ QVector<const EpgEvent *> EpgStore::range(const QString &channel, qint64 from, q
 
     const auto &list = it.value();
     // First event that ends after 'from'; stop times are sorted as events don't overlap.
-    auto position = std::upper_bound(list.cbegin(),
-                                     list.cend(),
-                                     from,
-                                     [](qint64 timestamp, const EpgEvent &event) {
-                                         return timestamp < event.stop;
-                                     });
+    auto position = std::ranges::upper_bound(list, from, std::ranges::less{}, &EpgEvent::stop);
 
     for (; position != list.cend() && position->start < to; ++position) {
         result.append(&*position);

@@ -139,7 +139,7 @@ QVariantList ColorSchemes::available()
         sorted.append({it.key(), it.value()});
     }
 
-    std::sort(sorted.begin(), sorted.end(), [](const auto &a, const auto &b) {
+    std::ranges::sort(sorted, [](const auto &a, const auto &b) {
         return a.second.localeAwareCompare(b.second) < 0;
     });
 

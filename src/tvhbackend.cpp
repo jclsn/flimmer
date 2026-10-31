@@ -267,20 +267,18 @@ void TvhBackend::fetchChannels(int generation)
                        channels.append(Channel::fromJson(object));
                    }
 
-                   std::stable_sort(channels.begin(),
-                                    channels.end(),
-                                    [](const Channel &a, const Channel &b) {
-                                        // Unnumbered channels (0) go to the end, alphabetically.
-                                        if ((a.number == 0) != (b.number == 0)) {
-                                            return a.number != 0;
-                                        }
+                   std::ranges::stable_sort(channels, [](const Channel &a, const Channel &b) {
+                       // Unnumbered channels (0) go to the end, alphabetically.
+                       if ((a.number == 0) != (b.number == 0)) {
+                           return a.number != 0;
+                       }
 
-                                        if (a.number != b.number) {
-                                            return a.number < b.number;
-                                        }
+                       if (a.number != b.number) {
+                           return a.number < b.number;
+                       }
 
-                                        return a.name.localeAwareCompare(b.name) < 0;
-                                    });
+                       return a.name.localeAwareCompare(b.name) < 0;
+                   });
 
                    m_database.setServerIdentity(AppSettings::instance()->server().identity());
                    m_database.saveChannels(channels);

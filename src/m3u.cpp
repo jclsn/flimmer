@@ -171,11 +171,10 @@ M3u::Playlist M3u::parse(const QByteArray &data, const QUrl &source)
         playlist.channels.append(std::move(channel));
     }
 
-    const bool numbered = std::any_of(playlist.channels.cbegin(),
-                                      playlist.channels.cend(),
-                                      [](const Channel &channel) {
-                                          return channel.number > 0;
-                                      });
+    const bool numbered = std::ranges::any_of(playlist.channels, [](const Channel &channel) {
+        return channel.number > 0;
+    });
+
     if (!numbered) {
         // Number by position so channels can still be picked with the number keys.
         for (int i = 0; i < playlist.channels.size(); ++i) {
@@ -183,15 +182,13 @@ M3u::Playlist M3u::parse(const QByteArray &data, const QUrl &source)
         }
     } else {
         // Unnumbered channels go to the end, otherwise the playlist order is kept.
-        std::stable_sort(playlist.channels.begin(),
-                         playlist.channels.end(),
-                         [](const Channel &a, const Channel &b) {
-                             if ((a.number == 0) != (b.number == 0)) {
-                                 return a.number != 0;
-                             }
+        std::ranges::stable_sort(playlist.channels, [](const Channel &a, const Channel &b) {
+            if ((a.number == 0) != (b.number == 0)) {
+                return a.number != 0;
+            }
 
-                             return a.number < b.number;
-                         });
+            return a.number < b.number;
+        });
     }
 
     return playlist;

@@ -116,9 +116,10 @@ private Q_SLOTS:
         QCOMPARE(loaded.size(), 2);
         QCOMPARE(database.lastUpdate(), 12345);
 
-        const auto first = std::find_if(loaded.cbegin(), loaded.cend(), [](const EpgEvent &e) {
+        const auto first = std::ranges::find_if(loaded, [](const EpgEvent &e) {
             return e.id == 1;
         });
+
         QVERIFY(first != loaded.cend());
         QCOMPARE(first->title, QStringLiteral("Event 1"));
         QCOMPARE(first->stop, 200);

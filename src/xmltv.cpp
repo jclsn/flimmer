@@ -158,7 +158,7 @@ int Xmltv::genreFromCategory(const QString &category)
     const QString text = category.toLower();
     const auto any = [&text](std::initializer_list<const char *> words) {
         // The words are UTF-8 ("fußball"), so not Latin-1.
-        return std::any_of(words.begin(), words.end(), [&text](const char *word) {
+        return std::ranges::any_of(words, [&text](const char *word) {
             return text.contains(QString::fromUtf8(word));
         });
     };
@@ -316,11 +316,9 @@ Xmltv::parse(const QByteArray &data, const ChannelMap &map, qint64 from, qint64 
     }
 
     // The stop time is optional; the next programme on the channel ends it then.
-    std::stable_sort(programmes.begin(),
-                     programmes.end(),
-                     [](const Programme &a, const Programme &b) {
-                         return a.channel != b.channel ? a.channel < b.channel : a.start < b.start;
-                     });
+    std::ranges::stable_sort(programmes, [](const Programme &a, const Programme &b) {
+        return a.channel != b.channel ? a.channel < b.channel : a.start < b.start;
+    });
 
     for (int i = 0; i < programmes.size(); ++i) {
         Programme &programme = programmes[i];
