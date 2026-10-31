@@ -101,7 +101,7 @@ void InputDebug::install(const QQmlApplicationEngine *engine)
 
     // A blocked event loop looks like ignored keys, so report it separately.
     auto *stallTimer = new QTimer(window);
-    auto clock = std::make_shared<QElapsedTimer>();
+    auto const clock = std::make_shared<QElapsedTimer>();
     clock->start();
 
     QObject::connect(stallTimer, &QTimer::timeout, window, [clock] {

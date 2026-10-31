@@ -307,7 +307,7 @@ void TvhBackend::fetchPlaylist(int generation)
             return;
         }
 
-        M3u::Playlist playlist = M3u::parse(result.body, server.playlist());
+        M3u::Playlist const playlist = M3u::parse(result.body, server.playlist());
         if (playlist.channels.isEmpty()) {
             setBusy(false);
             setStatus(Offline,
@@ -353,8 +353,8 @@ void TvhBackend::fetchGuide(int generation, const QUrl &url, const Xmltv::Channe
         const qint64 now = QDateTime::currentSecsSinceEpoch();
         const qint64 end =
             now + (static_cast<qint64>(AppSettings::instance()->guideDays()) * 24 * 3600);
-        auto events = std::make_shared<QVector<EpgEvent>>();
-        auto error = std::make_shared<QString>();
+        const auto events = std::make_shared<QVector<EpgEvent>>();
+        const auto error = std::make_shared<QString>();
 
         // Guides of large playlists are tens of megabytes; keep the UI responsive.
         QThread *worker = QThread::create([data = result.body, map, now, end, events, error] {

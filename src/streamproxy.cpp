@@ -93,8 +93,8 @@ void StreamProxy::handleConnection(QTcpSocket *socket)
 {
     connect(socket, &QTcpSocket::disconnected, socket, &QObject::deleteLater);
 
-    auto request = std::make_shared<QByteArray>();
-    auto connection = std::make_shared<QMetaObject::Connection>();
+    auto const request = std::make_shared<QByteArray>();
+    auto const connection = std::make_shared<QMetaObject::Connection>();
 
     *connection =
         connect(socket, &QTcpSocket::readyRead, this, [this, socket, request, connection] {
@@ -142,7 +142,7 @@ void StreamProxy::serve(QTcpSocket *socket, const QByteArray &request)
     NetworkAuth::setReplyCredentials(reply, target->username, target->password);
     reply->setReadBufferSize(s_bufferSize);
 
-    auto headerSent = std::make_shared<bool>(false);
+    auto const headerSent = std::make_shared<bool>(false);
 
     const auto forward = [socket, reply, headerSent](bool all) {
         if (socket->state() != QAbstractSocket::ConnectedState) {

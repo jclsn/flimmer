@@ -158,7 +158,8 @@ const EpgEvent *EpgStore::nextAfter(const QString &channel, qint64 time) const
     }
 
     const auto &list = it.value();
-    auto position = std::ranges::upper_bound(list, time, std::ranges::less{}, &EpgEvent::start);
+    auto const position =
+        std::ranges::upper_bound(list, time, std::ranges::less{}, &EpgEvent::start);
 
     return position == list.cend() ? nullptr : &*position;
 }

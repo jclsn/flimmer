@@ -41,8 +41,8 @@ int main(int argc, char *argv[])
 
     parser.addHelpOption();
     parser.addVersionOption();
-    QCommandLineOption windowed({QStringLiteral("w"), QStringLiteral("windowed")},
-                                QStringLiteral("Start in a window instead of fullscreen"));
+    QCommandLineOption const windowed({QStringLiteral("w"), QStringLiteral("windowed")},
+                                      QStringLiteral("Start in a window instead of fullscreen"));
 
     parser.addOption(windowed);
     parser.process(app);

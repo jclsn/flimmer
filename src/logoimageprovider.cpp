@@ -77,13 +77,13 @@ public:
 
     QQuickTextureFactory *textureFactory() const override
     {
-        QMutexLocker lock(&m_mutex);
+        QMutexLocker const lock(&m_mutex);
         return QQuickTextureFactory::textureFactoryForImage(m_image);
     }
 
     QString errorString() const override
     {
-        QMutexLocker lock(&m_mutex);
+        QMutexLocker const lock(&m_mutex);
         return m_error;
     }
 
@@ -99,7 +99,7 @@ public:
 private:
     bool loadFromCache()
     {
-        QImage image(m_cacheFile);
+        QImage const image(m_cacheFile);
 
         if (image.isNull()) {
             return false;
@@ -122,7 +122,7 @@ private:
             image = image.scaledToWidth(w, Qt::SmoothTransformation);
         }
 
-        QMutexLocker lock(&m_mutex);
+        QMutexLocker const lock(&m_mutex);
         m_image = std::move(image);
     }
 

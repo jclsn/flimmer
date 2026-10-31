@@ -21,13 +21,14 @@ constexpr const char *s_password = "tvhPassword";
 
 void NetworkAuth::setActiveServer(const ServerConfig &config)
 {
-    QMutexLocker lock(&s_mutex);
+    QMutexLocker const lock(&s_mutex);
     s_active = config;
 }
 
 ServerConfig NetworkAuth::activeServer()
 {
-    QMutexLocker lock(&s_mutex);
+    QMutexLocker const lock(&s_mutex);
+
     return s_active;
 }
 

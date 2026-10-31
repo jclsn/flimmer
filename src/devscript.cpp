@@ -110,7 +110,7 @@ struct Runner {
 };
 }
 
-void DevScript::runFromEnvironment(QQmlApplicationEngine *engine)
+void DevScript::runFromEnvironment(const QQmlApplicationEngine *engine)
 {
     const QString path = qEnvironmentVariable("FLIMMER_SCRIPT");
     if (path.isEmpty() || engine->rootObjects().isEmpty()) {
@@ -123,7 +123,7 @@ void DevScript::runFromEnvironment(QQmlApplicationEngine *engine)
         return;
     }
 
-    auto runner = std::make_shared<Runner>();
+    auto const runner = std::make_shared<Runner>();
     runner->lines = QString::fromUtf8(file.readAll()).split(QLatin1Char('\n'));
     runner->window = qobject_cast<QQuickWindow *>(engine->rootObjects().constFirst());
 

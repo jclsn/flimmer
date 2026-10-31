@@ -45,7 +45,7 @@ QPalette paletteFromScheme(const QString &path)
     const QSettings scheme(path, QSettings::IniFormat);
     QPalette palette;
 
-    auto set = [&palette](QPalette::ColorRole role, const QColor &color) {
+    auto const set = [&palette](QPalette::ColorRole role, const QColor &color) {
         if (color.isValid()) {
             palette.setColor(role, color);
         }
@@ -93,7 +93,7 @@ QPalette paletteFromScheme(const QString &path)
         readColor(scheme, QStringLiteral("View"), QStringLiteral("ForegroundInactive"));
 
     if (inactiveText.isValid()) {
-        for (QPalette::ColorRole role :
+        for (QPalette::ColorRole const role :
              {QPalette::WindowText, QPalette::Text, QPalette::ButtonText}) {
             palette.setColor(QPalette::Disabled, role, inactiveText);
         }
