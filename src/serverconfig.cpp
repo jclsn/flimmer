@@ -14,7 +14,7 @@ QUrl sourceUrl(const QString &text)
         return {};
     }
 
-    const QUrl url = QUrl::fromUserInput(trimmed);
+    QUrl url = QUrl::fromUserInput(trimmed);
     const QString scheme = url.scheme();
 
     if (!url.isValid()
