@@ -73,7 +73,8 @@ QString firstUuid(const QJsonDocument &document)
 
 TvhBackend *TvhBackend::instance()
 {
-    static TvhBackend *s_instance = new TvhBackend;
+    static auto s_instance = new TvhBackend;
+
     return s_instance;
 }
 
@@ -258,7 +259,7 @@ void TvhBackend::fetchChannels(int generation)
                    }
 
                    QVector<Channel> channels;
-                   for (const QJsonValue &value : entriesOf(result.json())) {
+                   for (const auto &value : entriesOf(result.json())) {
                        const QJsonObject object = value.toObject();
                        if (!object.value(QLatin1String("enabled")).toBool(true)) {
                            continue;
@@ -422,7 +423,7 @@ void TvhBackend::fetchEpgPage(int generation, int offset)
 
             const QJsonDocument document = result.json();
             const QJsonArray entries = entriesOf(document);
-            for (const QJsonValue &value : entries) {
+            for (const auto &value : entries) {
                 EpgEvent event = EpgEvent::fromJson(value.toObject());
 
                 // Filter client side as well in case the server ignored the filter.
