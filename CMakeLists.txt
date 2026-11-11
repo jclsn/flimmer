@@ -210,7 +210,7 @@ endif()
 
 install(TARGETS flimmer RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(
-    FILES data/flimmer.desktop
+    FILES data/io.github.jclsn.Flimmer.desktop
     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
 )
 

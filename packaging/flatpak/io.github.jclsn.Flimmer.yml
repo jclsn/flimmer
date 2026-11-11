@@ -15,8 +15,7 @@ runtime: org.kde.Platform
 runtime-version: "6.11"
 sdk: org.kde.Sdk
 command: flimmer
-# Flatpak only exports launchers and icons named after the app ID
-rename-desktop-file: flimmer.desktop
+# Flatpak only exports icons named after the app ID. The launcher already is.
 rename-icon: flimmer
 finish-args:
   - --share=ipc
