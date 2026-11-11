@@ -6,10 +6,12 @@
 
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QThread>
 #include <QTimeZone>
 #include <QXmlStreamReader>
 
 #include <algorithm>
+#include <memory>
 
 namespace
 {
@@ -348,4 +350,24 @@ Xmltv::parse(const QByteArray &data, const ChannelMap &map, qint64 from, qint64 
     }
 
     return events;
+}
+
+void Xmltv::parseInThread(QObject *context,
+                          const QByteArray &data,
+                          const ChannelMap &map,
+                          qint64 from,
+                          qint64 to,
+                          const Done &done)
+{
+    auto events = std::make_shared<QVector<EpgEvent>>();
+    auto error = std::make_shared<QString>();
+
+    QThread *worker = QThread::create([data, map, from, to, events, error]() {
+        *events = parse(data, map, from, to, error.get());
+    });
+    QObject::connect(worker, &QThread::finished, context, [worker, events, error, done]() {
+        worker->deleteLater();
+        done(*events, *error);
+    });
+    worker->start();
 }
