@@ -33,7 +33,9 @@ int main(int argc, char *argv[])
     QGuiApplication::setApplicationName(QStringLiteral("flimmer"));
     QGuiApplication::setApplicationDisplayName(QStringLiteral("Flimmer"));
     QGuiApplication::setApplicationVersion(QStringLiteral("0.1.0"));
-    QGuiApplication::setDesktopFileName(QStringLiteral("flimmer"));
+    // Must match the launcher's file name: the Plasma Bigscreen home screen only shows the running
+    // window instead of starting another copy when the window's app ID matches it.
+    QGuiApplication::setDesktopFileName(QStringLiteral("io.github.jclsn.Flimmer"));
 
     QCommandLineParser parser;
     parser.setApplicationDescription(
