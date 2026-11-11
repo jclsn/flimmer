@@ -63,3 +63,9 @@ flimmer_add_test(
         ${PROJECT_SOURCE_DIR}/src/epgstore.cpp
     LIBRARIES Qt6::Core Qt6::Sql
 )
+
+flimmer_add_test(
+    test_streambuffer
+    SOURCES ${PROJECT_SOURCE_DIR}/src/streambuffer.cpp
+    LIBRARIES Qt6::Core
+)
