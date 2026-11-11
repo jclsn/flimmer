@@ -25,6 +25,8 @@ constexpr int s_maxEpgEvents = 200000;
 constexpr int s_tickMs = 15 * 1000;
 constexpr int s_epgRefreshMs = 30 * 60 * 1000;
 constexpr int s_retryMs = 60 * 1000;
+// How far behind live relayed streams play.
+constexpr int s_bufferSeconds = 2;
 
 ServerConfig configFromValues(const QVariantMap &values, const ServerConfig &fallback)
 {
@@ -613,7 +615,7 @@ void TvhBackend::requestStream(const QString &uuid)
         // URL, so streams from the playlist's own server go through the local relay.
         if (!server.username.isEmpty() && url.userName().isEmpty()
             && url.host() == server.baseUrl().host()) {
-            url = m_streamProxy->relay(url, server);
+            url = m_streamProxy->relay(url, server.username, server.password, s_bufferSeconds);
 
             if (url.isEmpty()) {
                 Q_EMIT streamFailed(uuid, tr("The local stream relay could not be started"));
@@ -675,7 +677,8 @@ void TvhBackend::requestStream(const QString &uuid)
             }
 
             // Older servers without ticket support: relay the stream with our credentials.
-            const QUrl url = m_streamProxy->relay(direct, server);
+            const QUrl url =
+                m_streamProxy->relay(direct, server.username, server.password, s_bufferSeconds);
             if (url.isEmpty()) {
                 Q_EMIT streamFailed(uuid, tr("The local stream relay could not be started"));
 
