@@ -10,6 +10,7 @@
 #include <QHash>
 #include <QList>
 #include <QObject>
+#include <QPair>
 #include <QStringList>
 #include <QUrl>
 
@@ -35,9 +36,26 @@ public:
 
     explicit StreamProxy(QObject *parent = nullptr);
 
-    // Returns a local address for 'upstream'. The credentials are answered to the server's
-    // challenges; ones in the URL are used instead and removed from it. 'bufferMode' is a
-    // StreamBuffer mode. An empty URL means the relay could not be started.
+    using Headers = QList<QPair<QByteArray, QByteArray>>;
+
+    struct Target {
+        QUrl url;
+        // Answered to the server's challenges.
+        QString username;
+        QString password;
+        // A StreamBuffer mode.
+        int bufferMode = 0;
+        // Sent with every request, reconnects included (e.g. a User-Agent).
+        Headers headers;
+        // The address itself holds a secret (Xtream puts the password in its path), so the
+        // player is never sent there, not even for HLS.
+        bool secretUrl = false;
+    };
+
+    // Returns a local address for 'target'. Credentials in its URL are used instead of
+    // 'username' and 'password' and removed from it. An empty URL means the relay could not be
+    // started.
+    QUrl relay(Target target);
     QUrl
     relay(const QUrl &upstream, const QString &username, const QString &password, int bufferMode);
 
@@ -50,13 +68,6 @@ public:
     {
         m_timing = timing;
     }
-
-    struct Target {
-        QUrl url;
-        QString username;
-        QString password;
-        int bufferMode = 0;
-    };
 
 private:
     bool listen();
